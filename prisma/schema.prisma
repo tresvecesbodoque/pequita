@@ -1,0 +1,72 @@
+// Pequita — esquema de la base de datos (SQLite local)
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum StickerType {
+  ESQUELA
+  DECORATIVO
+  FOTO
+  ESCANEO
+}
+
+enum BackgroundType {
+  PRESET
+  CUSTOM
+}
+
+model Sticker {
+  id        String      @id @default(cuid())
+  type      StickerType
+  imageUrl  String
+  name      String?
+  width     Int?
+  height    Int?
+  createdAt DateTime    @default(now())
+
+  lettersUsingAsEsquela Letter[] @relation("EsquelaSticker")
+}
+
+model Letter {
+  id                  String         @id @default(cuid())
+  slug                String         @unique @default(cuid())
+  title               String         @default("Sin título")
+
+  // Autoría: cuando la carta llega desde la página pública /escribir, guardamos
+  // el nombre del familiar y su mensaje original (fuente de la esquela). Si
+  // authorName es null, la carta es del dueño (creada en el editor privado).
+  authorName          String?
+  authorMessage       String?
+
+  // Esquela (contenido interior)
+  esquelaStickerId    String?
+  esquelaSticker      Sticker?       @relation("EsquelaSticker", fields: [esquelaStickerId], references: [id])
+  esquelaCanvas       String         @default("{\"elements\":[],\"canvasWidth\":1000,\"canvasHeight\":1400}")
+  esquelaBaseImageUrl String?
+
+  // Sobre
+  sobreCanvas         String         @default("{\"elements\":[],\"canvasWidth\":1400,\"canvasHeight\":900}")
+  sobreBaseImageUrl   String?
+  sobreColor          String?        @default("#d6c7a1")
+
+  // Fondo temático del presentador
+  backgroundType      BackgroundType @default(PRESET)
+  backgroundPresetId  String?
+  backgroundImageUrl  String?
+  backgroundScale     Int?           // px opcional para densidad del tileo
+
+  // QR cacheados (data URLs)
+  qrInteriorDataUrl   String?
+  qrExteriorDataUrl   String?
+
+  isPublished         Boolean        @default(false)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+}

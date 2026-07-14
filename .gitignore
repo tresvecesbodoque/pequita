@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/app/generated/prisma
+/lib/generated/prisma
+
+# prisma sqlite db
+*.db
+*.db-journal
+prisma/migrations/dev.db*
+
+# secretos locales de pequita (hash de contraseña + secreto de sesión)
+pequita-secrets.json
+
+# imágenes subidas en local (en producción van a Vercel Blob)
+/public/uploads/
