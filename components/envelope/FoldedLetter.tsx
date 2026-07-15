@@ -3,12 +3,15 @@
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import type { CanvasData } from "@/lib/types/canvas";
 
-// La esquela se muestra doblada por la mitad y se despliega como papel real.
-// Construcción: la mitad inferior es estática; la mitad superior es una "solapa"
-// con bisagra en la línea media (su borde inferior). Doblada (rotateX -180) queda
-// tumbada sobre la mitad inferior mostrando su cara trasera (papel). Al desplegar
-// (rotateX 0) muestra el contenido de la mitad superior y reconstruye la carta.
-// El contenedor tiene fondo papel para tapar la región superior mientras está doblada.
+// Paquete de papel doblado por la mitad, como una carta real.
+//
+// El contenedor mide MEDIA hoja (la mitad inferior). La mitad superior es una
+// solapa que vive FUERA del contenedor (justo encima), con bisagra en la línea
+// de pliegue (el borde superior del contenedor). Doblada (rotateX -180) cae
+// sobre el contenedor y solo se ve su dorso de papel liso: un paquete cerrado,
+// sin texto visible. Al desplegarse (rotateX 0) reconstruye la hoja completa y
+// el mensaje queda impreso en el propio papel, porque cada mitad renderiza su
+// porción del lienzo (no hay texto superpuesto a la animación).
 
 type Props = {
   data: CanvasData;
@@ -18,57 +21,81 @@ type Props = {
 };
 
 const PAPER = "#fffdf8";
+const PAPER_EDGE = "#f0e9da";
 
 export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }: Props) {
   const aspect = data.canvasWidth / data.canvasHeight;
+  // El contenedor es la mitad inferior de la hoja: doble de ancho relativo.
+  const halfAspect = aspect * 2;
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-md shadow-[0_30px_80px_-30px_rgba(0,0,0,0.6)] ring-1 ring-black/5"
-      style={{ aspectRatio: `${aspect}`, backgroundColor: PAPER, perspective: 1400 }}
+      className="relative w-full"
+      style={{ aspectRatio: `${halfAspect}`, perspective: 1400 }}
     >
-      {/* Mitad inferior (estática): muestra la parte baja de la carta */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 overflow-hidden">
+      {/* Mitad inferior (estática): la parte baja de la carta.
+          isolation + zIndex: los elementos del lienzo traen z-index propios y,
+          sin aislar, se pintarían por ENCIMA de la solapa doblada. */}
+      <div
+        className="absolute inset-0 overflow-hidden shadow-[0_26px_60px_-28px_rgba(16,27,54,0.55)]"
+        style={{
+          backgroundColor: PAPER,
+          borderRadius: "0 0 6px 6px",
+          isolation: "isolate",
+          zIndex: 1,
+        }}
+      >
         <div className="absolute inset-x-0 bottom-0" style={{ height: "200%" }}>
           <CanvasStage data={data} baseColor={PAPER} baseImageUrl={baseImageUrl} />
         </div>
-        {/* sombra suave del pliegue */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-black/10 to-transparent" />
+        {/* sombra suave bajo la línea de pliegue */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-5 bg-gradient-to-b from-black/10 to-transparent" />
       </div>
 
-      {/* Solapa superior (se despliega) */}
+      {/* Solapa superior: bisagra en la línea de pliegue. Empieza doblada. */}
       <div
-        className={`${flapClassName} absolute inset-x-0 top-0 h-1/2`}
+        className={`${flapClassName} absolute inset-x-0`}
         style={{
+          top: "-100%",
+          height: "100%",
+          zIndex: 2,
           transformOrigin: "bottom center",
           transformStyle: "preserve-3d",
           transform: "rotateX(-180deg)",
           willChange: "transform",
         }}
       >
-        {/* Cara frontal: contenido de la mitad superior */}
+        {/* Cara frontal (visible al desplegar): la parte alta de la carta */}
         <div
           className="absolute inset-0 overflow-hidden"
-          style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
+          style={{
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            backgroundColor: PAPER,
+            borderRadius: "6px 6px 0 0",
+            boxShadow: "0 -14px 40px -24px rgba(16,27,54,0.35)",
+            isolation: "isolate",
+          }}
         >
           <div className="absolute inset-x-0 top-0" style={{ height: "200%" }}>
             <CanvasStage data={data} baseColor={PAPER} baseImageUrl={baseImageUrl} />
           </div>
-          {/* sombra del pliegue en el borde inferior */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-black/10 to-transparent" />
+          {/* sombra sobre la línea de pliegue */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t from-black/10 to-transparent" />
         </div>
 
-        {/* Cara trasera: papel (lo que se ve mientras está doblada) */}
+        {/* Dorso (visible mientras está doblada): papel liso, sin texto */}
         <div
           className="absolute inset-0"
           style={{
             transform: "rotateX(180deg)",
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
-            background: `linear-gradient(160deg, ${PAPER}, #f1e8d6)`,
+            background: `linear-gradient(165deg, ${PAPER} 0%, ${PAPER_EDGE} 100%)`,
+            borderRadius: "0 0 6px 6px",
           }}
         >
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-black/12 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-black/10 to-transparent" />
         </div>
       </div>
     </div>

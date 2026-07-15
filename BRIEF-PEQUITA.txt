@@ -1,0 +1,69 @@
+BRIEF DEL PROYECTO "PEQUITA" — PARA LLUVIA DE IDEAS POR IA
+===========================================================
+(Estado al 15-07-2026. Lee todo y luego cumple la TAREA del final.)
+
+QUE ES
+------
+Web de cartas de cumpleaños para Isidora ("Pequita"). Los familiares escriben
+cartas desde un formulario publico; el dueno las modera en un taller privado;
+Isidora recibe un album sorpresa donde cada carta vive dentro de un sobre que
+se abre con una animacion fisica (la hoja doblada sale del sobre y se
+despliega con el mensaje impreso en el papel).
+
+RUTAS
+-----
+/            portada publica: invita a escribir (boton grande) + enlace discreto al taller
+/escribir    formulario publico: nombre, mensaje (max 1000), 7 temas visuales
+             (Pergamino, Corazones, Noche estrellada, Dorado, El zorro, Cielo
+             de aviador, Botanico), 6 tipografias, foto opcional, y VISTA
+             PREVIA EN VIVO del producto final mientras escriben
+/gracias     confirmacion tras enviar
+/para-ella   album de Isidora, SOLO visualizacion, protegido con clave simple;
+             portada de cielo nocturno granate con estrellas + retScula de
+             sobres cerrados inclinados
+/carta/[slug] presentador publico de una carta publicada: sobre cerrado con
+             sello de estrella dorada -> solapa 3D gira ~150 grados y se
+             desvanece -> hoja doblada emerge del sobre -> viaja al centro ->
+             se despliega; fondo = tema elegido por el autor
+/editor      taller privado (auth): moderar cartas pendientes, editar lienzos
+             de sobre/esquela (canvas drag&drop con stickers), gestionar stickers
+
+ESTETICA VIGENTE (v2, en DESIGN.md del repo)
+--------------------------------------------
+Bosquejo a mano + El Principito + cartoon Disney anos 40 + MAXIMALISMO +
+paleta ROJA: papel antiguo #f6e8d6, tinta granate #4d2126, bermellon #b3282d,
+granate profundo #7c1b22, oro #d9a83f, coral #e0745a, cielo nocturno granate
+#3a1420. Titulos con Fredericka the Great (rotulado a lapiz), rotulos con
+Limelight (cartel de feria 40s). Tarjetas con borde irregular "dibujado a
+mano" y sombra dura desplazada (cartoon). Fondos con motivos repetidos
+(estrellitas, espirales). Motivos del Principito: estrellas, planeta con
+horizonte curvo, la rosa, el zorro, avioneta, luna.
+
+STICKERS
+--------
+Base actual: 20 SVG line-art dibujados por codigo (estrellas, rosa, zorro,
+avioneta, sombrero-serpiente, baobab, farol, corona, corazon...). Pipeline
+para generarlos con IA (API Gemini) listo pero sin cuota gratuita en la
+cuenta del dueno; alternativa: generarlos a mano en la web gratuita de Gemini
+con prompts ya escritos.
+
+STACK Y RESTRICCIONES
+---------------------
+Next.js (App Router) + Prisma + SQLite local / Turso en prod + Vercel +
+Vercel Blob para imagenes. Framer Motion para animaciones. Presupuesto: $0 o
+casi. Publico no tecnico (familia). Movil primero para los familiares.
+Una sola desarrolladora-IA trabajando por sesiones; los procesos repetitivos
+se automatizan con scripts Python/Node.
+
+TAREA PARA TI (IA QUE LEES ESTO)
+--------------------------------
+Genera una lluvia de ideas AMBICIOSA pero realizable con este stack y
+presupuesto ~$0, organizada en estas categorias:
+1. La experiencia de Isidora el dia del cumpleanos (el momento sorpresa).
+2. Mejoras para los familiares que escriben (mas emocion, menos friccion).
+3. El taller/moderacion del dueno.
+4. Animaciones y detalles esteticos (coherentes con la estetica v2 descrita).
+5. Stickers y contenido generado (con y sin IA).
+6. Que pasa DESPUES del cumpleanos (segunda vida del sitio).
+Para cada idea: nombre corto, 1-3 frases de descripcion, esfuerzo estimado
+(S/M/L) y un apunte de como encaja en la estetica v2. Marca tus 5 favoritas.

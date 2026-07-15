@@ -1,5 +1,14 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Nunito, Caveat } from "next/font/google";
+import {
+  Cormorant_Garamond,
+  Nunito,
+  Caveat,
+  Dancing_Script,
+  Patrick_Hand,
+  Amatic_SC,
+  Fredericka_the_Great,
+  Limelight,
+} from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/lib/site";
 
@@ -20,6 +29,40 @@ const nunito = Nunito({
 const caveat = Caveat({
   variable: "--font-hand",
   subsets: ["latin"],
+});
+
+// Manuscrita elegante, de pluma
+const dancing = Dancing_Script({
+  variable: "--font-hand2",
+  subsets: ["latin"],
+});
+
+// Manuscrita redonda e infantil, muy legible
+const patrick = Patrick_Hand({
+  variable: "--font-hand3",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+// Display de trazos finos, como letrero dibujado a mano
+const amatic = Amatic_SC({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+// Rotulado a lápiz (bosquejo) para títulos grandes
+const fredericka = Fredericka_the_Great({
+  variable: "--font-sketch",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+// Cartel de feria años 40 para rótulos cortos
+const limelight = Limelight({
+  variable: "--font-deco",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 // URL base para que las imágenes OG y los enlaces se resuelvan absolutos al
@@ -59,7 +102,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${cormorant.variable} ${nunito.variable} ${caveat.variable} h-full antialiased`}
+      className={`${cormorant.variable} ${nunito.variable} ${caveat.variable} ${dancing.variable} ${patrick.variable} ${amatic.variable} ${fredericka.variable} ${limelight.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

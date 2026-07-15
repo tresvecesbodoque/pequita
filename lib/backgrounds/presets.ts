@@ -55,6 +55,26 @@ export const BACKGROUND_PRESETS: BackgroundPreset[] = [
     ),
   },
   {
+    id: "zorro",
+    name: "El zorro",
+    bgColor: "#f8ece1",
+    tileSize: 56,
+    tileSvg: tile(
+      56,
+      `<g fill='none' stroke='#c97b4a' stroke-opacity='0.55' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 22l4-6 4 5h4l4-5 4 6c0 7-4 11-10 11s-10-4-10-11z'/><path d='M27 29h6'/></g><circle cx='12' cy='44' r='1.3' fill='#c97b4a' fill-opacity='0.4'/><circle cx='46' cy='46' r='1' fill='#c97b4a' fill-opacity='0.4'/>`
+    ),
+  },
+  {
+    id: "nubes",
+    name: "Cielo de aviador",
+    bgColor: "#eef3f8",
+    tileSize: 64,
+    tileSvg: tile(
+      64,
+      `<g fill='none' stroke='#7d9cbb' stroke-opacity='0.5' stroke-width='1.4' stroke-linecap='round'><path d='M12 22c2-5 9-5 11 0h5a4 4 0 0 1 0 8H14a4 4 0 0 1-2-8z'/><path d='M38 48c1-3 6-3 7 0h4a3 3 0 0 1 0 6H37a3 3 0 0 1 1-6z'/></g><path d='M50 14l1.4 3.4 3.4 1.4-3.4 1.4L50 23.6l-1.4-3.4-3.4-1.4 3.4-1.4z' fill='#d9a83f' fill-opacity='0.55'/>`
+    ),
+  },
+  {
     id: "botanico",
     name: "Botánico",
     bgColor: "#eef1e8",

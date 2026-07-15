@@ -16,6 +16,9 @@ const MAX_NAME = 40;
 const MAX_MESSAGE = 1000;
 const ALLOWED_FONTS = new Set([
   "var(--font-hand)",
+  "var(--font-hand2)",
+  "var(--font-hand3)",
+  "var(--font-display)",
   "var(--font-serif)",
   "var(--font-sans)",
 ]);

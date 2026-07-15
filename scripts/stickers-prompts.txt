@@ -1,0 +1,27 @@
+# Base de stickers Pequita — un prompt por línea.
+# Correr con la skill central gen-imagenes (ver AGENTS.md → Flujo de scripts):
+#   python3 ~/CLAUDE/skills-centrales/gen-imagenes/gen_imagenes.py \
+#     --prompts-file scripts/stickers-prompts.txt \
+#     --out public/stickers-base \
+#     --estilo "ilustración minimalista de línea fina, tinta azul noche (#22304a) con acentos dorados (#d9a83f) y rosa suave (#d98a80), estilo El Principito y minimalismo escandinavo, sobre fondo blanco liso, formato sticker die-cut, sin texto" \
+#     --transparente
+el principito de pie sobre su pequeño planeta mirando las estrellas
+una rosa bajo su cúpula de cristal
+un zorro naranja sentado, con la cola enroscada
+una avioneta antigua entre nubes pequeñas
+una estrella fugaz con estela punteada
+un ramo de tres estrellas doradas
+una luna creciente con una estrella pequeña
+un baobab diminuto con tres hojas
+una bufanda ondeando al viento
+un farol encendido sobre un planeta minúsculo
+una constelación en forma de corazón
+un sobre de carta cerrado con sello de estrella
+una pluma estilográfica dibujando una línea de estrellas
+un globo aerostático pequeño entre estrellas
+una serpiente que se comió un elefante (el sombrero del principito)
+un pozo en el desierto bajo una estrella
+dos pájaros llevando hilos de un corazón
+una corona pequeña y sencilla
+un telescopio apuntando a una estrella dorada
+un corazón dibujado con una sola línea continua
