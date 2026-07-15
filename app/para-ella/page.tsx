@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { AlbumEnvelope } from "@/components/album/AlbumEnvelope";
 import { AlbumGate } from "@/components/album/AlbumGate";
+import { Constelacion } from "@/components/album/Constelacion";
 import { isAlbumUnlocked } from "@/lib/albumAccess";
 import { SITE } from "@/lib/site";
 
@@ -82,6 +83,12 @@ export default async function AlbumPage() {
             </g>
           </svg>
         </div>
+
+        {/* La constelación: una estrella por carta; se enciende al leerla */}
+        <Constelacion
+          slugs={letters.map((l) => l.slug)}
+          mensajeFinal={SITE.finalMessage}
+        />
       </section>
 
       {/* Los sobres: retícula abundante, ligeramente traviesa (maximalismo) */}

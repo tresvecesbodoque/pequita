@@ -19,7 +19,20 @@ type Props = {
   esquelaBaseImageUrl: string | null;
   background: BackgroundConfig;
   qrInterior: string | null;
+  /** mensaje de voz opcional del autor (audio-carta) */
+  audioUrl?: string | null;
 };
+
+// Esquirlas doradas del lacre al romperse: dirección de vuelo de cada una.
+const ESQUIRLAS = [
+  { dx: -52, dy: -34, rot: -120 },
+  { dx: 48, dy: -46, rot: 140 },
+  { dx: -64, dy: 10, rot: -200 },
+  { dx: 62, dy: 18, rot: 180 },
+  { dx: -30, dy: 52, rot: -160 },
+  { dx: 34, dy: 48, rot: 120 },
+  { dx: 4, dy: -60, rot: 90 },
+];
 
 // Secuencia de apertura, como una carta de verdad:
 //  1. El sello cede y la solapa del sobre se abre hacia atrás.
@@ -39,6 +52,7 @@ export function EnvelopePresenter({
   esquelaBaseImageUrl,
   background,
   qrInterior,
+  audioUrl = null,
 }: Props) {
   const esquela = parseCanvas(esquelaCanvas, EMPTY_ESQUELA);
   const sobre = parseCanvas(sobreCanvas, EMPTY_SOBRE);
@@ -46,6 +60,7 @@ export function EnvelopePresenter({
   const [scope, animate] = useAnimate();
   const [opened, setOpened] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [burst, setBurst] = useState(false);
   // Remontar el escenario es la forma más fiable de "volver a cerrar".
   const [sceneKey, setSceneKey] = useState(0);
 
@@ -66,7 +81,14 @@ export function EnvelopePresenter({
     // la muestra espejada sobre el sobre (dos triángulos flotantes). En vez de
     // eso, gira hasta ~150° y se desvanece: el sobre queda como bolsillo
     // abierto y la hoja sale limpia.
-    animate(".seal", { opacity: 0, scale: 0.5 }, { duration: 0.4, ease: "easeOut" });
+    // 0) El lacre cede: tiembla, se agrieta y estalla en esquirlas doradas.
+    await animate(
+      ".seal",
+      { rotate: [0, -9, 11, -7, 5, 0], scale: [1, 1.16, 1.16, 1] },
+      { duration: 0.5, ease: "easeInOut" }
+    );
+    setBurst(true);
+    animate(".seal", { opacity: 0, scale: 0.35 }, { duration: 0.28, ease: "easeIn" });
     await animate(
       ".flap",
       { rotateX: [0, -12, -105] },
@@ -112,6 +134,7 @@ export function EnvelopePresenter({
   function reset() {
     setOpened(false);
     setBusy(false);
+    setBurst(false);
     setSceneKey((k) => k + 1);
   }
 
@@ -162,6 +185,24 @@ export function EnvelopePresenter({
               style={{ zIndex: 3, transformOrigin: "top center" }}
             >
               <FoldedLetter data={esquela} baseImageUrl={esquelaBaseImageUrl} />
+              {audioUrl && opened && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25, duration: 0.6, ease: PAPER_EASE }}
+                  className="mx-auto mt-4 flex w-fit items-center gap-3 rounded-xl border-2 border-[var(--foreground)]/60 bg-[var(--surface)]/90 px-4 py-2.5 shadow-[3px_4px_0_rgba(124,27,34,0.25)] backdrop-blur"
+                >
+                  <span className="text-lg" aria-hidden>
+                    🎙
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-medium text-[var(--foreground)]">
+                      Escucha su voz
+                    </span>
+                    <audio src={audioUrl} controls className="mt-1 h-9 w-56 max-w-full" />
+                  </div>
+                </motion.div>
+              )}
               {qrInterior && opened && (
                 <motion.div
                   initial={{ opacity: 0, y: 6 }}
@@ -237,6 +278,23 @@ export function EnvelopePresenter({
                 </svg>
               </div>
             </motion.div>
+
+            {/* Esquirlas doradas del lacre al romperse */}
+            {burst &&
+              ESQUIRLAS.map((e, i) => (
+                <motion.span
+                  key={i}
+                  className="pointer-events-none absolute"
+                  style={{ zIndex: 32, left: "calc(50% - 5px)", top: "calc(56% - 5px)" }}
+                  initial={{ x: 0, y: 0, opacity: 1, scale: 1, rotate: 0 }}
+                  animate={{ x: e.dx, y: e.dy, opacity: 0, scale: 0.5, rotate: e.rot }}
+                  transition={{ duration: 0.7, ease: "easeOut" }}
+                >
+                  <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" aria-hidden>
+                    <path d="M6 0l1.6 4.4L12 6 7.6 7.6 6 12 4.4 7.6 0 6l4.4-1.6z" fill="#d9a83f" />
+                  </svg>
+                </motion.span>
+              ))}
           </motion.div>
         </div>
 

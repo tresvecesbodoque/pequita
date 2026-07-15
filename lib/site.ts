@@ -17,4 +17,10 @@ export const SITE = {
    * si quieres que el álbum sea abierto, sin clave.
    */
   albumCode: "cumple",
+  /**
+   * Mensaje final oculto: se revela en el álbum cuando ella ha leído TODAS
+   * las cartas (la constelación se completa).
+   */
+  finalMessage:
+    "Leíste todas las cartas, Pequita. Como el zorro al principito: eres responsable de todos los que has domesticado — y todos ellos te escribieron hoy. Feliz cumpleaños. 💛",
 } as const;

@@ -32,8 +32,10 @@ export function buildGuestEsquela(opts: {
   ink: string;
   photoUrl: string | null;
   photoRatio: number;
+  /** firma a mano alzada (data URL PNG apaisado ~400×140) */
+  signatureUrl?: string | null;
 }): CanvasData {
-  const { message, authorName, fontFamily, ink, photoUrl, photoRatio } = opts;
+  const { message, authorName, fontFamily, ink, photoUrl, photoRatio, signatureUrl } = opts;
   const text = `${message}\n\n— ${authorName}`;
   const len = text.length;
   const elements: CanvasElement[] = [];
@@ -60,7 +62,7 @@ export function buildGuestEsquela(opts: {
     } as ImageElement);
 
     const textTop = photoY + photoHpct / 2 + 4;
-    const textBottom = 93;
+    const textBottom = signatureUrl ? 86 : 93;
     const heightPct = textBottom - textTop;
     elements.push({
       id: nanoid(8),
@@ -78,21 +80,38 @@ export function buildGuestEsquela(opts: {
       align: len <= 160 ? "center" : "left",
     } as TextElement);
   } else {
+    const height = signatureUrl ? 74 : 84;
     elements.push({
       id: nanoid(8),
       kind: "text",
       text,
       x: 50,
-      y: 50,
+      y: signatureUrl ? 45 : 50,
       width: 82,
-      height: 84,
+      height,
       rotation: 0,
       zIndex: z++,
-      fontSize: fitFontSize(len, 82, 84),
+      fontSize: fitFontSize(len, 82, height),
       fontFamily,
       color: ink,
       align: len <= 200 ? "center" : "left",
     } as TextElement);
+  }
+
+  if (signatureUrl) {
+    // Firma a mano alzada abajo a la derecha, ligeramente traviesa.
+    const ratio = 140 / 400;
+    elements.push({
+      id: nanoid(8),
+      kind: "image",
+      src: signatureUrl,
+      ratio,
+      x: 66,
+      y: 91,
+      width: 30,
+      rotation: -2,
+      zIndex: z++,
+    } as ImageElement);
   }
 
   return { elements, canvasWidth: CANVAS_W, canvasHeight: CANVAS_H };

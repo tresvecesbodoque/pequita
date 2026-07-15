@@ -39,6 +39,41 @@ type Options = {
   maxDim?: number | null;
 };
 
+// Tipos de audio que aceptamos de MediaRecorder según el navegador.
+const AUDIO_TYPES = new Set([
+  "audio/webm",
+  "audio/mp4",
+  "audio/mpeg",
+  "audio/ogg",
+  "audio/wav",
+]);
+
+/** Guarda un mensaje de voz tal cual (sin transcodificar). */
+export async function storeAudio(file: File, maxBytes = 3 * 1024 * 1024): Promise<string> {
+  if (file.size > maxBytes) {
+    throw new UploadError("El audio es demasiado largo (máx. 3 MB).", 413);
+  }
+  const baseType = (file.type || "").split(";")[0].trim().toLowerCase();
+  if (!AUDIO_TYPES.has(baseType)) {
+    throw new UploadError("Formato de audio no soportado.", 400);
+  }
+  const ext = baseType.split("/")[1];
+  const filename = `${nanoid(12)}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`uploads/voces/${filename}`, buffer, {
+      access: "public",
+      contentType: baseType,
+    });
+    return blob.url;
+  }
+  const dir = join(process.cwd(), "public", "uploads", "voces");
+  await mkdir(dir, { recursive: true });
+  await writeFile(join(dir, filename), buffer);
+  return `/uploads/voces/${filename}`;
+}
+
 export async function processAndStoreImage(
   file: File,
   category: string,

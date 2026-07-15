@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { processAndStoreImage, UploadError } from "@/lib/uploadServer";
+import { processAndStoreImage, storeAudio, UploadError } from "@/lib/uploadServer";
 import { getTheme } from "@/lib/letterThemes";
 import { buildGuestEsquela, buildGuestSobre } from "@/lib/guestCanvas";
 
@@ -56,6 +56,14 @@ export async function submitGuestLetter(
   const fontInput = String(formData.get("font") ?? "");
   const fontFamily = ALLOWED_FONTS.has(fontInput) ? fontInput : "var(--font-hand)";
   const photo = formData.get("photo");
+  const audio = formData.get("audio");
+
+  // Firma a mano alzada: PNG pequeño en data URL, dibujado en nuestro pad.
+  const signatureRaw = String(formData.get("signature") ?? "");
+  const signatureUrl =
+    signatureRaw.startsWith("data:image/png;base64,") && signatureRaw.length <= 150_000
+      ? signatureRaw
+      : null;
 
   if (authorName.length < 2) return { error: "Escribe tu nombre 🙂" };
   if (authorName.length > MAX_NAME) return { error: "El nombre es demasiado largo." };
@@ -81,6 +89,17 @@ export async function submitGuestLetter(
     }
   }
 
+  // Audio-carta opcional
+  let audioUrl: string | null = null;
+  if (audio instanceof File && audio.size > 0) {
+    try {
+      audioUrl = await storeAudio(audio);
+    } catch (e) {
+      if (e instanceof UploadError) return { error: e.message };
+      return { error: "No se pudo guardar el audio. Prueba de nuevo o envía sin voz." };
+    }
+  }
+
   const theme = getTheme(themeId);
   const esquela = buildGuestEsquela({
     message,
@@ -89,6 +108,7 @@ export async function submitGuestLetter(
     ink: theme.ink,
     photoUrl,
     photoRatio,
+    signatureUrl,
   });
   const sobre = buildGuestSobre({ ink: theme.sobreInk });
 
@@ -98,6 +118,7 @@ export async function submitGuestLetter(
       slug: nanoid(10),
       authorName,
       authorMessage: message,
+      audioUrl,
       esquelaCanvas: JSON.stringify(esquela),
       sobreCanvas: JSON.stringify(sobre),
       sobreColor: theme.sobreColor,

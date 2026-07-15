@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { EnvelopePresenter } from "@/components/envelope/EnvelopePresenter";
+import { MarcarLeida } from "@/components/album/MarcarLeida";
 
 // Siempre fresca: refleja al instante si una carta se publica o se despublica.
 export const dynamic = "force-dynamic";
@@ -32,7 +33,10 @@ export default async function CartaPage({
   if (!letter) notFound();
 
   return (
-    <EnvelopePresenter
+    <>
+      {/* Registra la carta como leída (para la constelación del álbum) */}
+      <MarcarLeida slug={letter.slug} />
+      <EnvelopePresenter
       title={letter.title}
       esquelaCanvas={letter.esquelaCanvas}
       sobreCanvas={letter.sobreCanvas}
@@ -46,6 +50,8 @@ export default async function CartaPage({
         backgroundScale: letter.backgroundScale,
       }}
       qrInterior={letter.qrInteriorDataUrl}
-    />
+      audioUrl={letter.audioUrl}
+      />
+    </>
   );
 }

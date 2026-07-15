@@ -45,6 +45,9 @@ model Letter {
   authorName          String?
   authorMessage       String?
 
+  // Audio-carta: mensaje de voz opcional grabado por el familiar (URL al blob)
+  audioUrl            String?
+
   // Esquela (contenido interior)
   esquelaStickerId    String?
   esquelaSticker      Sticker?       @relation("EsquelaSticker", fields: [esquelaStickerId], references: [id])

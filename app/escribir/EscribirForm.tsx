@@ -11,6 +11,8 @@ import { backgroundLayerStyle } from "@/lib/backgrounds/render";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { SignaturePad } from "@/components/ui/SignaturePad";
+import { VoiceRecorder } from "@/components/ui/VoiceRecorder";
 
 const FONTS = [
   { label: "Manuscrita", value: "var(--font-hand)" },
@@ -34,7 +36,20 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
   const [previewRatio, setPreviewRatio] = useState(1);
+  const [signature, setSignature] = useState<string | null>(null);
+  const [audio, setAudio] = useState<Blob | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // El action de React no permite adjuntar el Blob de audio desde un input,
+  // así que lo añadimos al FormData justo antes de despachar.
+  function enviar(fd: FormData) {
+    if (audio) {
+      const ext = (audio.type.split(";")[0].split("/")[1] || "webm").trim();
+      fd.set("audio", new File([audio], `voz.${ext}`, { type: audio.type }));
+    }
+    if (signature) fd.set("signature", signature);
+    formAction(fd);
+  }
 
   function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -68,8 +83,9 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
         ink: themeData.ink,
         photoUrl: preview,
         photoRatio: previewRatio,
+        signatureUrl: signature,
       }),
-    [message, authorName, font, themeData.ink, preview, previewRatio, recipientName]
+    [message, authorName, font, themeData.ink, preview, previewRatio, signature, recipientName]
   );
 
   const chipActivo =
@@ -80,7 +96,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   return (
     <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
       <motion.form
-        action={formAction}
+        action={enviar}
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -230,6 +246,22 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
               <span aria-hidden>📷</span> Añadir una foto
             </button>
           )}
+        </div>
+
+        {/* Firma a mano alzada */}
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-[var(--muted)]">
+            Tu firma (opcional)
+          </span>
+          <SignaturePad onChange={setSignature} />
+        </div>
+
+        {/* Audio-carta */}
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-[var(--muted)]">
+            Tu voz (opcional)
+          </span>
+          <VoiceRecorder onChange={setAudio} />
         </div>
 
         {state?.error && (
