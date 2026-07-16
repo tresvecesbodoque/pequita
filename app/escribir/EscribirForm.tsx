@@ -40,9 +40,61 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   const [previewRatio, setPreviewRatio] = useState(1);
   const [signature, setSignature] = useState<string | null>(null);
   const [audio, setAudio] = useState<Blob | null>(null);
+  // Carta a cuatro manos: segundo firmante opcional.
+  const [showSecond, setShowSecond] = useState(false);
+  const [authorName2, setAuthorName2] = useState("");
+  const [signature2, setSignature2] = useState<string | null>(null);
   // Lienzos personalizados en el estudio (misma interfaz que el taller).
   const [custom, setCustom] = useState<{ esq: string; sob: string } | null>(null);
+  const [greeting, setGreeting] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const DRAFT_KEY = "pequita-borrador";
+
+  // Al montar: pre-rellenar nombre desde ?de= y restaurar borrador guardado.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const de = params.get("de");
+    let restoredName = "";
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (typeof d.message === "string") setMessage(d.message);
+        if (typeof d.authorName === "string") restoredName = d.authorName;
+        if (typeof d.theme === "string") setTheme(d.theme);
+        if (typeof d.font === "string") setFont(d.font);
+        if (typeof d.authorName2 === "string" && d.authorName2) {
+          setAuthorName2(d.authorName2);
+          setShowSecond(true);
+        }
+      }
+    } catch {
+      // borrador corrupto: se ignora
+    }
+    if (de) {
+      setAuthorName(de);
+      setGreeting(de);
+    } else if (restoredName) {
+      setAuthorName(restoredName);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Guarda el borrador (texto y opciones; no la foto/voz/firma, que son pesadas).
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(
+          DRAFT_KEY,
+          JSON.stringify({ message, authorName, theme, font, authorName2 })
+        );
+      } catch {
+        // sin almacenamiento: el borrador simplemente no persiste
+      }
+    }, 500);
+    return () => clearTimeout(t);
+  }, [message, authorName, theme, font, authorName2]);
 
   // El action de React no permite adjuntar el Blob de audio desde un input,
   // así que lo añadimos al FormData justo antes de despachar.
@@ -52,9 +104,17 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
       fd.set("audio", new File([audio], `voz.${ext}`, { type: audio.type }));
     }
     if (signature) fd.set("signature", signature);
+    if (showSecond && authorName2.trim()) fd.set("authorName2", authorName2.trim());
+    if (showSecond && signature2) fd.set("signature2", signature2);
     if (custom) {
       fd.set("esquelaCanvas", custom.esq);
       fd.set("sobreCanvas", custom.sob);
+    }
+    // El envío redirige a /gracias; limpiamos el borrador para no reabrirlo.
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      /* noop */
     }
     formAction(fd);
   }
@@ -92,8 +152,10 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
         photoUrl: preview,
         photoRatio: previewRatio,
         signatureUrl: signature,
+        authorName2: showSecond ? authorName2 || null : null,
+        signatureUrl2: showSecond ? signature2 : null,
       }),
-    [message, authorName, font, themeData.ink, preview, previewRatio, signature, recipientName]
+    [message, authorName, font, themeData.ink, preview, previewRatio, signature, showSecond, authorName2, signature2, recipientName]
   );
 
   // Si cambia el contenido base, la personalización quedaría desfasada:
@@ -101,7 +163,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   useEffect(() => {
     setCustom(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [message, authorName, font, theme, preview, signature]);
+  }, [message, authorName, font, theme, preview, signature, showSecond, authorName2, signature2]);
 
   function abrirEstudio() {
     setCustom({
@@ -134,6 +196,15 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
           aria-hidden="true"
           className="pointer-events-none absolute left-[-9999px] h-0 w-0 opacity-0"
         />
+
+        {greeting && (
+          <p
+            className="text-2xl text-[var(--accent)]"
+            style={{ fontFamily: "var(--font-hand)" }}
+          >
+            ¡Hola, {greeting}! 💛 Escríbele a {recipientName}.
+          </p>
+        )}
 
         <Input
           name="authorName"
@@ -278,6 +349,49 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
           </span>
           <SignaturePad onChange={setSignature} />
         </div>
+
+        {/* Carta a cuatro manos: segundo firmante opcional */}
+        {!showSecond ? (
+          <button
+            type="button"
+            onClick={() => setShowSecond(true)}
+            className="self-start text-sm text-[var(--accent)] hover:underline"
+          >
+            + Firmar entre dos (carta a cuatro manos)
+          </button>
+        ) : (
+          <div className="flex flex-col gap-3 rounded-2xl border-2 border-dashed border-[var(--border)] p-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-[var(--muted)]">
+                Segunda persona
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSecond(false);
+                  setAuthorName2("");
+                  setSignature2(null);
+                }}
+                className="text-xs text-[var(--muted)] hover:underline"
+              >
+                Quitar
+              </button>
+            </div>
+            <Input
+              label="Su nombre"
+              placeholder="Ej. Tío Andrés"
+              maxLength={40}
+              value={authorName2}
+              onChange={(e) => setAuthorName2(e.target.value)}
+            />
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium text-[var(--muted)]">
+                Su firma (opcional)
+              </span>
+              <SignaturePad onChange={setSignature2} />
+            </div>
+          </div>
+        )}
 
         {/* Audio-carta */}
         <div className="flex flex-col gap-2">

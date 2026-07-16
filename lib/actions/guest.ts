@@ -124,12 +124,13 @@ export async function submitGuestLetter(
   const photo = formData.get("photo");
   const audio = formData.get("audio");
 
-  // Firma a mano alzada: PNG pequeño en data URL, dibujado en nuestro pad.
-  const signatureRaw = String(formData.get("signature") ?? "");
-  const signatureUrl =
-    signatureRaw.startsWith("data:image/png;base64,") && signatureRaw.length <= 150_000
-      ? signatureRaw
-      : null;
+  // Firma(s) a mano alzada: PNG pequeño en data URL, dibujado en nuestro pad.
+  const validSignature = (raw: string) =>
+    raw.startsWith("data:image/png;base64,") && raw.length <= 150_000 ? raw : null;
+  const signatureUrl = validSignature(String(formData.get("signature") ?? ""));
+  const signatureUrl2 = validSignature(String(formData.get("signature2") ?? ""));
+  // Segundo firmante (carta a cuatro manos)
+  const authorName2 = String(formData.get("authorName2") ?? "").trim().slice(0, MAX_NAME) || null;
 
   if (authorName.length < 2) return { error: "Escribe tu nombre 🙂" };
   if (authorName.length > MAX_NAME) return { error: "El nombre es demasiado largo." };
@@ -188,14 +189,17 @@ export async function submitGuestLetter(
     photoUrl,
     photoRatio,
     signatureUrl,
+    authorName2,
+    signatureUrl2,
   });
   const sobre = buildGuestSobre({ ink: theme.sobreInk });
 
+  const displayName = authorName2 ? `${authorName} y ${authorName2}` : authorName;
   await prisma.letter.create({
     data: {
-      title: `De ${authorName}`,
+      title: `De ${displayName}`,
       slug: nanoid(10),
-      authorName,
+      authorName: displayName,
       authorMessage: message,
       audioUrl,
       esquelaCanvas: customEsquela ?? JSON.stringify(esquela),

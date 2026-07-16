@@ -34,10 +34,16 @@ export function buildGuestEsquela(opts: {
   photoRatio: number;
   /** firma a mano alzada (data URL PNG apaisado ~400×140) */
   signatureUrl?: string | null;
+  /** segundo firmante opcional (carta a cuatro manos) */
+  authorName2?: string | null;
+  signatureUrl2?: string | null;
 }): CanvasData {
-  const { message, authorName, fontFamily, ink, photoUrl, photoRatio, signatureUrl } = opts;
-  const text = `${message}\n\n— ${authorName}`;
+  const { message, authorName, fontFamily, ink, photoUrl, photoRatio, signatureUrl, authorName2, signatureUrl2 } = opts;
+  const firma = authorName2 ? `${authorName} y ${authorName2}` : authorName;
+  const text = `${message}\n\n— ${firma}`;
   const len = text.length;
+  // ¿hay al menos una firma dibujada? controla el espacio reservado abajo
+  const hasSignature = Boolean(signatureUrl || signatureUrl2);
   const elements: CanvasElement[] = [];
   let z = 1;
 
@@ -62,7 +68,7 @@ export function buildGuestEsquela(opts: {
     } as ImageElement);
 
     const textTop = photoY + photoHpct / 2 + 4;
-    const textBottom = signatureUrl ? 86 : 93;
+    const textBottom = hasSignature ? 86 : 93;
     const heightPct = textBottom - textTop;
     elements.push({
       id: nanoid(8),
@@ -80,13 +86,13 @@ export function buildGuestEsquela(opts: {
       align: len <= 160 ? "center" : "left",
     } as TextElement);
   } else {
-    const height = signatureUrl ? 74 : 84;
+    const height = hasSignature ? 74 : 84;
     elements.push({
       id: nanoid(8),
       kind: "text",
       text,
       x: 50,
-      y: signatureUrl ? 45 : 50,
+      y: hasSignature ? 45 : 50,
       width: 82,
       height,
       rotation: 0,
@@ -98,21 +104,24 @@ export function buildGuestEsquela(opts: {
     } as TextElement);
   }
 
-  if (signatureUrl) {
-    // Firma a mano alzada abajo a la derecha, ligeramente traviesa.
-    const ratio = 140 / 400;
+  // Firmas a mano alzada abajo, ligeramente traviesas. Con dos firmantes se
+  // reparten (izquierda y derecha); con uno solo, va a la derecha.
+  const ratio = 140 / 400;
+  const firmas = [signatureUrl, signatureUrl2].filter(Boolean) as string[];
+  firmas.forEach((src, i) => {
+    const x = firmas.length === 2 ? (i === 0 ? 36 : 70) : 66;
     elements.push({
       id: nanoid(8),
       kind: "image",
-      src: signatureUrl,
+      src,
       ratio,
-      x: 66,
+      x,
       y: 91,
-      width: 30,
-      rotation: -2,
+      width: firmas.length === 2 ? 26 : 30,
+      rotation: i === 0 ? -2 : 2,
       zIndex: z++,
     } as ImageElement);
-  }
+  });
 
   return { elements, canvasWidth: CANVAS_W, canvasHeight: CANVAS_H };
 }
