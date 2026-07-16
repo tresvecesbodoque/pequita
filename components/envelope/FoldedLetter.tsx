@@ -40,7 +40,8 @@ export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }
         className="absolute inset-0 overflow-hidden shadow-[0_26px_60px_-28px_rgba(16,27,54,0.55)]"
         style={{
           backgroundColor: PAPER,
-          borderRadius: "0 0 6px 6px",
+          // borde inferior levemente irregular, como hoja cortada a mano
+          borderRadius: "3px 2px 12px 9px",
           isolation: "isolate",
           zIndex: 1,
         }}
@@ -50,6 +51,9 @@ export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }
         </div>
         {/* sombra suave bajo la línea de pliegue */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-5 bg-gradient-to-b from-black/10 to-transparent" />
+        {/* insinuación de canto de papel en los lados */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/[0.06] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-1.5 bg-gradient-to-l from-black/[0.06] to-transparent" />
       </div>
 
       {/* Solapa superior: bisagra en la línea de pliegue. Empieza doblada. */}
@@ -72,7 +76,7 @@ export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }
             backfaceVisibility: "hidden",
             WebkitBackfaceVisibility: "hidden",
             backgroundColor: PAPER,
-            borderRadius: "6px 6px 0 0",
+            borderRadius: "9px 12px 2px 3px",
             boxShadow: "0 -14px 40px -24px rgba(16,27,54,0.35)",
             isolation: "isolate",
           }}
@@ -82,6 +86,9 @@ export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }
           </div>
           {/* sombra sobre la línea de pliegue */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t from-black/10 to-transparent" />
+          {/* insinuación de canto de papel en los lados */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/[0.06] to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-1.5 bg-gradient-to-l from-black/[0.06] to-transparent" />
         </div>
 
         {/* Dorso (visible mientras está doblada): papel liso, sin texto */}

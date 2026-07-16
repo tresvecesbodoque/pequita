@@ -2,13 +2,14 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useAnimate } from "framer-motion";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { FoldedLetter } from "./FoldedLetter";
 import { backgroundLayerStyle, type BackgroundConfig } from "@/lib/backgrounds/render";
 import { parseCanvas, EMPTY_ESQUELA, EMPTY_SOBRE } from "@/lib/types/canvas";
 import { shade } from "@/lib/color";
+import { playPaper, isMuted, setMuted } from "@/lib/paperSound";
 
 type Props = {
   title: string;
@@ -33,6 +34,21 @@ const ESQUIRLAS = [
   { dx: 34, dy: 48, rot: 120 },
   { dx: 4, dy: -60, rot: 90 },
 ];
+
+// Polvo de estrellas al desplegar la hoja: motas doradas que suben y se dispersan.
+const POLVO = Array.from({ length: 14 }, (_, i) => ({
+  x: (i * 47) % 100,
+  dx: ((i * 31) % 80) - 40,
+  dy: -60 - ((i * 23) % 70),
+  delay: (i % 5) * 0.06,
+  size: 3 + (i % 3),
+}));
+
+// Forro estampado del sobre (estrellitas) visible al abrirse la solapa.
+const LINING = (color: string) =>
+  `url("data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26'><path d='M13 4l1.4 3.4 3.6.3-2.8 2.4.9 3.5L13 11.6 9.9 13.6l.9-3.5L8 7.7l3.6-.3z' fill='${color}' fill-opacity='0.5'/></svg>`
+  )}")`;
 
 // Secuencia de apertura, como una carta de verdad:
 //  1. El sello cede y la solapa del sobre se abre hacia atrás.
@@ -61,8 +77,22 @@ export function EnvelopePresenter({
   const [opened, setOpened] = useState(false);
   const [busy, setBusy] = useState(false);
   const [burst, setBurst] = useState(false);
+  const [dust, setDust] = useState(false);
+  const [muted, setMutedState] = useState(false);
+  const [reduced, setReduced] = useState(false);
   // Remontar el escenario es la forma más fiable de "volver a cerrar".
   const [sceneKey, setSceneKey] = useState(0);
+
+  useEffect(() => {
+    setMutedState(isMuted());
+    setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
+
+  function toggleMute() {
+    const next = !muted;
+    setMuted(next);
+    setMutedState(next);
+  }
 
   const stageRef = useRef<HTMLDivElement>(null);
   const envelopeRef = useRef<HTMLDivElement>(null);
@@ -88,7 +118,9 @@ export function EnvelopePresenter({
       { duration: 0.5, ease: "easeInOut" }
     );
     setBurst(true);
+    playPaper(0.35, 0.14, 2200); // chasquido seco del lacre al ceder
     animate(".seal", { opacity: 0, scale: 0.35 }, { duration: 0.28, ease: "easeIn" });
+    playPaper(0.6, 0.13, 1200); // crujido de la solapa abriéndose
     await animate(
       ".flap",
       { rotateX: [0, -12, -105] },
@@ -103,6 +135,7 @@ export function EnvelopePresenter({
     // 2) La hoja doblada emerge desde dentro del sobre (queda apenas apoyada
     // en la boca, para no salirse de pantalla en móviles).
     const dyOut = env.top - letter.bottom + Math.min(28, letter.height * 0.12);
+    playPaper(0.9, 0.12, 900); // roce del papel deslizándose hacia afuera
     await animate(".letter", { y: dyOut }, { duration: 1.2, ease: PAPER_EASE });
 
     // 3) El sobre se despide hacia abajo; la hoja viaja al centro del escenario.
@@ -121,11 +154,18 @@ export function EnvelopePresenter({
     );
 
     // 4) La hoja se despliega por el pliegue, con un respiro final de papel.
+    playPaper(1.1, 0.13, 1000); // despliegue del pliegue
     await animate(
       ".fold-flap",
       { rotateX: [-180, 4, 0] },
       { duration: 1.35, ease: PAPER_EASE, times: [0, 0.82, 1] }
     );
+
+    // Polvo de estrellas en el momento culminante.
+    if (!reduced) {
+      setDust(true);
+      setTimeout(() => setDust(false), 1600);
+    }
 
     setOpened(true);
     setBusy(false);
@@ -135,6 +175,7 @@ export function EnvelopePresenter({
     setOpened(false);
     setBusy(false);
     setBurst(false);
+    setDust(false);
     setSceneKey((k) => k + 1);
   }
 
@@ -240,12 +281,14 @@ export function EnvelopePresenter({
                   WebkitBackfaceVisibility: "hidden",
                 }}
               />
-              {/* dorso de la solapa: interior del sobre (se entrevé al girar) */}
+              {/* dorso de la solapa = forro del sobre: estampado de estrellitas
+                  que se entrevé al girar la solapa (profundidad cartoon 40s) */}
               <div
                 className="absolute inset-0"
                 style={{
                   clipPath: "polygon(0 0, 100% 0, 50% 100%)",
-                  background: shade(flapColor, -18),
+                  background: shade(flapColor, -20),
+                  backgroundImage: LINING(shade(flapColor, 22)),
                   transform: "rotateX(180deg)",
                   backfaceVisibility: "hidden",
                   WebkitBackfaceVisibility: "hidden",
@@ -296,7 +339,39 @@ export function EnvelopePresenter({
                 </motion.span>
               ))}
           </motion.div>
+
+          {/* Polvo de estrellas: motas doradas que suben al desplegarse la hoja */}
+          {dust && (
+            <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center">
+              <div className="relative h-0 w-64">
+                {POLVO.map((p, i) => (
+                  <motion.span
+                    key={i}
+                    className="absolute top-0"
+                    style={{ left: `${p.x}%` }}
+                    initial={{ opacity: 0, x: 0, y: 20, scale: 0.4 }}
+                    animate={{ opacity: [0, 1, 0], x: p.dx, y: p.dy, scale: [0.4, 1, 0.6] }}
+                    transition={{ duration: 1.4, delay: p.delay, ease: "easeOut" }}
+                  >
+                    <svg width={p.size} height={p.size} viewBox="0 0 12 12" aria-hidden>
+                      <path d="M6 0l1.6 4.4L12 6 7.6 7.6 6 12 4.4 7.6 0 6l4.4-1.6z" fill="#d9a83f" />
+                    </svg>
+                  </motion.span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Silenciar el sonido de papel */}
+        <button
+          onClick={toggleMute}
+          aria-label={muted ? "Activar sonido" : "Silenciar sonido"}
+          title={muted ? "Activar sonido" : "Silenciar sonido"}
+          className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--foreground)]/40 bg-[var(--surface)]/70 text-sm backdrop-blur transition-colors hover:border-[var(--accent)]"
+        >
+          {muted ? "🔇" : "🔊"}
+        </button>
 
         {/* Controles */}
         <div className="relative z-20 mt-3 text-center">
