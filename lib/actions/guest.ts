@@ -195,6 +195,7 @@ export async function submitGuestLetter(
   const sobre = buildGuestSobre({ ink: theme.sobreInk });
 
   const displayName = authorName2 ? `${authorName} y ${authorName2}` : authorName;
+  const editToken = nanoid(24);
   await prisma.letter.create({
     data: {
       title: `De ${displayName}`,
@@ -202,6 +203,7 @@ export async function submitGuestLetter(
       authorName: displayName,
       authorMessage: message,
       audioUrl,
+      editToken,
       esquelaCanvas: customEsquela ?? JSON.stringify(esquela),
       sobreCanvas: customSobre ?? JSON.stringify(sobre),
       sobreColor: theme.sobreColor,
@@ -212,5 +214,82 @@ export async function submitGuestLetter(
   });
 
   revalidatePath("/editor");
-  redirect("/gracias");
+  redirect(`/gracias?editar=${editToken}`);
+}
+
+// ————————————————————————————————————————————————————————————————
+// Corrección de una carta ya enviada, mientras siga pendiente de moderación.
+// El autor solo tiene su token secreto (no hay sesión). Solo puede cambiar el
+// TEXTO del mensaje; el resto (foto, firma, voz, diseño) se conserva intacto:
+// hacemos un swap del bloque de mensaje dentro del lienzo existente.
+// ————————————————————————————————————————————————————————————————
+
+export type EditableLetter = {
+  message: string;
+  authorName: string | null;
+  published: boolean;
+} | null;
+
+/** Busca una carta por su token de edición (para precargar el formulario). */
+export async function getEditableLetter(token: string): Promise<EditableLetter> {
+  if (!token) return null;
+  const letter = await prisma.letter.findUnique({
+    where: { editToken: token },
+    select: { authorMessage: true, authorName: true, isPublished: true },
+  });
+  if (!letter) return null;
+  return {
+    message: letter.authorMessage ?? "",
+    authorName: letter.authorName,
+    published: letter.isPublished,
+  };
+}
+
+export type GuestEditState = { error?: string; ok?: boolean } | null;
+
+export async function editGuestLetter(
+  _prev: GuestEditState,
+  formData: FormData
+): Promise<GuestEditState> {
+  const token = String(formData.get("token") ?? "");
+  const message = String(formData.get("message") ?? "").trim();
+  if (message.length < 4) return { error: "Escribe tu mensaje para ella." };
+  if (message.length > MAX_MESSAGE) {
+    return { error: `El mensaje es muy largo (máx. ${MAX_MESSAGE} caracteres).` };
+  }
+
+  const letter = await prisma.letter.findUnique({
+    where: { editToken: token },
+    select: { id: true, isPublished: true, esquelaCanvas: true, authorMessage: true },
+  });
+  if (!letter) return { error: "No encontramos esa carta." };
+  if (letter.isPublished) {
+    return { error: "Esta carta ya fue publicada y no se puede editar." };
+  }
+
+  // Reemplaza el bloque de mensaje dentro del lienzo, conservando la firma y
+  // todo lo demás. El texto principal tiene la forma "mensaje\n\n— firmante".
+  let esquelaCanvas = letter.esquelaCanvas;
+  try {
+    const canvas = JSON.parse(letter.esquelaCanvas);
+    const marker = "\n\n— ";
+    const el = canvas.elements?.find(
+      (e: { kind?: string; text?: string }) =>
+        e.kind === "text" && typeof e.text === "string" && e.text.includes(marker)
+    );
+    if (el) {
+      const firma = el.text.slice(el.text.indexOf(marker));
+      el.text = message + firma;
+      esquelaCanvas = JSON.stringify(canvas);
+    }
+  } catch {
+    // lienzo ilegible: al menos actualizamos authorMessage abajo
+  }
+
+  await prisma.letter.update({
+    where: { id: letter.id },
+    data: { authorMessage: message, esquelaCanvas },
+  });
+  revalidatePath("/editor");
+  return { ok: true };
 }

@@ -6,7 +6,13 @@ import { NavBar } from "@/components/layout/NavBar";
 
 export const metadata: Metadata = { title: "¡Gracias por tu carta!" };
 
-export default function GraciasPage() {
+export default async function GraciasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ editar?: string }>;
+}) {
+  const { editar } = await searchParams;
+
   return (
     <main className="maximal-tile flex min-h-screen flex-col items-center justify-center px-4 py-10 text-center">
       <NavBar />
@@ -24,6 +30,22 @@ export default function GraciasPage() {
           La guardamos con mucho cariño. Aparecerá en el álbum sorpresa de{" "}
           {SITE.recipientName} cuando sea revisada.
         </p>
+
+        {editar && (
+          <div className="mt-6 rounded-xl border-2 border-dashed border-[var(--border)] p-4">
+            <p className="text-sm text-[var(--muted)]">
+              ¿Se te olvidó algo? Puedes corregir tu mensaje mientras no lo hayamos
+              revisado. Guarda este enlace:
+            </p>
+            <Link
+              href={`/corregir/${editar}`}
+              className="mt-2 inline-block text-sm font-semibold text-[var(--accent)] hover:underline"
+            >
+              ✎ Corregir mi carta
+            </Link>
+          </div>
+        )}
+
         <div className="mt-7">
           <Link href="/escribir">
             <Button variant="outline">Escribir otra carta</Button>
