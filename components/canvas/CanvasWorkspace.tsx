@@ -195,7 +195,12 @@ export function CanvasWorkspace({
           </span>
         </div>
 
-        <div className="mx-auto max-w-xl rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-inner">
+        <div className="relative mx-auto max-w-xl rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3 shadow-inner">
+          {/* marcas de registro tipo imprenta en las esquinas */}
+          <span className="registro left-1 top-1" />
+          <span className="registro right-1 top-1" />
+          <span className="registro bottom-1 left-1" />
+          <span className="registro bottom-1 right-1" />
           <CanvasStage
             data={canvas}
             editable
@@ -204,7 +209,7 @@ export function CanvasWorkspace({
             onChange={setElements}
             baseColor={baseColor}
             baseImageUrl={baseImageUrl}
-            className="rounded-lg"
+            className="cursor-pluma rounded-lg"
           />
         </div>
         <p className="mt-2 text-center text-xs text-[var(--muted)]">
