@@ -225,3 +225,18 @@ html {
     display: none;
   }
 }
+
+/* Libro imprimible: cada carta en su propia hoja */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .libro-hoja {
+    break-after: page;
+    page-break-after: always;
+  }
+  .libro-hoja:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+}

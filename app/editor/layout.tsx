@@ -13,7 +13,7 @@ export default async function EditorLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-[var(--border)] bg-[var(--background)]/85 px-6 py-3 backdrop-blur">
+      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-[var(--border)] bg-[var(--background)]/85 px-6 py-3 backdrop-blur print:hidden">
         <Link href="/editor" className="flex items-baseline gap-2">
           <span
             className="text-2xl text-[var(--accent)]"
@@ -40,6 +40,12 @@ export default async function EditorLayout({
             className="rounded-full px-3 py-1.5 hover:bg-black/5"
           >
             Stickers
+          </Link>
+          <Link
+            href="/editor/libro"
+            className="rounded-full px-3 py-1.5 hover:bg-black/5"
+          >
+            Libro
           </Link>
           <LogoutButton />
         </nav>
