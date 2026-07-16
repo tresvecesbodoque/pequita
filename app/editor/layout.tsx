@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/auth/session";
 import { LogoutButton } from "@/components/auth/LogoutButton";
-import { PageTransition } from "@/components/layout/PageTransition";
 
 export default async function EditorLayout({
   children,
@@ -50,9 +49,7 @@ export default async function EditorLayout({
           <LogoutButton />
         </nav>
       </header>
-      <main className="flex-1">
-        <PageTransition>{children}</PageTransition>
-      </main>
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageTransition } from "@/components/layout/PageTransition";
 import {
   Cormorant_Garamond,
   Nunito,
@@ -104,7 +105,9 @@ export default function RootLayout({
       lang="es"
       className={`${cormorant.variable} ${nunito.variable} ${caveat.variable} ${dancing.variable} ${patrick.variable} ${amatic.variable} ${fredericka.variable} ${limelight.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <PageTransition>{children}</PageTransition>
+      </body>
     </html>
   );
 }
