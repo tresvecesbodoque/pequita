@@ -161,8 +161,33 @@ html {
   padding-bottom: 0.35em;
 }
 
+/* Avioneta mensajera cruzando el cielo del álbum, con estela punteada */
+.avioneta {
+  position: absolute;
+  top: 14%;
+  left: -12%;
+  width: 66px;
+  opacity: 0.85;
+  animation: cruzar 22s linear infinite;
+}
+
+@keyframes cruzar {
+  0% {
+    transform: translateX(0) translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateX(60vw) translateY(-18px) rotate(-4deg);
+  }
+  100% {
+    transform: translateX(130vw) translateY(6px) rotate(-4deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .starfield::after {
     animation: none;
+  }
+  .avioneta {
+    display: none;
   }
 }

@@ -9,6 +9,9 @@ export function AlbumEnvelope({
   sobreColor,
   tilt = 0,
   locked = false,
+  stampEmoji = "⭐",
+  dateLabel,
+  featured = false,
 }: {
   slug: string;
   label: string;
@@ -17,6 +20,12 @@ export function AlbumEnvelope({
   tilt?: number;
   /** sin clave: el sobre se ve atenuado, con candado, y lleva al formulario */
   locked?: boolean;
+  /** motivo de la estampilla (emoji del tema de la carta) */
+  stampEmoji?: string;
+  /** fecha corta para el matasellos */
+  dateLabel?: string;
+  /** carta destacada "empieza por aquí": brilla */
+  featured?: boolean;
 }) {
   const color = sobreColor || "#e7d8b5";
   const ink = readableInk(color);
@@ -28,10 +37,57 @@ export function AlbumEnvelope({
       style={{ transform: `rotate(${tilt}deg)` }}
       aria-label={locked ? "Carta bloqueada: escribe la clave arriba" : undefined}
     >
+      {featured && !locked && (
+        <p
+          className="mb-1 text-center text-xs font-semibold text-[var(--accent)]"
+          style={{ fontFamily: "var(--font-hand2, cursive)" }}
+        >
+          ✦ empieza por aquí ✦
+        </p>
+      )}
       <div
-        className="relative aspect-[3/2] overflow-hidden rounded-lg border-2 border-[var(--foreground)]/70 shadow-[4px_5px_0_rgba(124,27,34,0.3)] transition-all duration-300 ease-out group-hover:-translate-y-1.5 group-hover:shadow-[6px_8px_0_rgba(124,27,34,0.35)]"
+        className={`relative aspect-[3/2] overflow-hidden rounded-lg border-2 transition-all duration-300 ease-out group-hover:-translate-y-1.5 ${
+          featured && !locked
+            ? "border-[var(--gold)] shadow-[0_0_0_3px_rgba(217,168,63,0.35),4px_5px_0_rgba(124,27,34,0.3)] group-hover:shadow-[0_0_0_4px_rgba(217,168,63,0.45),6px_8px_0_rgba(124,27,34,0.35)]"
+            : "border-[var(--foreground)]/70 shadow-[4px_5px_0_rgba(124,27,34,0.3)] group-hover:shadow-[6px_8px_0_rgba(124,27,34,0.35)]"
+        }`}
         style={{ backgroundColor: color }}
       >
+        {/* estampilla postal: motivo del tema, arriba a la derecha */}
+        {!locked && (
+          <div
+            className="absolute right-2 top-2 flex h-8 w-7 flex-col items-center justify-center rounded-[2px] text-sm"
+            style={{
+              background: shade(color, 12),
+              boxShadow: `0 0 0 2px ${color}, 0 0 0 3px ${shade(color, -22)}`,
+              // borde dentado de estampilla
+              maskImage:
+                "radial-gradient(circle at 1.5px 1.5px, transparent 1.5px, #000 1.6px)",
+              maskSize: "4px 4px",
+              WebkitMaskImage:
+                "radial-gradient(circle at 1.5px 1.5px, transparent 1.5px, #000 1.6px)",
+              WebkitMaskSize: "4px 4px",
+            }}
+          >
+            <span aria-hidden>{stampEmoji}</span>
+          </div>
+        )}
+        {/* matasellos: círculo con la fecha, semitransparente sobre la estampilla */}
+        {!locked && dateLabel && (
+          <div
+            className="absolute right-0.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full text-[6px] font-bold uppercase leading-tight"
+            style={{
+              color: shade(ink, 0),
+              border: `1.5px solid ${ink}`,
+              opacity: 0.4,
+              transform: "rotate(-12deg)",
+              textAlign: "center",
+            }}
+          >
+            {dateLabel}
+          </div>
+        )}
+
         {/* solapa triangular */}
         <div
           className="absolute inset-x-0 top-0 h-[56%]"

@@ -89,3 +89,9 @@ export const LETTER_THEMES: LetterTheme[] = [
 export function getTheme(id: string | null | undefined): LetterTheme {
   return LETTER_THEMES.find((t) => t.id === id) ?? LETTER_THEMES[0];
 }
+
+/** Emoji de estampilla según el preset de fondo que guardó la carta. */
+export function stampEmojiForPreset(presetId: string | null | undefined): string {
+  const t = LETTER_THEMES.find((x) => x.presetId === presetId);
+  return t?.emoji ?? "⭐";
+}

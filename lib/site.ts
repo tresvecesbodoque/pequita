@@ -23,4 +23,16 @@ export const SITE = {
    */
   finalMessage:
     "Leíste todas las cartas, Pequita. Como el zorro al principito: eres responsable de todos los que has domesticado — y todos ellos te escribieron hoy. Feliz cumpleaños. 💛",
+  /**
+   * Modo día D: fecha (ISO) en que el álbum "despierta". Antes de esta fecha,
+   * aunque se tenga la clave, los sobres duermen y se muestra una cuenta
+   * regresiva. Déjalo en null para abrir el álbum de inmediato.
+   * Ej: "2026-08-15T00:00:00-04:00"
+   */
+  revealDate: null as string | null,
+  /**
+   * Slug de la carta destacada ("empieza por aquí"): brilla en el álbum para
+   * sugerir por dónde comenzar. Déjalo en null para no destacar ninguna.
+   */
+  firstLetterSlug: null as string | null,
 } as const;

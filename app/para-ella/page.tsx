@@ -3,8 +3,10 @@ import { prisma } from "@/lib/db";
 import { AlbumEnvelope } from "@/components/album/AlbumEnvelope";
 import { AlbumGate } from "@/components/album/AlbumGate";
 import { Constelacion } from "@/components/album/Constelacion";
+import { Countdown } from "@/components/album/Countdown";
 import { NavBar } from "@/components/layout/NavBar";
 import { isAlbumUnlocked } from "@/lib/albumAccess";
+import { stampEmojiForPreset } from "@/lib/letterThemes";
 import { SITE } from "@/lib/site";
 
 // Siempre fresca: muestra las cartas aprobadas en el momento.
@@ -25,8 +27,15 @@ async function getAlbumLetters() {
       title: true,
       authorName: true,
       sobreColor: true,
+      backgroundPresetId: true,
+      createdAt: true,
     },
   });
+}
+
+const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+function fechaCorta(d: Date): string {
+  return `${d.getDate()} ${MESES[d.getMonth()]}`;
 }
 
 // Página SOLO de visualización: aquí no hay taller, ni edición, ni formularios.
@@ -37,11 +46,23 @@ export default async function AlbumPage() {
   // solo se pueden ABRIR con la clave.
   const letters = await getAlbumLetters();
 
+  // Modo día D: antes de la fecha, el álbum duerme (aunque haya clave).
+  const revealAt = SITE.revealDate ? new Date(SITE.revealDate) : null;
+  const beforeReveal = revealAt !== null && Date.now() < revealAt.getTime();
+
   return (
     <main className="min-h-screen">
       <NavBar claro />
       {/* Cielo del Principito: portada del álbum */}
       <section className="starfield px-5 pb-24 pt-20 text-center sm:pt-24">
+        {/* avioneta mensajera cruzando el cielo */}
+        <svg className="avioneta" viewBox="0 0 120 40" fill="none" aria-hidden>
+          <path d="M18 24 h56 c8 0 12 -4 12 -8 h-48" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M36 16 l-8 -10 h10 l12 10" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M36 24 l-6 8 h9 l8 -8" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M92 20 q10 2 22 0" stroke="var(--night-ink)" strokeOpacity="0.5" strokeWidth="1.6" strokeDasharray="1 6" strokeLinecap="round" />
+        </svg>
+
         <div className="relative z-10 mx-auto max-w-2xl">
           <p className="text-[0.7rem] uppercase tracking-[0.45em] text-[var(--night-ink)]/60">
             el álbum de
@@ -84,8 +105,10 @@ export default async function AlbumPage() {
           </svg>
         </div>
 
-        {/* Con clave: la constelación. Sin clave: el candado de las cartas. */}
-        {unlocked ? (
+        {/* Prioridad: día D (cuenta regresiva) > clave (candado) > constelación */}
+        {beforeReveal ? (
+          <Countdown isoDate={SITE.revealDate!} />
+        ) : unlocked ? (
           <Constelacion
             slugs={letters.map((l) => l.slug)}
             mensajeFinal={SITE.finalMessage}
@@ -128,7 +151,10 @@ export default async function AlbumPage() {
                   sobreColor={l.sobreColor ?? "#e7d8b5"}
                   label={l.authorName ? `De ${l.authorName}` : l.title}
                   tilt={[-1.6, 1.2, -0.8, 1.8][i % 4]}
-                  locked={!unlocked}
+                  locked={!unlocked || beforeReveal}
+                  stampEmoji={stampEmojiForPreset(l.backgroundPresetId)}
+                  dateLabel={fechaCorta(l.createdAt)}
+                  featured={SITE.firstLetterSlug === l.slug}
                 />
               ))}
             </div>
