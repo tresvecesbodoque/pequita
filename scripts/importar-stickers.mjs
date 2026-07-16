@@ -30,13 +30,29 @@ if (pngs.length === 0) {
   process.exit(1);
 }
 
+// Purga filas de la base cuyo archivo /stickers-base/ ya no existe (renombrados
+// o eliminados), para que el álbum no muestre stickers rotos o duplicados.
+const urlsActuales = new Set(pngs.map((f) => `/stickers-base/${f}`));
+const filasBase = sql(
+  `SELECT imageUrl FROM Sticker WHERE imageUrl LIKE '/stickers-base/%';`
+)
+  .split("\n")
+  .filter(Boolean);
+let purgados = 0;
+for (const url of filasBase) {
+  if (!urlsActuales.has(url)) {
+    sql(`DELETE FROM Sticker WHERE imageUrl='${url.replaceAll("'", "''")}';`);
+    purgados++;
+  }
+}
+
 let nuevos = 0;
 for (const f of pngs.sort()) {
   const url = `/stickers-base/${f}`;
   const existe = sql(`SELECT COUNT(*) FROM Sticker WHERE imageUrl='${url}';`);
   if (existe !== "0") continue;
   const nombre = f
-    .replace(/\.png$/i, "")
+    .replace(/\.(png|svg|webp)$/i, "")
     .replace(/^\d+-/, "")
     .replaceAll("-", " ");
   sql(
@@ -45,4 +61,6 @@ for (const f of pngs.sort()) {
   );
   nuevos++;
 }
-console.log(`Importados ${nuevos} stickers nuevos (${pngs.length} PNG en total).`);
+console.log(
+  `Importados ${nuevos} nuevos, purgados ${purgados} obsoletos (${pngs.length} archivos en total).`
+);

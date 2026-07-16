@@ -6,7 +6,7 @@
 // Uso:  node scripts/generar-stickers-svg.mjs
 // Salida: public/stickers-base/*.svg  → luego `node scripts/importar-stickers.mjs`
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readdirSync, rmSync } from "node:fs";
 import path from "node:path";
 
 // Paleta v2 (DESIGN.md): tinta granate, rojo bermellón, coral y oro.
@@ -17,6 +17,11 @@ const VERDE = "#8a8a52";
 
 const carpeta = path.resolve(import.meta.dirname, "..", "public", "stickers-base");
 mkdirSync(carpeta, { recursive: true });
+
+// Limpia SVG previos para que renombrados/reordenados no dejen huérfanos.
+for (const f of readdirSync(carpeta)) {
+  if (f.toLowerCase().endsWith(".svg")) rmSync(path.join(carpeta, f));
+}
 
 // Trazo estándar parametrizado. OJO: nunca añadir otro stroke/stroke-width al
 // mismo elemento (atributo duplicado = XML inválido y el SVG no se pinta).
@@ -89,8 +94,9 @@ const stickers = {
     <circle cx="60" cy="22" r="9" fill="${VERDE}" fill-opacity="0.55"/>
     <circle cx="40" cy="66" r="7" fill="${VERDE}" fill-opacity="0.45"/>`,
   "bufanda-al-viento": `
-    <path d="M30 40 c14 -6 26 -6 34 0 c-2 10 -8 14 -10 24 c14 -8 30 -10 44 -4" ${T(GOLD)}/>
-    <path d="M36 50 c10 -4 18 -4 24 0 M62 56 c12 -6 24 -8 34 -4" ${T(GOLD, 2)} stroke-dasharray="1 8"/>`,
+    <path d="M46 30 c8 -4 16 -4 22 0 l-4 18 c12 -4 26 -2 34 6 c-2 6 -8 10 -14 10 c4 4 4 10 0 14 c-10 2 -20 -2 -26 -10 l-14 -8 z" fill="${GOLD}" fill-opacity="0.25" stroke="${GOLD}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M52 38 c4 -2 8 -2 12 0 M66 54 c8 -2 16 0 22 4" ${T(INK, 1.8)} stroke-dasharray="1 6"/>
+    <path d="M28 22 c3 2 5 5 5 9 M22 30 c4 0 8 2 10 5" ${T(GOLD, 2)}/>`,
   "farol": `
     <path d="M52 34 h16 M56 34 v-6 h8 v6" ${T()}/>
     <path d="M48 34 l4 34 h16 l4 -34 z" ${T()}/>
@@ -116,22 +122,78 @@ const stickers = {
     <rect x="50" y="80" width="20" height="12" rx="3" ${T()}/>
     <path d="M60 18 v52 M42 30 c10 8 26 8 36 0" ${T(INK, 2)}/>`,
   "pozo-en-el-desierto": `
-    <path d="M34 92 h52 M38 92 l4 -20 h36 l4 20" ${T()}/>
-    <path d="M42 72 l18 -34 18 34" ${T()}/>
-    <circle cx="60" cy="58" r="5" ${T(INK, 2.2)}/>
-    <path d="M60 63 v9" ${T(INK, 2.2)}/>
-    ${chispa(60, 20, 7)}`,
+    <path d="M36 70 h48 M40 70 v22 h40 v-22" ${T()}/>
+    <path d="M40 78 h40 M40 86 h40" ${T(INK, 1.6)} stroke-dasharray="2 5"/>
+    <path d="M36 70 l10 -22 h28 l10 22" ${T()}/>
+    <path d="M60 48 v12 M54 60 h12" ${T(INK, 2.2)}/>
+    <circle cx="60" cy="38" r="5" ${T(INK, 2.2)}/>
+    <path d="M60 43 v5" ${T(INK, 2.2)}/>
+    ${chispa(60, 16, 7)}${chispa(88, 30, 4)}`,
   "corona-sencilla": `
     <path d="M30 78 l-4 -34 16 12 18 -22 18 22 16 -12 -4 34 z" ${T()}/>
     <circle cx="60" cy="66" r="3.5" fill="${GOLD}"/>`,
+  "elefante-en-la-boa": `
+    <path d="M14 82 c2 -26 14 -44 34 -46 c22 -2 40 10 48 30 c4 8 6 12 10 16" ${T()}/>
+    <line x1="8" y1="82" x2="112" y2="82" ${T()}/>
+    <path d="M40 62 c2 -10 10 -16 20 -16 c10 0 16 6 18 14 M74 66 c4 0 8 4 8 8 M46 54 c-4 6 -4 12 -2 18" ${T(INK, 1.6)} stroke-dasharray="2 4"/>
+    <circle cx="52" cy="52" r="1.6" fill="${INK}"/>`,
+  "el-farolero": `
+    <circle cx="60" cy="86" r="22" ${T()}/>
+    <path d="M56 70 v-26 M50 44 h12 M52 44 v-8 h8 v8" ${T(INK, 2.2)}/>
+    ${chispa(56, 40, 6)}
+    <path d="M74 60 c4 -6 10 -8 16 -6" ${T(ROSE, 2)}/>
+    <circle cx="92" cy="52" r="3.5" ${T(ROSE, 2)}/>
+    <path d="M89 58 c1 4 5 6 9 5 M92 56 v10 M88 72 l4 -6 4 6" ${T(ROSE, 2)}/>`,
+  "el-rey": `
+    <path d="M42 46 l-3 -18 10 7 11 -13 11 13 10 -7 -3 18 z" ${T()}/>
+    <circle cx="60" cy="60" r="10" ${T()}/>
+    <circle cx="56" cy="58" r="1.4" fill="${INK}"/>
+    <circle cx="64" cy="58" r="1.4" fill="${INK}"/>
+    <path d="M56 64 c2 2 6 2 8 0" ${T(INK, 1.8)}/>
+    <path d="M40 96 c2 -16 10 -24 20 -24 c10 0 18 8 20 24" fill="${ROSE}" fill-opacity="0.2" stroke="${ROSE}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M46 84 c4 2 8 2 12 0 M62 88 c4 2 8 2 12 0" ${T(ROSE, 1.6)} stroke-dasharray="1 5"/>`,
+  "la-serpiente": `
+    <path d="M18 78 c10 -12 22 -12 30 -2 c8 10 20 10 28 0 c8 -10 20 -12 28 -2" ${T(VERDE, 3)}/>
+    <circle cx="20" cy="74" r="1.6" fill="${INK}"/>
+    <path d="M14 78 c-3 1 -5 3 -6 6" ${T(VERDE, 2)}/>
+    ${chispa(96, 52, 5)}`,
+  "cordero-en-su-caja": `
+    <rect x="34" y="52" width="52" height="36" rx="4" ${T()}/>
+    <path d="M34 60 h52 M42 52 v36 M78 52 v36" ${T(INK, 1.4)} stroke-dasharray="2 6"/>
+    <circle cx="48" cy="88" r="3" ${T(INK, 2)}/>
+    <circle cx="72" cy="88" r="3" ${T(INK, 2)}/>
+    <path d="M46 44 a8 8 0 0 1 12 -6 a8 8 0 0 1 14 2 a7 7 0 0 1 2 12 h-26 a7 7 0 0 1 -2 -8" fill="#fffdf8" stroke="${INK}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="70" cy="42" r="1.4" fill="${INK}"/>
+    <path d="M74 52 h6" ${T(INK, 2)}/>`,
+  "biplano-de-corazones": `
+    <path d="M28 60 h44 c6 0 10 -3 10 -7 h-40" ${T()}/>
+    <path d="M40 53 v-12 h24 v12 M40 46 h24" ${T(INK, 2.2)}/>
+    <path d="M42 60 l-5 10 h8 l7 -10" ${T()}/>
+    <path d="M24 50 c-3 2 -3 8 0 10" ${T(INK, 2)}/>
+    <path d="M86 50 c4 -3 8 -3 10 0 c2 -3 6 -3 8 0 c1 4 -4 8 -9 11 c-5 -3 -10 -7 -9 -11 z" fill="${ROSE}" fill-opacity="0.5" stroke="${ROSE}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M78 56 c2 -1 4 -1 6 -2" ${T(ROSE, 1.8)} stroke-dasharray="1 5"/>`,
   "corazon-de-una-linea": `
     <path d="M24 66 C24 42 48 38 60 54 C72 38 96 42 96 66 C96 84 70 96 60 100 C50 96 24 84 24 66" ${T(ROSE)}/>
     ${chispa(90, 30, 6)}`,
 };
 
+// Detecta atributos duplicados en un elemento (XML inválido → sticker roto).
+function tieneAtributoDuplicado(cuerpo) {
+  for (const tag of cuerpo.match(/<[a-z]+[^>]*>/g) ?? []) {
+    const attrs = (tag.match(/\s([a-zA-Z:-]+)=/g) ?? []).map((a) => a.trim().slice(0, -1));
+    if (new Set(attrs).size !== attrs.length) return tag.slice(0, 60);
+  }
+  return null;
+}
+
 let n = 0;
 for (const [nombre, cuerpo] of Object.entries(stickers)) {
   n++;
+  const dup = tieneAtributoDuplicado(cuerpo);
+  if (dup) {
+    console.error(`✗ ${nombre}: atributo duplicado en ${dup}…`);
+    process.exit(1);
+  }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">\n${cuerpo}\n</svg>\n`;
   writeFileSync(path.join(carpeta, `${String(n).padStart(2, "0")}-${nombre}.svg`), svg);
 }
