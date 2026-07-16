@@ -5,8 +5,8 @@ import { motion } from "framer-motion";
 import { unlockAlbum, type AlbumGateState } from "@/lib/actions/album";
 import { Button } from "@/components/ui/Button";
 
-// Puerta del álbum sorpresa: un cielo nocturno del Principito con una sola
-// pregunta. Sin adornos de más — la clave abre las estrellas.
+// Candado de las cartas: el cielo se ve siempre; la clave abre los sobres.
+// Se renderiza DENTRO del cielo estrellado del álbum.
 export function AlbumGate({ recipientName }: { recipientName: string }) {
   const [state, action, pending] = useActionState<AlbumGateState, FormData>(
     unlockAlbum,
@@ -14,7 +14,7 @@ export function AlbumGate({ recipientName }: { recipientName: string }) {
   );
 
   return (
-    <main className="starfield flex min-h-screen flex-col items-center justify-center px-4">
+    <div className="flex flex-col items-center px-4 pb-6 pt-12">
       <motion.form
         action={action}
         initial={{ opacity: 0, y: 14 }}
@@ -29,11 +29,10 @@ export function AlbumGate({ recipientName }: { recipientName: string }) {
           />
         </svg>
 
-        <h1 className="mt-5 text-3xl text-[var(--night-ink)]">
-          El álbum de {recipientName}
-        </h1>
-        <p className="mt-2 text-sm text-[var(--night-ink)]/65">
-          Escribe la clave para abrir el cielo.
+        <p className="mt-4 text-sm text-[var(--night-ink)]/75">
+          Las cartas de {recipientName} duermen tras una clave.
+          <br />
+          Escríbela para despertar los sobres.
         </p>
 
         <input
@@ -54,9 +53,9 @@ export function AlbumGate({ recipientName }: { recipientName: string }) {
           disabled={pending}
           className="mt-5 w-full bg-[var(--gold)] text-[var(--night-deep)] hover:brightness-105"
         >
-          {pending ? "Abriendo…" : "Entrar"}
+          {pending ? "Abriendo…" : "Abrir las cartas"}
         </Button>
       </motion.form>
-    </main>
+    </div>
   );
 }

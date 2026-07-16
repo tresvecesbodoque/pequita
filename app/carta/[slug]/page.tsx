@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { EnvelopePresenter } from "@/components/envelope/EnvelopePresenter";
 import { MarcarLeida } from "@/components/album/MarcarLeida";
+import { NavBar } from "@/components/layout/NavBar";
 
 // Siempre fresca: refleja al instante si una carta se publica o se despublica.
 export const dynamic = "force-dynamic";
@@ -36,6 +37,7 @@ export default async function CartaPage({
     <>
       {/* Registra la carta como leída (para la constelación del álbum) */}
       <MarcarLeida slug={letter.slug} />
+      <NavBar />
       <EnvelopePresenter
       title={letter.title}
       esquelaCanvas={letter.esquelaCanvas}

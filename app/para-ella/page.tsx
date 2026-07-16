@@ -30,20 +30,20 @@ async function getAlbumLetters() {
 }
 
 // Página SOLO de visualización: aquí no hay taller, ni edición, ni formularios.
-// Únicamente el cielo, los sobres y las cartas.
+// El CIELO se ve siempre; las CARTAS (sobres y constelación) piden la clave.
 export default async function AlbumPage() {
-  // Puerta con clave (sorpresa): si no está desbloqueado, pide la clave.
-  if (!(await isAlbumUnlocked())) {
-    return <AlbumGate recipientName={SITE.recipientName} />;
-  }
-
-  const letters = await getAlbumLetters();
+  const unlocked = await isAlbumUnlocked();
+  const letters = unlocked ? await getAlbumLetters() : [];
 
   return (
     <main className="min-h-screen">
       <NavBar claro />
       {/* Cielo del Principito: portada del álbum */}
-      <section className="starfield px-5 pb-24 pt-20 text-center sm:pt-24">
+      <section
+        className={`starfield px-5 pb-24 pt-20 text-center sm:pt-24 ${
+          unlocked ? "" : "flex min-h-screen flex-col justify-center pb-32"
+        }`}
+      >
         <div className="relative z-10 mx-auto max-w-2xl">
           <p className="text-[0.7rem] uppercase tracking-[0.45em] text-[var(--night-ink)]/60">
             el álbum de
@@ -86,14 +86,19 @@ export default async function AlbumPage() {
           </svg>
         </div>
 
-        {/* La constelación: una estrella por carta; se enciende al leerla */}
-        <Constelacion
-          slugs={letters.map((l) => l.slug)}
-          mensajeFinal={SITE.finalMessage}
-        />
+        {/* Con clave: la constelación. Sin clave: el candado de las cartas. */}
+        {unlocked ? (
+          <Constelacion
+            slugs={letters.map((l) => l.slug)}
+            mensajeFinal={SITE.finalMessage}
+          />
+        ) : (
+          <AlbumGate recipientName={SITE.recipientName} />
+        )}
       </section>
 
       {/* Los sobres: retícula abundante, ligeramente traviesa (maximalismo) */}
+      {unlocked && (
       <section className="maximal-tile px-5 pb-24 pt-16">
         <div className="mx-auto max-w-5xl">
         {letters.length === 0 ? (
@@ -131,6 +136,7 @@ export default async function AlbumPage() {
         )}
         </div>
       </section>
+      )}
     </main>
   );
 }
