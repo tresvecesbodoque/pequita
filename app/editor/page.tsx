@@ -11,6 +11,21 @@ export default async function EditorHome() {
   const pending = letters.filter((l) => l.authorName && !l.isPublished);
   const rest = letters.filter((l) => !(l.authorName && !l.isPublished));
 
+  // Panel de estado del regalo.
+  const publicadas = letters.filter((l) => l.isPublished);
+  const deFamiliares = letters.filter((l) => l.authorName);
+  const conVoz = letters.filter((l) => l.audioUrl).length;
+  const autores = Array.from(
+    new Set(deFamiliares.map((l) => l.authorName!).filter(Boolean))
+  );
+
+  const stats: [string, number, string][] = [
+    ["En el álbum", publicadas.length, "🌟"],
+    ["Por revisar", pending.length, "✉"],
+    ["Familiares", autores.length, "👪"],
+    ["Con voz", conVoz, "🎙"],
+  ];
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
       <div className="flex items-end justify-between gap-4">
@@ -22,6 +37,30 @@ export default async function EditorHome() {
         </div>
         <NewLetterButton />
       </div>
+
+      {/* Panel de estado del regalo */}
+      <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {stats.map(([label, n, emoji]) => (
+          <div
+            key={label}
+            className="flex items-center gap-3 rounded-2xl border-2 border-[var(--foreground)]/60 bg-[var(--surface)] px-4 py-3 shadow-[3px_4px_0_rgba(124,27,34,0.2)]"
+          >
+            <span className="text-2xl" aria-hidden>
+              {emoji}
+            </span>
+            <div>
+              <p className="text-2xl leading-none text-[var(--accent)]">{n}</p>
+              <p className="text-xs text-[var(--muted)]">{label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {autores.length > 0 && (
+        <p className="mt-3 text-sm text-[var(--muted)]">
+          <span className="font-medium">Han escrito:</span> {autores.join(", ")}.
+        </p>
+      )}
 
       {pending.length > 0 && (
         <section className="mt-10">

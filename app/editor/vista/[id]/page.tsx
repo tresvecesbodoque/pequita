@@ -44,6 +44,7 @@ export default async function PreviewPage({
           backgroundScale: letter.backgroundScale,
         }}
         qrInterior={letter.qrInteriorDataUrl}
+        audioUrl={letter.audioUrl}
       />
     </div>
   );
