@@ -36,6 +36,72 @@ function tooManyRequests(): boolean {
 
 export type GuestSubmitState = { error: string } | null;
 
+/** Stickers visibles para invitados: solo los decorativos (sin auth). */
+export async function listGuestStickers() {
+  return prisma.sticker.findMany({
+    where: { type: "DECORATIVO" },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, type: true, imageUrl: true, name: true, width: true, height: true },
+  });
+}
+
+// Sanitiza un lienzo editado por un invitado: estructura y srcs en whitelist.
+// Devuelve el JSON limpio o null si no es utilizable.
+function sanitizeGuestCanvas(raw: string, w: number, h: number): string | null {
+  if (!raw || raw.length > 300_000) return null;
+  try {
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data.elements) || data.elements.length > 60) return null;
+    const okSrc = (s: unknown) =>
+      typeof s === "string" &&
+      (s.startsWith("/stickers-base/") ||
+        s.startsWith("/uploads/") ||
+        s.startsWith("https://") && s.includes(".blob.vercel-storage.com/") ||
+        (s.startsWith("data:image/png;base64,") && s.length <= 150_000));
+    const elements = data.elements
+      .map((e: Record<string, unknown>) => {
+        const base = {
+          id: nanoid(8),
+          x: Number(e.x) || 0,
+          y: Number(e.y) || 0,
+          width: Math.min(Math.abs(Number(e.width) || 10), 200),
+          rotation: Number(e.rotation) || 0,
+          zIndex: Number(e.zIndex) || 1,
+        };
+        if (e.kind === "text" && typeof e.text === "string") {
+          return {
+            ...base,
+            kind: "text",
+            text: e.text.slice(0, 2000),
+            height: Math.min(Math.abs(Number(e.height) || 10), 200),
+            fontSize: Math.min(Math.abs(Number(e.fontSize) || 3), 30),
+            fontFamily: ALLOWED_FONTS.has(String(e.fontFamily))
+              ? String(e.fontFamily)
+              : "var(--font-hand)",
+            color: /^#[0-9a-fA-F]{3,8}$/.test(String(e.color)) ? String(e.color) : "#4d2126",
+            align: ["left", "center", "right", "justify"].includes(String(e.align))
+              ? e.align
+              : "left",
+          };
+        }
+        if (e.kind === "image" && okSrc(e.src)) {
+          return {
+            ...base,
+            kind: "image",
+            src: e.src,
+            ratio: Math.min(Math.max(Number(e.ratio) || 1, 0.05), 20),
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+    if (elements.length === 0) return null;
+    return JSON.stringify({ elements, canvasWidth: w, canvasHeight: h });
+  } catch {
+    return null;
+  }
+}
+
 export async function submitGuestLetter(
   _prev: GuestSubmitState,
   formData: FormData
@@ -101,6 +167,19 @@ export async function submitGuestLetter(
   }
 
   const theme = getTheme(themeId);
+
+  // Lienzos personalizados con el estudio de invitado (opcionales, saneados)
+  const customEsquela = sanitizeGuestCanvas(
+    String(formData.get("esquelaCanvas") ?? ""),
+    1000,
+    1400
+  );
+  const customSobre = sanitizeGuestCanvas(
+    String(formData.get("sobreCanvas") ?? ""),
+    1400,
+    900
+  );
+
   const esquela = buildGuestEsquela({
     message,
     authorName,
@@ -119,8 +198,8 @@ export async function submitGuestLetter(
       authorName,
       authorMessage: message,
       audioUrl,
-      esquelaCanvas: JSON.stringify(esquela),
-      sobreCanvas: JSON.stringify(sobre),
+      esquelaCanvas: customEsquela ?? JSON.stringify(esquela),
+      sobreCanvas: customSobre ?? JSON.stringify(sobre),
       sobreColor: theme.sobreColor,
       backgroundPresetId: theme.presetId,
       // backgroundType usa el default PRESET del esquema.

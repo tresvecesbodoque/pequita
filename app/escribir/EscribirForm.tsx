@@ -2,11 +2,13 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useActionState, useMemo, useRef, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { submitGuestLetter, type GuestSubmitState } from "@/lib/actions/guest";
 import { LETTER_THEMES, getTheme } from "@/lib/letterThemes";
-import { buildGuestEsquela } from "@/lib/guestCanvas";
+import { buildGuestEsquela, buildGuestSobre } from "@/lib/guestCanvas";
+import { GuestStudio } from "@/components/guest/GuestStudio";
+import { parseCanvas, EMPTY_ESQUELA } from "@/lib/types/canvas";
 import { backgroundLayerStyle } from "@/lib/backgrounds/render";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { Button } from "@/components/ui/Button";
@@ -38,6 +40,8 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   const [previewRatio, setPreviewRatio] = useState(1);
   const [signature, setSignature] = useState<string | null>(null);
   const [audio, setAudio] = useState<Blob | null>(null);
+  // Lienzos personalizados en el estudio (misma interfaz que el taller).
+  const [custom, setCustom] = useState<{ esq: string; sob: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // El action de React no permite adjuntar el Blob de audio desde un input,
@@ -48,6 +52,10 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
       fd.set("audio", new File([audio], `voz.${ext}`, { type: audio.type }));
     }
     if (signature) fd.set("signature", signature);
+    if (custom) {
+      fd.set("esquelaCanvas", custom.esq);
+      fd.set("sobreCanvas", custom.sob);
+    }
     formAction(fd);
   }
 
@@ -88,12 +96,27 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
     [message, authorName, font, themeData.ink, preview, previewRatio, signature, recipientName]
   );
 
+  // Si cambia el contenido base, la personalización quedaría desfasada:
+  // se descarta (el estudio parte siempre de lo que dice el formulario).
+  useEffect(() => {
+    setCustom(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [message, authorName, font, theme, preview, signature]);
+
+  function abrirEstudio() {
+    setCustom({
+      esq: JSON.stringify(esquelaPreview),
+      sob: JSON.stringify(buildGuestSobre({ ink: themeData.sobreInk })),
+    });
+  }
+
   const chipActivo =
     "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)] shadow-[2px_3px_0_rgba(124,27,34,0.25)]";
   const chipInactivo =
     "border-[var(--border)] text-[var(--foreground)] hover:border-[var(--accent-soft)]";
 
   return (
+    <div className="flex flex-col gap-8">
     <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
       <motion.form
         action={enviar}
@@ -306,7 +329,10 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
             className="mx-auto max-w-[280px] overflow-hidden rounded-sm shadow-[0_18px_40px_-18px_rgba(38,13,21,0.55)] ring-1 ring-black/10"
             style={{ isolation: "isolate" }}
           >
-            <CanvasStage data={esquelaPreview} baseColor="#fffdf8" />
+            <CanvasStage
+              data={custom ? parseCanvas(custom.esq, EMPTY_ESQUELA) : esquelaPreview}
+              baseColor="#fffdf8"
+            />
           </div>
           {/* mini sobre del tema elegido */}
           <div className="mx-auto mt-4 flex w-fit items-center gap-2 rounded-full bg-[var(--surface)]/85 px-3.5 py-1.5 text-xs text-[var(--muted)] shadow-sm backdrop-blur">
@@ -318,6 +344,46 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
           </div>
         </div>
       </motion.aside>
+    </div>
+
+    {/* Estudio de diseño: la misma interfaz del taller, para invitados */}
+    <section className="sketch-card p-5 sm:p-7">
+      {!custom ? (
+        <div className="flex flex-col items-center gap-2 text-center">
+          <p className="text-sm text-[var(--muted)]">
+            ¿Quieres decorarla a tu manera? Abre el estudio: stickers, textos y
+            capas, igual que en el taller.
+          </p>
+          <Button type="button" variant="outline" onClick={abrirEstudio}>
+            🎨 Personalizar el diseño
+          </Button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-2xl">Tu estudio 🎨</h2>
+            <button
+              type="button"
+              onClick={() => setCustom(null)}
+              className="text-xs text-[var(--muted)] hover:underline"
+            >
+              Descartar personalización
+            </button>
+          </div>
+          <p className="-mt-2 text-xs text-[var(--muted)]">
+            Ojo: si después cambias el mensaje, el nombre, el estilo o la firma,
+            la personalización se reinicia desde el formulario.
+          </p>
+          <GuestStudio
+            initialEsquela={custom.esq}
+            initialSobre={custom.sob}
+            sobreColor={themeData.sobreColor}
+            onEsquelaChange={(j) => setCustom((p) => (p ? { ...p, esq: j } : p))}
+            onSobreChange={(j) => setCustom((p) => (p ? { ...p, sob: j } : p))}
+          />
+        </div>
+      )}
+    </section>
     </div>
   );
 }

@@ -26,6 +26,9 @@ export default async function EditorLayout({
           </span>
         </Link>
         <nav className="flex items-center gap-1 text-sm">
+          <Link href="/" className="rounded-full px-3 py-1.5 hover:bg-black/5">
+            ⌂ Inicio
+          </Link>
           <Link
             href="/editor"
             className="rounded-full px-3 py-1.5 hover:bg-black/5"

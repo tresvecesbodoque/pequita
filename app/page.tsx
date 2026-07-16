@@ -70,15 +70,42 @@ export default function Home() {
             <div className="hairline flex-1" />
           </div>
 
-          <Link
-            href="/editor"
-            className="mt-5 inline-block text-xs text-[var(--muted)] underline-offset-4 hover:underline"
-          >
-            Entrar al taller
-          </Link>
+          {/* Hub: todos los caminos salen de aquí */}
+          <div className="mx-auto mt-7 grid max-w-md gap-3 sm:grid-cols-3">
+            <HubCard href="/saber-mas" emoji="📖" titulo="Saber más" nota="¿Qué es este regalo?" />
+            <HubCard href="/para-ella" emoji="🌙" titulo="El álbum" nota="El cielo de Isidora" />
+            <HubCard href="/editor" emoji="🗝" titulo="El taller" nota="Solo con llave" />
+          </div>
         </div>
       </div>
     </main>
+  );
+}
+
+function HubCard({
+  href,
+  emoji,
+  titulo,
+  nota,
+}: {
+  href: string;
+  emoji: string;
+  titulo: string;
+  nota: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group rounded-2xl border-2 border-[var(--foreground)]/60 bg-[var(--surface)] px-4 py-3.5 text-center shadow-[3px_4px_0_rgba(124,27,34,0.25)] transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]"
+    >
+      <span className="text-xl" aria-hidden>
+        {emoji}
+      </span>
+      <p className="mt-1 text-sm font-semibold text-[var(--foreground)] group-hover:text-[var(--accent)]">
+        {titulo}
+      </p>
+      <p className="text-[0.68rem] text-[var(--muted)]">{nota}</p>
+    </Link>
   );
 }
 

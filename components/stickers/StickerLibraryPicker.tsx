@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Modal } from "@/components/ui/Modal";
 import { listStickers } from "@/lib/actions/stickers";
+import { listGuestStickers } from "@/lib/actions/guest";
 import { STICKER_TYPES, type StickerTypeValue } from "@/lib/stickers";
 
 export type PickedSticker = {
@@ -18,10 +19,13 @@ export function StickerLibraryPicker({
   open,
   onClose,
   onPick,
+  publicOnly = false,
 }: {
   open: boolean;
   onClose: () => void;
   onPick: (s: PickedSticker) => void;
+  /** modo invitado: solo stickers decorativos, sin auth */
+  publicOnly?: boolean;
 }) {
   const [stickers, setStickers] = useState<Sticker[]>([]);
   const [filter, setFilter] = useState<StickerTypeValue | "ALL">("ALL");
@@ -30,7 +34,7 @@ export function StickerLibraryPicker({
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    listStickers()
+    (publicOnly ? listGuestStickers() : listStickers())
       .then((rows) =>
         setStickers(
           rows.map((s) => ({

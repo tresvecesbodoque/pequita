@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth/session";
 import { LoginForm } from "./LoginForm";
+import { NavBar } from "@/components/layout/NavBar";
 
 export default async function LoginPage({
   searchParams,
@@ -16,6 +17,7 @@ export default async function LoginPage({
 
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
+      <NavBar />
       <LoginForm next={next ?? "/editor"} />
     </main>
   );

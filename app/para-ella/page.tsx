@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { AlbumEnvelope } from "@/components/album/AlbumEnvelope";
 import { AlbumGate } from "@/components/album/AlbumGate";
 import { Constelacion } from "@/components/album/Constelacion";
+import { NavBar } from "@/components/layout/NavBar";
 import { isAlbumUnlocked } from "@/lib/albumAccess";
 import { SITE } from "@/lib/site";
 
@@ -40,6 +41,7 @@ export default async function AlbumPage() {
 
   return (
     <main className="min-h-screen">
+      <NavBar claro />
       {/* Cielo del Principito: portada del álbum */}
       <section className="starfield px-5 pb-24 pt-20 text-center sm:pt-24">
         <div className="relative z-10 mx-auto max-w-2xl">

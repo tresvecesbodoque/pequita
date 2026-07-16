@@ -16,11 +16,18 @@ import type { CanvasData, CanvasElement, TextElement } from "@/lib/types/canvas"
 import { nanoid } from "nanoid";
 
 type Props = {
-  letterId: string;
+  /** id de la carta (modo taller). En modo invitado no hay carta aún. */
+  letterId?: string;
   which: "esquela" | "sobre";
   initialCanvas: CanvasData;
   baseColor?: string | null;
   baseImageUrl?: string | null;
+  /** modo invitado: persiste vía callback en vez de la acción autenticada */
+  persist?: (json: string) => void;
+  /** ocultar subida de imágenes (la API exige sesión) */
+  allowUpload?: boolean;
+  /** librería restringida a stickers públicos (decorativos) */
+  publicStickers?: boolean;
 };
 
 export function CanvasWorkspace({
@@ -29,6 +36,9 @@ export function CanvasWorkspace({
   initialCanvas,
   baseColor,
   baseImageUrl,
+  persist,
+  allowUpload = true,
+  publicStickers = false,
 }: Props) {
   const [elements, setElements] = useState<CanvasElement[]>(initialCanvas.elements);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -49,7 +59,9 @@ export function CanvasWorkspace({
     }
     setStatus("saving");
     const t = setTimeout(async () => {
-      await updateCanvas(letterId, which, JSON.stringify({ ...initialCanvas, elements }));
+      const json = JSON.stringify({ ...initialCanvas, elements });
+      if (persist) persist(json);
+      else if (letterId) await updateCanvas(letterId, which, json);
       setStatus("saved");
     }, 800);
     return () => clearTimeout(t);
@@ -159,21 +171,25 @@ export function CanvasWorkspace({
           >
             ✦ Librería
           </Button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            onChange={handleUpload}
-            className="hidden"
-          />
-          <Button
-            variant="outline"
-            className="px-4 py-2 text-xs"
-            onClick={() => fileRef.current?.click()}
-            disabled={uploading}
-          >
-            {uploading ? "Subiendo…" : "↑ Subir imagen"}
-          </Button>
+          {allowUpload && (
+            <>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                onChange={handleUpload}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                className="px-4 py-2 text-xs"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? "Subiendo…" : "↑ Subir imagen"}
+              </Button>
+            </>
+          )}
           <span className="ml-auto text-xs text-[var(--muted)]">
             {status === "saving" ? "Guardando…" : status === "saved" ? "Guardado ✓" : ""}
           </span>
@@ -244,6 +260,7 @@ export function CanvasWorkspace({
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
         onPick={pickSticker}
+        publicOnly={publicStickers}
       />
     </div>
   );

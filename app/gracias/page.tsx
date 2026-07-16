@@ -2,12 +2,14 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/Button";
 import { SITE } from "@/lib/site";
+import { NavBar } from "@/components/layout/NavBar";
 
 export const metadata: Metadata = { title: "¡Gracias por tu carta!" };
 
 export default function GraciasPage() {
   return (
     <main className="maximal-tile flex min-h-screen flex-col items-center justify-center px-4 py-10 text-center">
+      <NavBar />
       <div className="sketch-card sketch-card--gira max-w-lg p-8 sm:p-10">
         <svg viewBox="0 0 24 24" className="mx-auto h-10 w-10" aria-hidden>
           <path

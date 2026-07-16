@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { EscribirForm } from "./EscribirForm";
+import { NavBar } from "@/components/layout/NavBar";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
 export default function EscribirPage() {
   return (
     <main className="maximal-tile min-h-screen">
-      <div className="mx-auto max-w-5xl px-4 py-10">
+      <NavBar />
+      <div className="mx-auto max-w-5xl px-4 pb-10 pt-20">
         <header className="mb-8 text-center">
           <p
             className="text-4xl text-[var(--accent)]"
