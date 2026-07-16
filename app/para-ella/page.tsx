@@ -33,17 +33,15 @@ async function getAlbumLetters() {
 // El CIELO se ve siempre; las CARTAS (sobres y constelación) piden la clave.
 export default async function AlbumPage() {
   const unlocked = await isAlbumUnlocked();
-  const letters = unlocked ? await getAlbumLetters() : [];
+  // Los sobres se VEN siempre (atenuados y con candado sin clave);
+  // solo se pueden ABRIR con la clave.
+  const letters = await getAlbumLetters();
 
   return (
     <main className="min-h-screen">
       <NavBar claro />
       {/* Cielo del Principito: portada del álbum */}
-      <section
-        className={`starfield px-5 pb-24 pt-20 text-center sm:pt-24 ${
-          unlocked ? "" : "flex min-h-screen flex-col justify-center pb-32"
-        }`}
-      >
+      <section className="starfield px-5 pb-24 pt-20 text-center sm:pt-24">
         <div className="relative z-10 mx-auto max-w-2xl">
           <p className="text-[0.7rem] uppercase tracking-[0.45em] text-[var(--night-ink)]/60">
             el álbum de
@@ -93,12 +91,13 @@ export default async function AlbumPage() {
             mensajeFinal={SITE.finalMessage}
           />
         ) : (
-          <AlbumGate recipientName={SITE.recipientName} />
+          <div id="candado">
+            <AlbumGate recipientName={SITE.recipientName} />
+          </div>
         )}
       </section>
 
-      {/* Los sobres: retícula abundante, ligeramente traviesa (maximalismo) */}
-      {unlocked && (
+      {/* Los sobres: siempre visibles; sin clave, atenuados y con candado */}
       <section className="maximal-tile px-5 pb-24 pt-16">
         <div className="mx-auto max-w-5xl">
         {letters.length === 0 ? (
@@ -129,6 +128,7 @@ export default async function AlbumPage() {
                   sobreColor={l.sobreColor ?? "#e7d8b5"}
                   label={l.authorName ? `De ${l.authorName}` : l.title}
                   tilt={[-1.6, 1.2, -0.8, 1.8][i % 4]}
+                  locked={!unlocked}
                 />
               ))}
             </div>
@@ -136,7 +136,6 @@ export default async function AlbumPage() {
         )}
         </div>
       </section>
-      )}
     </main>
   );
 }
