@@ -55,6 +55,7 @@ function sanitizeGuestCanvas(raw: string, w: number, h: number): string | null {
     const okSrc = (s: unknown) =>
       typeof s === "string" &&
       (s.startsWith("/stickers-base/") ||
+        s.startsWith("/stickers-principito/") ||
         s.startsWith("/uploads/") ||
         s.startsWith("https://") && s.includes(".blob.vercel-storage.com/") ||
         (s.startsWith("data:image/png;base64,") && s.length <= 150_000));

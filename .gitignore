@@ -53,3 +53,4 @@ pequita-secrets.json
 
 # imágenes subidas en local (en producción van a Vercel Blob)
 /public/uploads/
+public/stickers-principito/.webp-orig/
