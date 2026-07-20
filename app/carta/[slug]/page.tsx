@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
+import { SITE } from "@/lib/site";
 import { EnvelopePresenter } from "@/components/envelope/EnvelopePresenter";
 import { MarcarLeida } from "@/components/album/MarcarLeida";
 import { NavBar } from "@/components/layout/NavBar";
@@ -30,6 +31,14 @@ export default async function CartaPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  // Modo día D: antes de la fecha las cartas duermen TAMBIÉN por enlace
+  // directo (si no, un link filtrado se saltaba el candado y la cuenta
+  // regresiva del álbum). Se redirige al cielo, que muestra la cuenta.
+  if (SITE.revealDate && Date.now() < new Date(SITE.revealDate).getTime()) {
+    redirect(SITE.albumPath);
+  }
+
   const letter = await getPublicLetter(slug);
   if (!letter) notFound();
 

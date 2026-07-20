@@ -53,34 +53,33 @@ export function AlbumEnvelope({
         }`}
         style={{ backgroundColor: color }}
       >
-        {/* estampilla postal: motivo del tema, arriba a la derecha */}
+        {/* Estampilla postal: marco blanco doble sobre fondo del tema, con el
+            motivo centrado. (El dentado por máscara perforaba TODA la
+            superficie y de cerca parecía tela de lunares.) */}
         {!locked && (
           <div
-            className="absolute right-2 top-2 flex h-8 w-7 flex-col items-center justify-center rounded-[2px] text-sm"
+            className="absolute right-2.5 top-2 flex h-9 w-8 items-center justify-center text-sm"
             style={{
-              background: shade(color, 12),
-              boxShadow: `0 0 0 2px ${color}, 0 0 0 3px ${shade(color, -22)}`,
-              // borde dentado de estampilla
-              maskImage:
-                "radial-gradient(circle at 1.5px 1.5px, transparent 1.5px, #000 1.6px)",
-              maskSize: "4px 4px",
-              WebkitMaskImage:
-                "radial-gradient(circle at 1.5px 1.5px, transparent 1.5px, #000 1.6px)",
-              WebkitMaskSize: "4px 4px",
+              background: shade(color, 22),
+              border: "2.5px solid rgba(255,253,248,0.9)",
+              outline: `1.5px solid ${shade(color, -30)}`,
+              transform: "rotate(3deg)",
+              borderRadius: "1px",
             }}
           >
             <span aria-hidden>{stampEmoji}</span>
           </div>
         )}
-        {/* matasellos: círculo con la fecha, semitransparente sobre la estampilla */}
+        {/* matasellos: anillo con la fecha que MUERDE la esquina de la
+            estampilla, como un sello de correos de verdad */}
         {!locked && dateLabel && (
           <div
-            className="absolute right-0.5 top-0.5 flex h-9 w-9 items-center justify-center rounded-full text-[6px] font-bold uppercase leading-tight"
+            className="absolute right-8 top-6 flex h-9 w-9 items-center justify-center rounded-full text-[7px] font-bold uppercase leading-tight"
             style={{
-              color: shade(ink, 0),
+              color: ink,
               border: `1.5px solid ${ink}`,
-              opacity: 0.4,
-              transform: "rotate(-12deg)",
+              opacity: 0.5,
+              transform: "rotate(-14deg)",
               textAlign: "center",
             }}
           >

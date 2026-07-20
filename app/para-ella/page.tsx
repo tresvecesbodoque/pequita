@@ -38,6 +38,14 @@ function fechaCorta(d: Date): string {
   return `${d.getDate()} ${MESES[d.getMonth()]}`;
 }
 
+// Inclinación "traviesa" derivada del slug: un ciclo fijo de 4 valores en una
+// grilla de 4 columnas alineaba cada columna con la misma inclinación.
+function tiltForSlug(slug: string): number {
+  let h = 0;
+  for (const c of slug) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return ((h % 33) - 16) / 8; // -2.0º .. +2.0º
+}
+
 // Página SOLO de visualización: aquí no hay taller, ni edición, ni formularios.
 // El CIELO se ve siempre; las CARTAS (sobres y constelación) piden la clave.
 export default async function AlbumPage() {
@@ -124,9 +132,17 @@ export default async function AlbumPage() {
       <section className="maximal-tile px-5 pb-24 pt-16">
         <div className="mx-auto max-w-5xl">
         {letters.length === 0 ? (
-          <div className="paper-texture rounded-3xl border border-dashed border-[var(--border)] p-16 text-center">
-            <p className="text-lg text-[var(--muted)]">
-              Todavía no hay cartas en el álbum.
+          <div className="sketch-card sketch-card--gira p-16 text-center">
+            <svg viewBox="0 0 24 24" className="mx-auto h-8 w-8" aria-hidden>
+              <path
+                d="M12 3l2.2 5.4 5.8.5-4.4 3.8 1.3 5.7L12 15.9l-4.9 2.5 1.3-5.7L4 8.9l5.8-.5z"
+                fill="none"
+                stroke="var(--gold)"
+                strokeWidth="1.6"
+              />
+            </svg>
+            <p className="mt-3 text-lg text-[var(--muted)]">
+              Todavía no hay cartas en el álbum. Las primeras están en camino.
             </p>
           </div>
         ) : (
@@ -144,13 +160,13 @@ export default async function AlbumPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-3 lg:grid-cols-4">
-              {letters.map((l, i) => (
+              {letters.map((l) => (
                 <AlbumEnvelope
                   key={l.id}
                   slug={l.slug}
                   sobreColor={l.sobreColor ?? "#e7d8b5"}
                   label={l.authorName ? `De ${l.authorName}` : l.title}
-                  tilt={[-1.6, 1.2, -0.8, 1.8][i % 4]}
+                  tilt={tiltForSlug(l.slug)}
                   locked={!unlocked || beforeReveal}
                   stampEmoji={stampEmojiForPreset(l.backgroundPresetId)}
                   dateLabel={fechaCorta(l.createdAt)}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { CornerDoodle } from "@/components/ui/CornerDoodle";
 import { NavBar } from "@/components/layout/NavBar";
 import { SITE } from "@/lib/site";
 
@@ -15,7 +16,11 @@ export default function SaberMasPage() {
     <main className="maximal-tile min-h-screen">
       <NavBar />
       <div className="mx-auto max-w-2xl px-4 pb-16 pt-20">
-        <div className="sketch-card sketch-card--gira p-7 sm:p-10">
+        <div className="sketch-card sketch-card--v2 sketch-card--gira2 relative p-7 sm:p-10">
+          <CornerDoodle className="absolute left-3 top-3 h-7 w-7" />
+          <CornerDoodle className="absolute right-3 top-3 h-7 w-7 -scale-x-100" />
+          <CornerDoodle className="absolute bottom-3 left-3 h-7 w-7 -scale-y-100" />
+          <CornerDoodle className="absolute bottom-3 right-3 h-7 w-7 -scale-100" />
           <p
             className="text-center text-4xl text-[var(--accent)]"
             style={{ fontFamily: "var(--font-sketch)" }}

@@ -20,7 +20,9 @@ function posicion(slug: string, i: number, total: number) {
   let h = 0;
   for (const c of slug) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   const x = 8 + (i + 0.5) * (84 / total) + ((h % 7) - 3);
-  const y = 22 + ((h >> 3) % 46);
+  // Franja vertical acotada: con el rango antiguo (22..68 de un lienzo de 70)
+  // el cielo quedaba con medio viewport de vacío entre planeta y leyenda.
+  const y = 10 + ((h >> 3) % 24);
   return { x: Math.max(5, Math.min(95, x)), y };
 }
 
@@ -42,8 +44,8 @@ export function Constelacion({ slugs, mensajeFinal }: Props) {
   }));
 
   return (
-    <div className="relative z-10 mx-auto mt-10 w-full max-w-xl px-4">
-      <svg viewBox="0 0 100 70" className="w-full" aria-hidden>
+    <div className="relative z-10 mx-auto mt-8 w-full max-w-lg px-4">
+      <svg viewBox="0 0 100 44" className="w-full" aria-hidden>
         {/* al completarse, el trazo une las estrellas como constelación */}
         {completa && (
           <motion.polyline

@@ -81,6 +81,8 @@ export const metadata: Metadata = {
     template: "%s · Pequita",
   },
   description: SITE.inviteSubtitle,
+  // Regalo privado: fuera de los índices de búsqueda (refuerza a app/robots.ts).
+  robots: { index: false, follow: false },
   openGraph: {
     title: `Una carta para ${SITE.recipientName}`,
     description: SITE.inviteSubtitle,

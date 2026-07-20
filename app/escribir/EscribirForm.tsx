@@ -185,7 +185,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="sketch-card flex flex-col gap-6 p-6 sm:p-8"
+        className="sketch-card sketch-card--v2 flex flex-col gap-6 p-6 sm:p-8"
       >
         {/* Honeypot anti-bots (oculto para personas) */}
         <input
@@ -461,7 +461,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
     </div>
 
     {/* Estudio de diseño: la misma interfaz del taller, para invitados */}
-    <section className="sketch-card p-5 sm:p-7">
+    <section className="sketch-card sketch-card--v3 p-5 sm:p-7">
       {!custom ? (
         <div className="flex flex-col items-center gap-2 text-center">
           <p className="text-sm text-[var(--muted)]">

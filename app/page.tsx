@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/Button";
+import { CornerDoodle } from "@/components/ui/CornerDoodle";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -70,11 +71,12 @@ export default function Home() {
             <div className="hairline flex-1" />
           </div>
 
-          {/* Hub: todos los caminos salen de aquí */}
+          {/* Hub: todos los caminos salen de aquí (iconos a tinta, no emoji:
+              los emoji de sistema rompen el mundo dibujado a mano) */}
           <div className="mx-auto mt-7 grid max-w-md gap-3 sm:grid-cols-3">
-            <HubCard href="/saber-mas" emoji="📖" titulo="Saber más" nota="¿Qué es este regalo?" />
-            <HubCard href="/para-ella" emoji="🌙" titulo="El álbum" nota="El cielo de Isidora" />
-            <HubCard href="/editor" emoji="🗝" titulo="El taller" nota="Solo con llave" />
+            <HubCard href="/saber-mas" icon={<IconLibro />} titulo="Saber más" nota="¿Qué es este regalo?" />
+            <HubCard href="/para-ella" icon={<IconLuna />} titulo="El álbum" nota="El cielo de Isidora" />
+            <HubCard href="/editor" icon={<IconLlave />} titulo="El taller" nota="Solo con llave" />
           </div>
         </div>
       </div>
@@ -84,28 +86,74 @@ export default function Home() {
 
 function HubCard({
   href,
-  emoji,
+  icon,
   titulo,
   nota,
 }: {
   href: string;
-  emoji: string;
+  icon: React.ReactNode;
   titulo: string;
   nota: string;
 }) {
   return (
     <Link
       href={href}
-      className="group rounded-2xl border-2 border-[var(--foreground)]/60 bg-[var(--surface)] px-4 py-3.5 text-center shadow-[3px_4px_0_rgba(124,27,34,0.25)] transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]"
+      className="sketch-mini group border-2 border-[var(--foreground)]/60 bg-[var(--surface)] px-4 py-3.5 text-center shadow-[3px_4px_0_rgba(124,27,34,0.25)] transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]"
     >
-      <span className="text-xl" aria-hidden>
-        {emoji}
+      <span className="mx-auto block h-6 w-8" aria-hidden>
+        {icon}
       </span>
       <p className="mt-1 text-sm font-semibold text-[var(--foreground)] group-hover:text-[var(--accent)]">
         {titulo}
       </p>
       <p className="text-[0.68rem] text-[var(--muted)]">{nota}</p>
     </Link>
+  );
+}
+
+// Iconos del hub, en la línea granate del sitio con acentos oro/rojo.
+function IconLibro() {
+  return (
+    <svg viewBox="0 0 32 24" className="h-full w-full" fill="none" aria-hidden>
+      <g stroke="var(--foreground)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 5c-3-2.4-7.5-2.8-11-1.6V20c3.5-1.2 8-.8 11 1.6 3-2.4 7.5-2.8 11-1.6V3.4C23.5 2.2 19 2.6 16 5z" />
+        <path d="M16 5v16.6" />
+        <path d="M8.5 8.5c1.6-.3 3.2-.3 4.5.1M8.5 12c1.6-.3 3.2-.3 4.5.1" strokeWidth="1.3" stroke="var(--accent)" strokeOpacity="0.75" />
+      </g>
+    </svg>
+  );
+}
+
+function IconLuna() {
+  return (
+    <svg viewBox="0 0 32 24" className="h-full w-full" fill="none" aria-hidden>
+      <path
+        d="M19 2.6A10 10 0 1 0 27.4 15 8 8 0 0 1 19 2.6z"
+        stroke="var(--foreground)"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+        fill="var(--gold)"
+        fillOpacity="0.3"
+      />
+      <path
+        d="M26 4.4l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"
+        fill="var(--gold)"
+        stroke="var(--foreground)"
+        strokeWidth="1"
+      />
+    </svg>
+  );
+}
+
+function IconLlave() {
+  return (
+    <svg viewBox="0 0 32 24" className="h-full w-full" fill="none" aria-hidden>
+      <g stroke="var(--foreground)" strokeWidth="1.8" strokeLinecap="round">
+        <circle cx="9" cy="12" r="5.2" />
+        <circle cx="9" cy="12" r="1.8" fill="var(--gold)" stroke="none" />
+        <path d="M14.5 12H29M24 12v4.5M28 12v6" />
+      </g>
+    </svg>
   );
 }
 
@@ -122,17 +170,3 @@ function Estrellita({ grande = false }: { grande?: boolean }) {
   );
 }
 
-function CornerDoodle({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 40 40" className={className} aria-hidden>
-      <path
-        d="M4 36 C6 18 18 6 36 4 M10 36 C12 24 24 12 36 10"
-        fill="none"
-        stroke="var(--accent)"
-        strokeOpacity="0.5"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}

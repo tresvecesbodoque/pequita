@@ -23,6 +23,24 @@ type Props = {
 const PAPER = "#fffdf8";
 const PAPER_EDGE = "#f0e9da";
 
+// Grano sutil de papel SOBRE el lienzo (el lienzo pinta su fondo opaco, así
+// que la textura debe ir encima, en multiplicar y casi transparente). La hoja
+// era el único objeto plano del sitio: el protagonista merece materia.
+const GRAIN = {
+  backgroundImage:
+    "radial-gradient(1px 1px at 13% 22%, rgba(77,33,38,0.5) 50%, transparent 51%)," +
+    "radial-gradient(1.4px 1.4px at 37% 64%, rgba(77,33,38,0.4) 50%, transparent 51%)," +
+    "radial-gradient(1px 1px at 58% 15%, rgba(77,33,38,0.45) 50%, transparent 51%)," +
+    "radial-gradient(1.2px 1.2px at 72% 48%, rgba(77,33,38,0.35) 50%, transparent 51%)," +
+    "radial-gradient(1px 1px at 88% 79%, rgba(77,33,38,0.45) 50%, transparent 51%)," +
+    "radial-gradient(1.3px 1.3px at 24% 87%, rgba(77,33,38,0.4) 50%, transparent 51%)," +
+    "radial-gradient(1px 1px at 46% 39%, rgba(77,33,38,0.35) 50%, transparent 51%)," +
+    "radial-gradient(1.1px 1.1px at 81% 12%, rgba(77,33,38,0.4) 50%, transparent 51%)",
+  backgroundSize: "160px 160px",
+  mixBlendMode: "multiply" as const,
+  opacity: 0.14,
+};
+
 export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }: Props) {
   const aspect = data.canvasWidth / data.canvasHeight;
   // El contenedor es la mitad inferior de la hoja: doble de ancho relativo.
@@ -49,8 +67,10 @@ export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }
         <div className="absolute inset-x-0 bottom-0" style={{ height: "200%" }}>
           <CanvasStage data={data} baseColor={PAPER} baseImageUrl={baseImageUrl} />
         </div>
-        {/* sombra suave bajo la línea de pliegue */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-5 bg-gradient-to-b from-black/10 to-transparent" />
+        {/* grano de papel */}
+        <div className="pointer-events-none absolute inset-0" style={GRAIN} />
+        {/* sombra suave bajo la línea de pliegue (discreta: cae sobre texto) */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-3 bg-gradient-to-b from-black/[0.07] to-transparent" />
         {/* insinuación de canto de papel en los lados */}
         <div className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/[0.06] to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-1.5 bg-gradient-to-l from-black/[0.06] to-transparent" />
@@ -84,8 +104,10 @@ export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }
           <div className="absolute inset-x-0 top-0" style={{ height: "200%" }}>
             <CanvasStage data={data} baseColor={PAPER} baseImageUrl={baseImageUrl} />
           </div>
-          {/* sombra sobre la línea de pliegue */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t from-black/10 to-transparent" />
+          {/* grano de papel */}
+          <div className="pointer-events-none absolute inset-0" style={GRAIN} />
+          {/* sombra sobre la línea de pliegue (discreta: cae sobre texto) */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3 bg-gradient-to-t from-black/[0.07] to-transparent" />
           {/* insinuación de canto de papel en los lados */}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/[0.06] to-transparent" />
           <div className="pointer-events-none absolute inset-y-0 right-0 w-1.5 bg-gradient-to-l from-black/[0.06] to-transparent" />

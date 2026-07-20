@@ -42,10 +42,19 @@ export function LoginForm({ next }: { next: string }) {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="paper-texture w-full max-w-sm rounded-3xl border border-[var(--border)] p-8 shadow-[0_20px_60px_-30px_rgba(58,46,38,0.4)]"
+      className="sketch-card sketch-card--v2 sketch-card--gira2 w-full max-w-sm p-8"
     >
       <div className="mb-6 text-center">
-        <p className="font-hand text-3xl text-[var(--accent)]" style={{ fontFamily: "var(--font-hand)" }}>
+        {/* la llavecita del taller, dibujada a tinta */}
+        <svg viewBox="0 0 64 32" className="mx-auto h-8 w-16" aria-hidden>
+          <g fill="none" stroke="var(--foreground)" strokeWidth="2" strokeLinecap="round">
+            <circle cx="14" cy="16" r="7.5" />
+            <circle cx="14" cy="16" r="2.6" fill="var(--gold)" stroke="none" />
+            <path d="M21.5 16h30" />
+            <path d="M44 16v6M51 16v8" />
+          </g>
+        </svg>
+        <p className="mt-2 text-3xl text-[var(--accent)]" style={{ fontFamily: "var(--font-hand)" }}>
           Pequita
         </p>
         <h1 className="mt-1 text-2xl">El taller de cartas</h1>

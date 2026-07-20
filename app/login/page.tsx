@@ -16,7 +16,7 @@ export default async function LoginPage({
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
+    <main className="maximal-tile flex min-h-screen items-center justify-center p-6">
       <NavBar />
       <LoginForm next={next ?? "/editor"} />
     </main>

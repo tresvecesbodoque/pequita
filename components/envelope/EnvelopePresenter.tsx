@@ -9,6 +9,7 @@ import { FoldedLetter } from "./FoldedLetter";
 import { backgroundLayerStyle, type BackgroundConfig } from "@/lib/backgrounds/render";
 import { parseCanvas, EMPTY_ESQUELA, EMPTY_SOBRE } from "@/lib/types/canvas";
 import { shade } from "@/lib/color";
+import { AudioCard } from "@/components/ui/AudioCard";
 import { playPaper, isMuted, setMuted } from "@/lib/paperSound";
 
 type Props = {
@@ -106,6 +107,10 @@ export function EnvelopePresenter({
     const env = envelopeRef.current!.getBoundingClientRect();
     const letter = letterRef.current!.getBoundingClientRect();
 
+    // Con reduced-motion la secuencia entera se compacta a un suspiro:
+    // mismos pasos, duraciones mínimas y sin polvo de estrellas.
+    const d = (x: number) => (reduced ? Math.min(x, 0.18) : x);
+
     // 1) El sello se suelta y la solapa se abre con inercia de papel.
     // No la giramos 180° completos: pasado el punto muerto la proyección CSS
     // la muestra espejada sobre el sobre (dos triángulos flotantes). En vez de
@@ -115,42 +120,46 @@ export function EnvelopePresenter({
     await animate(
       ".seal",
       { rotate: [0, -9, 11, -7, 5, 0], scale: [1, 1.16, 1.16, 1] },
-      { duration: 0.5, ease: "easeInOut" }
+      { duration: d(0.5), ease: "easeInOut" }
     );
-    setBurst(true);
+    if (!reduced) setBurst(true);
     playPaper(0.35, 0.14, 2200); // chasquido seco del lacre al ceder
-    animate(".seal", { opacity: 0, scale: 0.35 }, { duration: 0.28, ease: "easeIn" });
+    animate(".seal", { opacity: 0, scale: 0.35 }, { duration: d(0.28), ease: "easeIn" });
     playPaper(0.6, 0.13, 1200); // crujido de la solapa abriéndose
     await animate(
       ".flap",
       { rotateX: [0, -12, -105] },
-      { duration: 0.8, ease: "easeIn", times: [0, 0.3, 1] }
+      { duration: d(0.8), ease: "easeIn", times: [0, 0.3, 1] }
     );
     await animate(
       ".flap",
       { rotateX: -150, opacity: 0 },
-      { duration: 0.4, ease: "easeOut" }
+      { duration: d(0.4), ease: "easeOut" }
     );
 
     // 2) La hoja doblada emerge desde dentro del sobre (queda apenas apoyada
     // en la boca, para no salirse de pantalla en móviles).
     const dyOut = env.top - letter.bottom + Math.min(28, letter.height * 0.12);
     playPaper(0.9, 0.12, 900); // roce del papel deslizándose hacia afuera
-    await animate(".letter", { y: dyOut }, { duration: 1.2, ease: PAPER_EASE });
+    await animate(".letter", { y: dyOut }, { duration: d(1.2), ease: PAPER_EASE });
 
     // 3) El sobre se despide hacia abajo; la hoja viaja al centro del escenario.
     animate(
       ".env-piece",
       { y: 110, opacity: 0 },
-      { duration: 0.85, ease: "easeInOut" }
+      { duration: d(0.85), ease: "easeInOut" }
     );
-    // Al desplegarse, la hoja completa queda centrada en la línea de pliegue
-    // (el borde superior del paquete), así que llevamos ese borde al centro.
+    // Al desplegarse, la hoja completa (el doble del paquete) queda centrada en
+    // la línea de pliegue: llevamos ese borde al centro y ESCALAMOS para que
+    // quepa entera en el escenario (hojas altas en pantallas bajas se cortaban
+    // por arriba sin forma de alcanzarlas, porque el escenario no hace scroll).
     const dyCenter = stage.top + stage.height / 2 - letter.top;
+    const fit = (stage.height / 2 / letter.height) * 0.96;
+    const scale = Math.max(0.5, Math.min(1.06, fit));
     await animate(
       ".letter",
-      { y: dyCenter, scale: 1.06 },
-      { duration: 0.95, ease: PAPER_EASE }
+      { y: dyCenter, scale },
+      { duration: d(0.95), ease: PAPER_EASE }
     );
 
     // 4) La hoja se despliega por el pliegue, con un respiro final de papel.
@@ -158,7 +167,7 @@ export function EnvelopePresenter({
     await animate(
       ".fold-flap",
       { rotateX: [-180, 4, 0] },
-      { duration: 1.35, ease: PAPER_EASE, times: [0, 0.82, 1] }
+      { duration: d(1.35), ease: PAPER_EASE, times: [0, 0.82, 1] }
     );
 
     // Polvo de estrellas en el momento culminante.
@@ -187,8 +196,16 @@ export function EnvelopePresenter({
       className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden px-4 py-14"
       style={backgroundLayerStyle(background)}
     >
-      {/* velo suave para dar profundidad al fondo */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/10" />
+      {/* Velo con foco: ilumina el centro del escenario y oscurece los bordes.
+          En los temas claros la hoja flotaba en un vacío plano; este foco le
+          da profundidad sin ensuciar los temas oscuros. */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 90% 62% at 50% 44%, rgba(255,252,240,0.14), transparent 60%), linear-gradient(180deg, rgba(38,13,21,0.10), transparent 30%, rgba(38,13,21,0.18))",
+        }}
+      />
 
       <div
         key={sceneKey}
@@ -226,37 +243,6 @@ export function EnvelopePresenter({
               style={{ zIndex: 3, transformOrigin: "top center" }}
             >
               <FoldedLetter data={esquela} baseImageUrl={esquelaBaseImageUrl} />
-              {audioUrl && opened && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.25, duration: 0.6, ease: PAPER_EASE }}
-                  className="mx-auto mt-4 flex w-fit items-center gap-3 rounded-xl border-2 border-[var(--foreground)]/60 bg-[var(--surface)]/90 px-4 py-2.5 shadow-[3px_4px_0_rgba(124,27,34,0.25)] backdrop-blur"
-                >
-                  <span className="text-lg" aria-hidden>
-                    🎙
-                  </span>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-medium text-[var(--foreground)]">
-                      Escucha su voz
-                    </span>
-                    <audio src={audioUrl} controls className="mt-1 h-9 w-56 max-w-full" />
-                  </div>
-                </motion.div>
-              )}
-              {qrInterior && opened && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.35, duration: 0.6, ease: PAPER_EASE }}
-                  className="mx-auto mt-4 flex w-fit items-center justify-center gap-3 rounded-xl bg-[var(--surface)]/85 px-4 py-3 shadow-sm backdrop-blur"
-                >
-                  <img src={qrInterior} alt="QR" className="h-14 w-14" />
-                  <span className="text-xs text-[var(--muted)]">
-                    Escanéame para volver a esta carta
-                  </span>
-                </motion.div>
-              )}
             </motion.div>
 
             {/* Solapa triangular: cerrada tapa la boca; al abrirse gira hacia
@@ -363,15 +349,45 @@ export function EnvelopePresenter({
           )}
         </div>
 
-        {/* Silenciar el sonido de papel */}
+        {/* Silenciar el sonido de papel: fijo a la esquina de la PANTALLA
+            (anclado al contenedor quedaba flotando a media altura en desktop) */}
         <button
           onClick={toggleMute}
           aria-label={muted ? "Activar sonido" : "Silenciar sonido"}
           title={muted ? "Activar sonido" : "Silenciar sonido"}
-          className="absolute right-3 top-3 z-30 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--foreground)]/40 bg-[var(--surface)]/70 text-sm backdrop-blur transition-colors hover:border-[var(--accent)]"
+          className="fixed right-4 top-4 z-40 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--foreground)]/40 bg-[var(--surface)]/80 text-sm backdrop-blur transition-colors hover:border-[var(--accent)]"
         >
           {muted ? "🔇" : "🔊"}
         </button>
+
+        {/* Audio-carta y QR: en el flujo, bajo el escenario (dentro de la hoja
+            animada se solapaban con los controles y estiraban el lienzo) */}
+        {opened && (audioUrl || qrInterior) && (
+          <div className="relative z-20 mt-2 flex flex-wrap items-center justify-center gap-3">
+            {audioUrl && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25, duration: 0.6, ease: PAPER_EASE }}
+              >
+                <AudioCard src={audioUrl} />
+              </motion.div>
+            )}
+            {qrInterior && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.6, ease: PAPER_EASE }}
+                className="flex items-center gap-3 rounded-2xl border-2 border-[var(--foreground)]/30 bg-[var(--surface)]/90 px-4 py-2.5 shadow-sm backdrop-blur"
+              >
+                <img src={qrInterior} alt="QR" className="h-12 w-12" />
+                <span className="max-w-[9rem] text-xs leading-snug text-[var(--muted)]">
+                  Escanéame para volver a esta carta
+                </span>
+              </motion.div>
+            )}
+          </div>
+        )}
 
         {/* Controles */}
         <div className="relative z-20 mt-3 text-center">
@@ -397,7 +413,9 @@ export function EnvelopePresenter({
           )}
         </div>
 
-        <p className="relative z-20 mt-5 text-center text-sm text-[var(--foreground)]/70">
+        {/* Título en pastilla de papel: legible sobre CUALQUIER fondo (con
+            temas oscuros la tinta granate desaparecía). */}
+        <p className="relative z-20 mt-5 rounded-full bg-[var(--surface)]/85 px-5 py-1.5 text-center text-sm text-[var(--foreground)]/90 shadow-sm backdrop-blur">
           {title}
         </p>
       </div>
