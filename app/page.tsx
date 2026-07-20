@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/Button";
 import { CornerDoodle } from "@/components/ui/CornerDoodle";
+import { SurpriseIntro } from "@/components/ui/SurpriseIntro";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -14,6 +15,9 @@ export const metadata: Metadata = {
 export default function Home() {
   return (
     <main className="maximal-tile min-h-screen">
+      {/* Telón de "shhh, es sorpresa" — solo en el enlace principal, primera vez.
+          No existe en /para-ella (el enlace de Isidora). */}
+      <SurpriseIntro />
       <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-4 py-12 text-center">
         <div className="sketch-card sketch-card--gira relative w-full px-6 py-12 sm:px-14">
           {/* esquinas garabateadas */}
