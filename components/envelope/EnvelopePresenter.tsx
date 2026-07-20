@@ -10,7 +10,7 @@ import { backgroundLayerStyle, type BackgroundConfig } from "@/lib/backgrounds/r
 import { parseCanvas, EMPTY_ESQUELA, EMPTY_SOBRE } from "@/lib/types/canvas";
 import { shade } from "@/lib/color";
 import { AudioCard } from "@/components/ui/AudioCard";
-import { playPaper, isMuted, setMuted } from "@/lib/paperSound";
+import { playLacre, playSobre, playHoja, isMuted, setMuted } from "@/lib/paperSound";
 
 type Props = {
   title: string;
@@ -123,9 +123,9 @@ export function EnvelopePresenter({
       { duration: d(0.5), ease: "easeInOut" }
     );
     if (!reduced) setBurst(true);
-    playPaper(0.35, 0.14, 2200); // chasquido seco del lacre al ceder
+    playLacre(); // el lacre se quiebra
     animate(".seal", { opacity: 0, scale: 0.35 }, { duration: d(0.28), ease: "easeIn" });
-    playPaper(0.6, 0.13, 1200); // crujido de la solapa abriéndose
+    playSobre(0.8); // la solapa del sobre se abre
     await animate(
       ".flap",
       { rotateX: [0, -12, -105] },
@@ -140,7 +140,7 @@ export function EnvelopePresenter({
     // 2) La hoja doblada emerge desde dentro del sobre (queda apenas apoyada
     // en la boca, para no salirse de pantalla en móviles).
     const dyOut = env.top - letter.bottom + Math.min(28, letter.height * 0.12);
-    playPaper(0.9, 0.12, 900); // roce del papel deslizándose hacia afuera
+    playSobre(1.1); // la hoja se desliza rozando la boca del sobre
     await animate(".letter", { y: dyOut }, { duration: d(1.2), ease: PAPER_EASE });
 
     // 3) El sobre se despide hacia abajo; la hoja viaja al centro del escenario.
@@ -163,7 +163,7 @@ export function EnvelopePresenter({
     );
 
     // 4) La hoja se despliega por el pliegue, con un respiro final de papel.
-    playPaper(1.1, 0.13, 1000); // despliegue del pliegue
+    playHoja(); // la hoja se desdobla
     await animate(
       ".fold-flap",
       { rotateX: [-180, 4, 0] },

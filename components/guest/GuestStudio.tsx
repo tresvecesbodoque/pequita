@@ -60,8 +60,12 @@ export function GuestStudio({
         ))}
       </div>
 
+      {/* key OBLIGATORIA: sin ella React reutiliza la misma instancia del
+          workspace al cambiar de pestaña (mismo tipo, misma posición) y los
+          elementos de la carta se quedaban pegados en el sobre. */}
       {tab === "esquela" ? (
         <CanvasWorkspace
+          key="esquela"
           which="esquela"
           initialCanvas={esquela}
           baseColor="#fffdf8"
@@ -71,6 +75,7 @@ export function GuestStudio({
         />
       ) : (
         <CanvasWorkspace
+          key="sobre"
           which="sobre"
           initialCanvas={sobre}
           baseColor={sobreColor}

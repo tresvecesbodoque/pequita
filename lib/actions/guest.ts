@@ -122,7 +122,10 @@ export async function submitGuestLetter(
   const themeId = String(formData.get("theme") ?? "");
   const fontInput = String(formData.get("font") ?? "");
   const fontFamily = ALLOWED_FONTS.has(fontInput) ? fontInput : "var(--font-hand)";
-  const photo = formData.get("photo");
+  // Hasta 3 fotos: photo (compat), photo2, photo3.
+  const photoFiles = [formData.get("photo"), formData.get("photo2"), formData.get("photo3")]
+    .filter((f): f is File => f instanceof File && f.size > 0)
+    .slice(0, 3);
   const audio = formData.get("audio");
 
   // Firma(s) a mano alzada: PNG pequeño en data URL, dibujado en nuestro pad.
@@ -140,20 +143,21 @@ export async function submitGuestLetter(
     return { error: `El mensaje es muy largo (máx. ${MAX_MESSAGE} caracteres).` };
   }
 
-  // Foto opcional
-  let photoUrl: string | null = null;
-  let photoRatio = 1;
-  if (photo instanceof File && photo.size > 0) {
+  // Fotos opcionales (máx. 3)
+  const photos: { url: string; ratio: number }[] = [];
+  for (const photo of photoFiles) {
     try {
       const stored = await processAndStoreImage(photo, "fotos", {
         maxBytes: 8 * 1024 * 1024,
         maxDim: 1400,
       });
-      photoUrl = stored.url;
-      if (stored.width && stored.height) photoRatio = stored.height / stored.width;
+      photos.push({
+        url: stored.url,
+        ratio: stored.width && stored.height ? stored.height / stored.width : 1,
+      });
     } catch (e) {
       if (e instanceof UploadError) return { error: e.message };
-      return { error: "No se pudo procesar la foto. Prueba con otra." };
+      return { error: "No se pudo procesar una de las fotos. Prueba con otra." };
     }
   }
 
@@ -187,8 +191,7 @@ export async function submitGuestLetter(
     authorName,
     fontFamily,
     ink: theme.ink,
-    photoUrl,
-    photoRatio,
+    photos,
     signatureUrl,
     authorName2,
     signatureUrl2,

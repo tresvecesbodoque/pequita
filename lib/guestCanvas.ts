@@ -25,20 +25,28 @@ function fitFontSize(len: number, widthPct: number, heightPct: number): number {
   return Number(clamp((fsPx / CANVAS_H) * 100, 2.0, 6.5).toFixed(2));
 }
 
+export type GuestPhoto = { url: string; ratio: number };
+
 export function buildGuestEsquela(opts: {
   message: string;
   authorName: string;
   fontFamily: string;
   ink: string;
-  photoUrl: string | null;
-  photoRatio: number;
+  /** hasta 3 fotos; con 2–3 se colocan en tira tipo collage */
+  photos?: GuestPhoto[];
+  /** compat: foto única (se ignora si llega `photos`) */
+  photoUrl?: string | null;
+  photoRatio?: number;
   /** firma a mano alzada (data URL PNG apaisado ~400×140) */
   signatureUrl?: string | null;
   /** segundo firmante opcional (carta a cuatro manos) */
   authorName2?: string | null;
   signatureUrl2?: string | null;
 }): CanvasData {
-  const { message, authorName, fontFamily, ink, photoUrl, photoRatio, signatureUrl, authorName2, signatureUrl2 } = opts;
+  const { message, authorName, fontFamily, ink, signatureUrl, authorName2, signatureUrl2 } = opts;
+  const photos: GuestPhoto[] = (
+    opts.photos ?? (opts.photoUrl ? [{ url: opts.photoUrl, ratio: opts.photoRatio ?? 1 }] : [])
+  ).slice(0, 3);
   const firma = authorName2 ? `${authorName} y ${authorName2}` : authorName;
   const text = `${message}\n\n— ${firma}`;
   const len = text.length;
@@ -47,27 +55,36 @@ export function buildGuestEsquela(opts: {
   const elements: CanvasElement[] = [];
   let z = 1;
 
-  if (photoUrl) {
-    // Foto arriba, dimensionada por su ALTURA objetivo (~26% del lienzo) para que
-    // retratos y panorámicas ocupen un espacio parecido y no desborden.
-    const ratio = clamp(photoRatio, 0.4, 2.2);
-    const targetHpx = 360;
-    const widthPct = clamp(((targetHpx / ratio) / CANVAS_W) * 100, 20, 46);
-    const photoHpct = ((widthPct / 100) * CANVAS_W * ratio) / CANVAS_H * 100;
-    const photoY = 7 + photoHpct / 2;
-    elements.push({
-      id: nanoid(8),
-      kind: "image",
-      src: photoUrl,
-      ratio,
-      x: 50,
-      y: photoY,
-      width: widthPct,
-      rotation: 0,
-      zIndex: z++,
-    } as ImageElement);
+  if (photos.length > 0) {
+    // Fotos arriba, dimensionadas por ALTURA objetivo común para que retratos
+    // y panorámicas convivan. Con 2–3, tira tipo collage con leve travesura.
+    const n = photos.length;
+    const targetHpx = n === 1 ? 360 : n === 2 ? 300 : 250;
+    const maxW = n === 1 ? 46 : n === 2 ? 38 : 28;
+    const xs = n === 1 ? [50] : n === 2 ? [29, 71] : [21, 50, 79];
+    const rots = n === 1 ? [0] : n === 2 ? [-2, 2] : [-3, 1.5, 3];
 
-    const textTop = photoY + photoHpct / 2 + 4;
+    let maxBottom = 0;
+    photos.forEach((p, i) => {
+      const ratio = clamp(p.ratio, 0.4, 2.2);
+      const widthPct = clamp(((targetHpx / ratio) / CANVAS_W) * 100, 14, maxW);
+      const photoHpct = ((widthPct / 100) * CANVAS_W * ratio) / CANVAS_H * 100;
+      const photoY = 7 + photoHpct / 2;
+      maxBottom = Math.max(maxBottom, photoY + photoHpct / 2);
+      elements.push({
+        id: nanoid(8),
+        kind: "image",
+        src: p.url,
+        ratio,
+        x: xs[i],
+        y: photoY,
+        width: widthPct,
+        rotation: rots[i],
+        zIndex: z++,
+      } as ImageElement);
+    });
+
+    const textTop = maxBottom + 4;
     const textBottom = hasSignature ? 86 : 93;
     const heightPct = textBottom - textTop;
     elements.push({

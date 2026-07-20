@@ -26,6 +26,9 @@ const FONTS = [
 ] as const;
 
 const MAX_MESSAGE = 1000;
+const MAX_FOTOS = 3;
+
+type FotoLocal = { file: File; url: string; ratio: number };
 
 export function EscribirForm({ recipientName }: { recipientName: string }) {
   const [state, formAction, pending] = useActionState<GuestSubmitState, FormData>(
@@ -36,8 +39,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   const [font, setFont] = useState<string>(FONTS[0].value);
   const [authorName, setAuthorName] = useState("");
   const [message, setMessage] = useState("");
-  const [preview, setPreview] = useState<string | null>(null);
-  const [previewRatio, setPreviewRatio] = useState(1);
+  const [fotos, setFotos] = useState<FotoLocal[]>([]);
   const [signature, setSignature] = useState<string | null>(null);
   const [audio, setAudio] = useState<Blob | null>(null);
   // Carta a cuatro manos: segundo firmante opcional.
@@ -99,6 +101,11 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   // El action de React no permite adjuntar el Blob de audio desde un input,
   // así que lo añadimos al FormData justo antes de despachar.
   function enviar(fd: FormData) {
+    // Las fotos viven en el estado (hasta 3); se adjuntan aquí con los nombres
+    // que espera la acción: photo, photo2, photo3.
+    fotos.forEach((f, i) => {
+      fd.set(i === 0 ? "photo" : `photo${i + 1}`, f.file);
+    });
     if (audio) {
       const ext = (audio.type.split(";")[0].split("/")[1] || "webm").trim();
       fd.set("audio", new File([audio], `voz.${ext}`, { type: audio.type }));
@@ -120,22 +127,28 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   }
 
   function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) {
-      setPreview(null);
-      return;
+    const files = Array.from(e.target.files ?? []);
+    for (const f of files) {
+      const url = URL.createObjectURL(f);
+      // La proporción real de cada foto para que la vista previa sea fiel.
+      const img = new Image();
+      img.onload = () => {
+        const ratio = img.naturalHeight / img.naturalWidth || 1;
+        setFotos((prev) =>
+          prev.length >= MAX_FOTOS ? prev : [...prev, { file: f, url, ratio }]
+        );
+      };
+      img.src = url;
     }
-    const url = URL.createObjectURL(f);
-    // La proporción real de la foto para que la vista previa sea fiel.
-    const img = new Image();
-    img.onload = () => setPreviewRatio(img.naturalHeight / img.naturalWidth || 1);
-    img.src = url;
-    setPreview(url);
+    // permitir volver a elegir el mismo archivo
+    if (fileRef.current) fileRef.current.value = "";
   }
 
-  function removePhoto() {
-    setPreview(null);
-    if (fileRef.current) fileRef.current.value = "";
+  function removePhoto(i: number) {
+    setFotos((prev) => {
+      URL.revokeObjectURL(prev[i]?.url ?? "");
+      return prev.filter((_, j) => j !== i);
+    });
   }
 
   const themeData = getTheme(theme);
@@ -149,13 +162,12 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
         authorName: authorName || "tu nombre",
         fontFamily: font,
         ink: themeData.ink,
-        photoUrl: preview,
-        photoRatio: previewRatio,
+        photos: fotos.map((f) => ({ url: f.url, ratio: f.ratio })),
         signatureUrl: signature,
         authorName2: showSecond ? authorName2 || null : null,
         signatureUrl2: showSecond ? signature2 : null,
       }),
-    [message, authorName, font, themeData.ink, preview, previewRatio, signature, showSecond, authorName2, signature2, recipientName]
+    [message, authorName, font, themeData.ink, fotos, signature, showSecond, authorName2, signature2, recipientName]
   );
 
   // Si cambia el contenido base, la personalización quedaría desfasada:
@@ -163,7 +175,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   useEffect(() => {
     setCustom(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [message, authorName, font, theme, preview, signature, showSecond, authorName2, signature2]);
+  }, [message, authorName, font, theme, fotos, signature, showSecond, authorName2, signature2]);
 
   function abrirEstudio() {
     setCustom({
@@ -294,50 +306,50 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
           </div>
         </fieldset>
 
-        {/* Foto opcional */}
+        {/* Fotos opcionales (hasta 3: con 2–3 van en tira tipo collage) */}
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium text-[var(--muted)]">
-            Una foto (opcional)
+            Fotos (opcional, hasta {MAX_FOTOS})
           </span>
           <input
             ref={fileRef}
             type="file"
-            name="photo"
             accept="image/*"
+            multiple
             onChange={onPhoto}
             className="hidden"
           />
-          {preview ? (
-            <div className="flex items-center gap-3">
-              <img
-                src={preview}
-                alt="Vista previa"
-                className="h-20 w-20 rounded-xl object-cover ring-2 ring-[var(--border)]"
-              />
-              <div className="flex flex-col gap-1 text-sm">
-                <button
-                  type="button"
-                  onClick={() => fileRef.current?.click()}
-                  className="text-left text-[var(--accent)] hover:underline"
-                >
-                  Cambiar foto
-                </button>
-                <button
-                  type="button"
-                  onClick={removePhoto}
-                  className="text-left text-[var(--muted)] hover:underline"
-                >
-                  Quitar
-                </button>
-              </div>
+          {fotos.length > 0 && (
+            <div className="flex flex-wrap items-start gap-3">
+              {fotos.map((f, i) => (
+                <div key={f.url} className="flex flex-col items-center gap-1">
+                  <img
+                    src={f.url}
+                    alt={`Foto ${i + 1}`}
+                    className="h-20 w-20 rounded-xl object-cover ring-2 ring-[var(--border)]"
+                    style={{ transform: `rotate(${[-2, 1.5, 2.5][i % 3]}deg)` }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(i)}
+                    className="text-xs text-[var(--muted)] hover:text-[var(--accent)] hover:underline"
+                  >
+                    Quitar
+                  </button>
+                </div>
+              ))}
             </div>
-          ) : (
+          )}
+          {fotos.length < MAX_FOTOS && (
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--muted)] transition-colors hover:border-[var(--accent)]"
             >
-              <span aria-hidden>📷</span> Añadir una foto
+              <span aria-hidden>📷</span>
+              {fotos.length === 0
+                ? "Añadir una foto"
+                : `Añadir otra foto (${fotos.length}/${MAX_FOTOS})`}
             </button>
           )}
         </div>

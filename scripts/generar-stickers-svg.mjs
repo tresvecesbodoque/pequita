@@ -13,6 +13,7 @@ import path from "node:path";
 const INK = "#4d2126";
 const GOLD = "#d9a83f";
 const ROSE = "#b3282d";
+const CORAL = "#e0745a";
 const VERDE = "#8a8a52";
 
 const carpeta = path.resolve(import.meta.dirname, "..", "public", "stickers-base");
@@ -37,6 +38,20 @@ const estrella = (cx, cy, r, color = GOLD, op = 1) => {
   }
   return `<polygon points="${p.join(" ")}" fill="${color}" fill-opacity="${op}"/>`;
 };
+// Florcita de bosquejo: 5 pétalos redondos y botón dorado.
+const flor = (cx, cy, r, color = ROSE) => {
+  const petalos = [];
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+    const px = (cx + r * Math.cos(a)).toFixed(1);
+    const py = (cy + r * Math.sin(a)).toFixed(1);
+    petalos.push(
+      `<circle cx="${px}" cy="${py}" r="${(r * 0.62).toFixed(1)}" fill="${color}" fill-opacity="0.45" stroke="${color}" stroke-width="1.6"/>`
+    );
+  }
+  return `${petalos.join("")}<circle cx="${cx}" cy="${cy}" r="${(r * 0.45).toFixed(1)}" fill="${GOLD}"/>`;
+};
+
 const chispa = (cx, cy, r, color = GOLD) =>
   `<path d="M${cx} ${cy - r} L${cx + r * 0.3} ${cy - r * 0.3} L${cx + r} ${cy} L${cx + r * 0.3} ${cy + r * 0.3} L${cx} ${cy + r} L${cx - r * 0.3} ${cy + r * 0.3} L${cx - r} ${cy} L${cx - r * 0.3} ${cy - r * 0.3} Z" fill="${color}"/>`;
 
@@ -175,6 +190,75 @@ const stickers = {
   "corazon-de-una-linea": `
     <path d="M24 66 C24 42 48 38 60 54 C72 38 96 42 96 66 C96 84 70 96 60 100 C50 96 24 84 24 66" ${T(ROSE)}/>
     ${chispa(90, 30, 6)}`,
+
+  // ——— ORNAMENTOS decorativos (esquinas, divisores, cintas, marcos) ———
+  "esquina-de-dos-arcos": `
+    <path d="M16 98 C18 64 32 34 66 24" ${T(INK, 2.8)}/>
+    <path d="M26 102 C30 72 44 44 76 34" ${T(ROSE, 2.2)} stroke-dasharray="1 7"/>
+    ${chispa(88, 22, 7)}${chispa(20, 108, 4, ROSE)}`,
+  "divisor-de-estrellas": `
+    <path d="M8 62 C24 57 38 64 50 60" ${T(INK, 2.4)} stroke-dasharray="2 7"/>
+    ${estrella(60, 58, 10)}
+    <path d="M70 60 C84 55 98 63 112 58" ${T(INK, 2.4)} stroke-dasharray="2 7"/>
+    ${chispa(12, 54, 4)}${chispa(108, 66, 4)}`,
+  "banderin-de-feria": `
+    <path d="M30 48 C46 57 74 57 90 48 L93 74 C74 83 46 83 27 74 Z" fill="${ROSE}" fill-opacity="0.18" stroke="${ROSE}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M30 48 L13 43 l5 12 -7 10 16 9" ${T(ROSE, 2.2)}/>
+    <path d="M90 48 L107 43 l-5 12 7 10 -16 9" ${T(ROSE, 2.2)}/>
+    <path d="M40 64 c12 4 28 4 40 -1" ${T(INK, 1.8)} stroke-dasharray="1 6"/>
+    ${chispa(60, 30, 5)}`,
+  "marco-oval-tembloroso": `
+    <path d="M60 16 C89 18 104 37 101 62 C98 87 82 104 57 102 C33 100 17 82 20 57 C23 33 35 14 60 16 Z" ${T(INK, 2.6)}/>
+    <path d="M60 26 C82 28 94 42 92 60 C90 80 78 94 58 92 C38 90 28 78 30 60 C32 40 42 24 60 26 Z" ${T(GOLD, 1.8)} stroke-dasharray="1 6"/>`,
+  "guirnalda-de-banderines": `
+    <path d="M10 32 C40 52 80 52 110 32" ${T(INK, 2.2)}/>
+    <path d="M18 37 l16 4 -8 16 z" fill="${ROSE}" fill-opacity="0.7" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M40 45 l16 2 -8 17 z" fill="${GOLD}" fill-opacity="0.7" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M62 47 l16 -1 -7 17 z" fill="${CORAL}" fill-opacity="0.7" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M84 43 l15 -4 -5 17 z" fill="${ROSE}" fill-opacity="0.7" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+    ${chispa(60, 84, 5)}`,
+  "subrayado-garabato": `
+    <path d="M14 52 C34 46 62 49 106 44" ${T(INK, 3)}/>
+    <path d="M18 66 C42 59 72 64 102 57" ${T(ROSE, 2.4)}/>
+    <path d="M28 78 C50 73 68 76 94 70" ${T(INK, 2)} stroke-dasharray="1 6"/>`,
+  "lazo-de-regalo": `
+    <path d="M55 56 C36 40 23 42 21 54 C19 66 34 71 54 63" fill="${ROSE}" fill-opacity="0.2" stroke="${ROSE}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M65 56 C84 40 97 42 99 54 C101 66 86 71 66 63" fill="${ROSE}" fill-opacity="0.2" stroke="${ROSE}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M54 66 C48 78 44 88 37 98" ${T(ROSE, 2.4)}/>
+    <path d="M66 66 C72 78 77 88 85 98" ${T(ROSE, 2.4)}/>
+    <circle cx="60" cy="60" r="7" fill="${GOLD}" fill-opacity="0.55" stroke="${INK}" stroke-width="2.2"/>
+    <path d="M32 52 c6 -3 12 -3 18 2 M88 52 c-6 -3 -12 -3 -18 2" ${T(INK, 1.4)} stroke-dasharray="1 5"/>`,
+  "ramita-de-laurel": `
+    <path d="M30 100 C42 78 54 54 84 24" ${T(VERDE, 2.6)}/>
+    <path d="M42 78 c-11 -3 -18 1 -20 10 c9 4 17 -1 20 -10 z" fill="${VERDE}" fill-opacity="0.35" stroke="${VERDE}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M48 68 c4 -11 11 -15 20 -13 c0 10 -9 15 -20 13 z" fill="${VERDE}" fill-opacity="0.35" stroke="${VERDE}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M58 54 c-11 -2 -18 2 -19 11 c9 3 16 -2 19 -11 z" fill="${VERDE}" fill-opacity="0.35" stroke="${VERDE}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M66 44 c3 -11 10 -16 19 -14 c1 9 -8 15 -19 14 z" fill="${VERDE}" fill-opacity="0.35" stroke="${VERDE}" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="88" cy="20" r="3.4" fill="${GOLD}"/>
+    <circle cx="79" cy="30" r="2.6" fill="${GOLD}"/>`,
+  "cinta-washi": `
+    <g transform="rotate(-12 60 60)">
+      <path d="M24 44 L96 44 L92 52 L98 60 L93 68 L96 76 L24 76 L28 68 L23 60 L28 52 Z" fill="${CORAL}" fill-opacity="0.3" stroke="${CORAL}" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M40 44 L32 76 M56 44 L48 76 M72 44 L64 76 M88 44 L80 76" ${T(CORAL, 2)}/>
+    </g>`,
+  "nube-con-estrellas": `
+    <path d="M30 76 a12 12 0 0 1 2 -24 a16 16 0 0 1 30 -9 a14 14 0 0 1 24 9 a11 11 0 0 1 2 24 z" ${T(INK, 2.6)}/>
+    ${estrella(46, 60, 7)}${estrella(66, 54, 9)}${estrella(82, 64, 5)}
+    ${chispa(24, 92, 5)}${chispa(96, 90, 4)}`,
+  "flecha-con-rulos": `
+    <path d="M14 78 C34 86 52 82 60 68 C66 57 58 48 50 54 C42 60 49 73 66 69 C82 65 93 53 101 41" ${T(INK, 2.8)}/>
+    <path d="M91 43 L102 40 L99 51" ${T(INK, 2.8)}/>
+    ${chispa(20, 66, 5, ROSE)}`,
+  "sol-de-trazos": `
+    <circle cx="60" cy="60" r="20" fill="${GOLD}" fill-opacity="0.3" stroke="${GOLD}" stroke-width="2.6"/>
+    <path d="M60 30 c-2 -5 -1 -9 1 -14 M60 90 c2 5 1 9 -1 14 M30 60 c-5 -2 -9 -1 -14 1 M90 60 c5 2 9 1 14 -1" ${T(GOLD, 2.6)}/>
+    <path d="M39 39 c-4 -3 -7 -6 -9 -11 M81 39 c4 -3 7 -6 9 -11 M39 81 c-4 3 -7 6 -9 11 M81 81 c4 3 7 6 9 11" ${T(GOLD, 2.4)}/>
+    <path d="M48 55 C54 50 68 50 74 56" ${T(INK, 1.6)} stroke-dasharray="1 5"/>`,
+  "media-corona-de-flores": `
+    <path d="M18 74 C28 94 46 104 60 104 C74 104 92 94 102 74" ${T(VERDE, 2.4)}/>
+    <path d="M34 90 c-8 -6 -14 -6 -18 -1 M86 90 c8 -6 14 -6 18 -1 M50 100 c-4 -8 -9 -11 -15 -10" ${T(VERDE, 2)}/>
+    ${flor(26, 80, 7, ROSE)}${flor(60, 102, 8, CORAL)}${flor(94, 80, 7, ROSE)}
+    ${chispa(60, 82, 5)}`,
 };
 
 // Detecta atributos duplicados en un elemento (XML inválido → sticker roto).

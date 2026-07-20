@@ -17,3 +17,11 @@ solo cuando tocan:
 - **Insumos externos pesados** (PDF/Word) → convertir a `.txt` con script y
   leer el `.txt`, nunca el original.
 <!-- END:nextjs-agent-rules -->
+
+# Memoria (loop de auto-mejora)
+
+Leer `memoria/APRENDIZAJES.md` al inicio de una tarea. Cuando el usuario corrija una
+preferencia **reutilizable** (tono, formato, prioridad, decisión de diseño o de flujo que
+valdrá en futuras tareas), anotarla ahí de inmediato, sin pedir permiso. No guardar hechos
+puntuales de una tarea ni resúmenes de conversación. Si una preferencia se vuelve estable,
+moverla a `AGENTS.md` o `DESIGN.md` y retirarla de la memoria.
