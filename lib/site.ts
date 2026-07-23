@@ -4,6 +4,8 @@
 export const SITE = {
   /** Nombre o apodo de la cumpleañera. Aparece en la portada y los textos. */
   recipientName: "Isidora",
+  /** Apodo corto para saludos ("¡Feliz Cumpleaños Isi!"). */
+  recipientNick: "Isi",
   /** Título de la portada pública para los familiares. */
   inviteTitle: "Una carta para su cumpleaños",
   /** Subtítulo/explicación breve en la portada. */
@@ -28,8 +30,10 @@ export const SITE = {
    * aunque se tenga la clave, los sobres duermen y se muestra una cuenta
    * regresiva. Déjalo en null para abrir el álbum de inmediato.
    * Ej: "2026-08-15T00:00:00-04:00"
+   * Nota: Chile en agosto está en horario estándar UTC−4 (el de verano UTC−3
+   * empieza en septiembre), por eso el offset -04:00 = "00:00:01 hora Santiago".
    */
-  revealDate: null as string | null,
+  revealDate: "2026-08-07T00:00:01-04:00" as string | null,
   /**
    * Slug de la carta destacada ("empieza por aquí"): brilla en el álbum para
    * sugerir por dónde comenzar. Déjalo en null para no destacar ninguna.
