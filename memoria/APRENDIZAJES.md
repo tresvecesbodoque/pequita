@@ -19,6 +19,14 @@ Una línea por aprendizaje, más reciente arriba:
 `- [YYYY-MM-DD] <preferencia en imperativo> — por qué / alcance`
 
 ## Aprendizajes
+- [2026-07-23] SUBIDA DE MEDIA: las funciones de Vercel topan el cuerpo en 4.5 MB, así
+  que fotos a máxima calidad y vídeos NO pueden pasar por un Server Action ni por una
+  route. El navegador sube DIRECTO a R2 con URL prefirmada (presigned PUT) vía
+  lib/uploadClient.ts → createUploadTarget; al action solo le llegan URLs (validadas con
+  isOwnMediaUrl). Requiere CORS en el bucket R2 (AllowedMethods PUT/GET/HEAD) — se
+  configura en el panel de Cloudflare (el token Object R/W no puede). En dev cae a
+  /api/media (disco). NOTA PENDIENTE: la subida del EDITOR (/api/upload) sigue pasando
+  por la función; si el dueño sube imágenes >4.5 MB, hay que migrarla también a presigned.
 - [2026-07-23] VÍDEO: los familiares graban/suben un clip breve (15–20s) junto a su
   carta, y el "vídeo final" es un MONTAJE que se reproduce solo (un reproductor pasa los
   clips uno tras otro), NO un único MP4 re-codificado. Se descartó el archivo único por
