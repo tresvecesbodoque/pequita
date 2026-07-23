@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Falta poco…</title>
+<title>dos sietes hasta el siete</title>
 <style>
   :root {
     --gold: #d9a83f;
@@ -18,15 +18,14 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 24px;
+    padding: 32px 24px;
     color: var(--ink);
     font-family: ui-serif, Georgia, "Times New Roman", serif;
     background:
       radial-gradient(1200px 600px at 50% -10%, #1b2748 0%, transparent 60%),
       linear-gradient(180deg, #0e1730 0%, #0a1020 100%);
-    overflow: hidden;
+    overflow-x: hidden;
   }
-  /* estrellitas del cielo */
   .cielo { position: fixed; inset: 0; pointer-events: none; }
   .cielo span {
     position: absolute; width: 2px; height: 2px; border-radius: 50%;
@@ -34,34 +33,48 @@
   }
   @keyframes titila { 0%,100% { opacity: .2 } 50% { opacity: .9 } }
 
-  .wrap { position: relative; max-width: 560px; }
-  .kicker { text-transform: uppercase; letter-spacing: .45em; font-size: .72rem; color: rgba(234,228,214,.6); }
-  .titulo {
-    margin-top: 14px; font-size: clamp(2.2rem, 8vw, 3.6rem); color: var(--gold);
-    font-family: "Brush Script MT", "Segoe Script", cursive;
-    line-height: 1.05;
-  }
-  .sub { margin-top: 14px; font-size: .98rem; color: rgba(234,228,214,.75); line-height: 1.6; }
+  .wrap { position: relative; max-width: 600px; width: 100%; }
 
-  .reloj { margin-top: 30px; display: flex; gap: 10px; justify-content: center; }
+  /* El poema, en cursiva */
+  .poema {
+    font-style: italic;
+    font-size: clamp(1.05rem, 3.6vw, 1.4rem);
+    line-height: 1.9;
+    color: var(--gold);
+    letter-spacing: .01em;
+    text-wrap: balance;
+  }
+
+  .nota {
+    margin-top: 30px;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: rgba(234, 228, 214, .85);
+    max-width: 30rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .reloj { margin-top: 34px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .bloque {
-    min-width: 74px; padding: 12px 6px; border: 1.5px solid rgba(217,168,63,.4);
+    min-width: 72px; padding: 12px 6px; border: 1.5px solid rgba(217,168,63,.4);
     border-radius: 14px; background: rgba(255,255,255,.04); backdrop-filter: blur(4px);
   }
   .num { font-size: 2.1rem; color: var(--gold); font-variant-numeric: tabular-nums; }
   .lab { font-size: .6rem; text-transform: uppercase; letter-spacing: .2em; color: rgba(234,228,214,.55); margin-top: 4px; }
 
-  /* estado del día D */
   .listo { display: none; }
+  .saludo {
+    margin-top: 30px; font-size: clamp(2rem, 7vw, 3rem); color: var(--gold);
+    font-family: "Brush Script MT", "Segoe Script", cursive; line-height: 1.1;
+  }
   .btn {
-    display: inline-block; margin-top: 26px; padding: 15px 30px; border-radius: 999px;
+    display: inline-block; margin-top: 24px; padding: 15px 30px; border-radius: 999px;
     background: var(--gold); color: #2a1e08; font-weight: 700; text-decoration: none;
     font-family: ui-sans-serif, system-ui, sans-serif;
-    box-shadow: 0 10px 30px -10px rgba(217,168,63,.6);
-    transition: transform .2s ease;
+    box-shadow: 0 10px 30px -10px rgba(217,168,63,.6); transition: transform .2s ease;
   }
   .btn:hover { transform: translateY(-2px); }
-  .rosa { font-size: 1.6rem; margin-top: 8px; }
   @media (prefers-reduced-motion: reduce) { .cielo span { animation: none; } }
 </style>
 </head>
@@ -71,9 +84,22 @@
   <main class="wrap">
     <!-- ANTES del día -->
     <section class="espera" id="espera">
-      <p class="kicker">algo se acerca</p>
-      <h1 class="titulo">Falta poco…</h1>
-      <p class="sub">Guarda este rincón del cielo. Cuando el contador llegue a cero, se abrirá una sorpresa hecha con mucho cariño. 💛</p>
+      <p class="poema">
+        Divina, boca viva que salva mi carne;<br />
+        roca rota donde este pacto se firma,<br />
+        hueso expuesto al filo de ser vulnerable.<br />
+        Asumo el crudo desastre de ser barro,<br />
+        dedos que amasan este lodo sin rumbo,<br />
+        pierdo mi nombre bajo este nuevo cielo,<br />
+        llueve este cuerpo nuevo en tu noche
+      </p>
+
+      <p class="nota">
+        Pequita mía,,, mi wawa. Te he estado preparando algo con mucho cariño y lo
+        podrás ver aquí cuando el contador llegue a 0 en tu día, el mejor día del
+        año. Te amo un montonazo.
+      </p>
+
       <div class="reloj" id="reloj" aria-live="polite">
         <div class="bloque"><div class="num" id="d">--</div><div class="lab">días</div></div>
         <div class="bloque"><div class="num" id="h">--</div><div class="lab">horas</div></div>
@@ -84,10 +110,17 @@
 
     <!-- EL día D -->
     <section class="listo" id="listo">
-      <p class="kicker">al fin es hoy</p>
-      <h1 class="titulo">¡Feliz cumpleaños,<br />Isidora!</h1>
-      <p class="rosa">🌹</p>
-      <p class="sub">Tu sorpresa te está esperando.</p>
+      <p class="poema">
+        Divina, boca viva que salva mi carne;<br />
+        roca rota donde este pacto se firma,<br />
+        hueso expuesto al filo de ser vulnerable.<br />
+        Asumo el crudo desastre de ser barro,<br />
+        dedos que amasan este lodo sin rumbo,<br />
+        pierdo mi nombre bajo este nuevo cielo,<br />
+        llueve este cuerpo nuevo en tu noche
+      </p>
+      <h1 class="saludo">¡Feliz cumpleaños,<br />mi wawa!</h1>
+      <p class="nota">Ya es tu día. Lo que te preparé con tanto cariño te espera.</p>
       <a class="btn" href="https://ishibonita.vercel.app">Entrar 🎁 →</a>
     </section>
   </main>
@@ -101,7 +134,6 @@
 
     document.querySelector(".btn").setAttribute("href", DESTINO);
 
-    // Cielo estrellado
     (function () {
       var c = document.getElementById("cielo"), html = "";
       for (var i = 0; i < 60; i++) {
