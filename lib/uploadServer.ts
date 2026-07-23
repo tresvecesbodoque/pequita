@@ -1,13 +1,22 @@
 import "server-only";
 import { writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { put } from "@vercel/blob";
-import sharp, { type Sharp, type Metadata } from "sharp";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import sharp from "sharp";
 import { nanoid } from "nanoid";
 
-// Procesado y almacenamiento de imágenes, compartido por la subida del editor
-// (autenticada) y la subida pública de invitados. En producción usa Vercel Blob
-// (si hay BLOB_READ_WRITE_TOKEN); en desarrollo escribe en public/uploads.
+// Procesado y almacenamiento de imágenes/medios, compartido por la subida del
+// editor (autenticada) y la subida pública de invitados.
+//
+// ALMACENAMIENTO:
+//   - PRODUCCIÓN: Cloudflare R2 (si están las variables R2_*). Compatible con
+//     la API de S3, 10 GB gratis y sin cargo por descarga (ideal para vídeo).
+//   - DESARROLLO: escribe en public/uploads (disco local).
+//
+// CALIDAD: se guarda el archivo ORIGINAL sin recomprimir ni redimensionar, para
+// que las fotos se vean a máxima calidad. Única excepción: formatos que el
+// navegador no sabe mostrar (HEIC/HEIF, TIFF…) se convierten a JPEG calidad 100
+// (visualmente sin pérdida) para que sí se puedan ver en el álbum.
 
 export const UPLOAD_CATEGORIES = new Set([
   "esquelas",
@@ -35,9 +44,22 @@ export class UploadError extends Error {
 type Options = {
   /** Tamaño máximo del archivo de entrada en bytes. */
   maxBytes?: number;
-  /** Lado mayor máximo tras el resize. `null` = sin resize (fondos tileables). */
+  /**
+   * Se conserva por compatibilidad con las llamadas existentes, pero ya NO se
+   * redimensiona: guardamos el original a máxima calidad.
+   */
   maxDim?: number | null;
 };
+
+// Formatos que el navegador muestra directamente → se guardan tal cual.
+const WEB_SAFE_IMAGE = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+  "image/svg+xml",
+]);
 
 // Tipos de audio que aceptamos de MediaRecorder según el navegador.
 const AUDIO_TYPES = new Set([
@@ -47,6 +69,88 @@ const AUDIO_TYPES = new Set([
   "audio/ogg",
   "audio/wav",
 ]);
+
+const EXT_BY_TYPE: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/avif": "avif",
+  "image/svg+xml": "svg",
+};
+
+// ── Almacenamiento (R2 en prod, disco en dev) ──────────────────────────────
+
+function r2Config() {
+  const {
+    R2_ACCOUNT_ID,
+    R2_ACCESS_KEY_ID,
+    R2_SECRET_ACCESS_KEY,
+    R2_BUCKET,
+    R2_PUBLIC_URL,
+  } = process.env;
+  if (
+    R2_ACCOUNT_ID &&
+    R2_ACCESS_KEY_ID &&
+    R2_SECRET_ACCESS_KEY &&
+    R2_BUCKET &&
+    R2_PUBLIC_URL
+  ) {
+    return {
+      accountId: R2_ACCOUNT_ID,
+      accessKeyId: R2_ACCESS_KEY_ID,
+      secretAccessKey: R2_SECRET_ACCESS_KEY,
+      bucket: R2_BUCKET,
+      publicUrl: R2_PUBLIC_URL.replace(/\/+$/, ""),
+    };
+  }
+  return null;
+}
+
+let cachedS3: S3Client | null = null;
+function s3Client(cfg: NonNullable<ReturnType<typeof r2Config>>): S3Client {
+  if (!cachedS3) {
+    cachedS3 = new S3Client({
+      region: "auto",
+      endpoint: `https://${cfg.accountId}.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId: cfg.accessKeyId,
+        secretAccessKey: cfg.secretAccessKey,
+      },
+    });
+  }
+  return cachedS3;
+}
+
+/**
+ * Guarda un buffer y devuelve su URL pública. `key` es la ruta relativa dentro
+ * del almacén, p. ej. "uploads/fotos/abc.jpg".
+ */
+async function putToStorage(
+  key: string,
+  body: Buffer,
+  contentType: string
+): Promise<string> {
+  const cfg = r2Config();
+  if (cfg) {
+    await s3Client(cfg).send(
+      new PutObjectCommand({
+        Bucket: cfg.bucket,
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+      })
+    );
+    return `${cfg.publicUrl}/${key}`;
+  }
+  // Local (dev): disco en public/…
+  const dir = join(process.cwd(), "public", ...key.split("/").slice(0, -1));
+  await mkdir(dir, { recursive: true });
+  await writeFile(join(process.cwd(), "public", key), body);
+  return `/${key}`;
+}
+
+// ── Audio ──────────────────────────────────────────────────────────────────
 
 /** Guarda un mensaje de voz tal cual (sin transcodificar). */
 export async function storeAudio(file: File, maxBytes = 3 * 1024 * 1024): Promise<string> {
@@ -60,19 +164,10 @@ export async function storeAudio(file: File, maxBytes = 3 * 1024 * 1024): Promis
   const ext = baseType.split("/")[1];
   const filename = `${nanoid(12)}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
-
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`uploads/voces/${filename}`, buffer, {
-      access: "public",
-      contentType: baseType,
-    });
-    return blob.url;
-  }
-  const dir = join(process.cwd(), "public", "uploads", "voces");
-  await mkdir(dir, { recursive: true });
-  await writeFile(join(dir, filename), buffer);
-  return `/uploads/voces/${filename}`;
+  return putToStorage(`uploads/voces/${filename}`, buffer, baseType);
 }
+
+// ── Imágenes (originales, a máxima calidad) ─────────────────────────────────
 
 export async function processAndStoreImage(
   file: File,
@@ -86,46 +181,40 @@ export async function processAndStoreImage(
   }
 
   const inputBuffer = Buffer.from(await file.arrayBuffer());
+  const baseType = (file.type || "").split(";")[0].trim().toLowerCase();
 
-  let pipeline: Sharp;
-  let meta: Metadata;
+  // Validar que es una imagen y leer dimensiones (sin recodificar).
+  let width: number | null = null;
+  let height: number | null = null;
   try {
-    pipeline = sharp(inputBuffer, { failOn: "none" });
-    meta = await pipeline.metadata();
+    const meta = await sharp(inputBuffer, { failOn: "none" }).metadata();
+    width = meta.width ?? null;
+    height = meta.height ?? null;
   } catch {
     throw new UploadError("El archivo no es una imagen válida.", 400);
   }
 
-  // Los fondos tileables se conservan a tamaño original para no romper el patrón;
-  // el resto se limita para no cargar imágenes gigantes.
-  const maxDim =
-    opts.maxDim === undefined ? (category === "fondos" ? null : 1600) : opts.maxDim;
-  if (maxDim && ((meta.width ?? 0) > maxDim || (meta.height ?? 0) > maxDim)) {
-    pipeline = pipeline.resize(maxDim, maxDim, { fit: "inside", withoutEnlargement: true });
+  let outputBuffer = inputBuffer;
+  let contentType = baseType || "application/octet-stream";
+  let ext = EXT_BY_TYPE[baseType] ?? "";
+
+  // Formatos no mostrables en el navegador → JPEG calidad 100 (sin resize).
+  if (!WEB_SAFE_IMAGE.has(baseType)) {
+    try {
+      outputBuffer = await sharp(inputBuffer, { failOn: "none" })
+        .jpeg({ quality: 100 })
+        .toBuffer();
+    } catch {
+      throw new UploadError("No se pudo convertir la imagen. Prueba con otra.", 400);
+    }
+    contentType = "image/jpeg";
+    ext = "jpg";
+  } else if (!ext) {
+    ext = "img";
   }
 
-  // webp preserva transparencia y pesa poco.
-  const outputBuffer = await pipeline.webp({ quality: 85 }).toBuffer();
-  const finalMeta = await sharp(outputBuffer).metadata();
-  const filename = `${nanoid(12)}.webp`;
+  const filename = `${nanoid(12)}.${ext}`;
+  const url = await putToStorage(`uploads/${category}/${filename}`, outputBuffer, contentType);
 
-  let url: string;
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`uploads/${category}/${filename}`, outputBuffer, {
-      access: "public",
-      contentType: "image/webp",
-    });
-    url = blob.url;
-  } else {
-    const dir = join(process.cwd(), "public", "uploads", category);
-    await mkdir(dir, { recursive: true });
-    await writeFile(join(dir, filename), outputBuffer);
-    url = `/uploads/${category}/${filename}`;
-  }
-
-  return {
-    url,
-    width: finalMeta.width ?? null,
-    height: finalMeta.height ?? null,
-  };
+  return { url, width, height };
 }

@@ -147,9 +147,9 @@ export async function submitGuestLetter(
   const photos: { url: string; ratio: number }[] = [];
   for (const photo of photoFiles) {
     try {
+      // Original a máxima calidad (sin redimensionar). Tope generoso para fotos.
       const stored = await processAndStoreImage(photo, "fotos", {
-        maxBytes: 8 * 1024 * 1024,
-        maxDim: 1400,
+        maxBytes: 25 * 1024 * 1024,
       });
       photos.push({
         url: stored.url,
