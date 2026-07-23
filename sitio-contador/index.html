@@ -35,25 +35,33 @@
 
   .wrap { position: relative; max-width: 600px; width: 100%; }
 
-  /* El poema, en cursiva */
+  .marca {
+    font-size: 1.4rem;
+    letter-spacing: .35em;
+    color: var(--gold);
+    margin-bottom: 26px;
+  }
+
+  /* El poema, en cursiva, grisáceo y sin negrita */
   .poema {
     font-style: italic;
+    font-weight: 400;
     font-size: clamp(1.05rem, 3.6vw, 1.4rem);
     line-height: 1.9;
-    color: var(--gold);
+    color: rgba(234, 228, 214, .55);
     letter-spacing: .01em;
     text-wrap: balance;
   }
 
   .nota {
-    margin-top: 30px;
-    font-size: 1rem;
+    font-size: 1.02rem;
     line-height: 1.75;
-    color: rgba(234, 228, 214, .85);
+    color: var(--gold);
     max-width: 30rem;
     margin-left: auto;
     margin-right: auto;
   }
+  .poema { margin-top: 28px; }
 
   .reloj { margin-top: 34px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .bloque {
@@ -84,6 +92,14 @@
   <main class="wrap">
     <!-- ANTES del día -->
     <section class="espera" id="espera">
+      <p class="marca">2/7</p>
+
+      <p class="nota">
+        Pequita mía,,, mi wawa. Te he estado preparando algo con mucho cariño y lo
+        podrás ver aquí cuando el contador llegue a 0 en tu día, el mejor día del
+        año. Te amo un montonazo.
+      </p>
+
       <p class="poema">
         Divina, boca viva que salva mi carne;<br />
         roca rota donde este pacto se firma,<br />
@@ -92,12 +108,6 @@
         dedos que amasan este lodo sin rumbo,<br />
         pierdo mi nombre bajo este nuevo cielo,<br />
         llueve este cuerpo nuevo en tu noche
-      </p>
-
-      <p class="nota">
-        Pequita mía,,, mi wawa. Te he estado preparando algo con mucho cariño y lo
-        podrás ver aquí cuando el contador llegue a 0 en tu día, el mejor día del
-        año. Te amo un montonazo.
       </p>
 
       <div class="reloj" id="reloj" aria-live="polite">
