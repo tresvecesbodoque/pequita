@@ -10,6 +10,7 @@ import { backgroundLayerStyle, type BackgroundConfig } from "@/lib/backgrounds/r
 import { parseCanvas, EMPTY_ESQUELA, EMPTY_SOBRE } from "@/lib/types/canvas";
 import { shade } from "@/lib/color";
 import { AudioCard } from "@/components/ui/AudioCard";
+import { VideoCard } from "@/components/ui/VideoCard";
 import { playLacre, playSobre, playHoja, isMuted, setMuted } from "@/lib/paperSound";
 
 type Props = {
@@ -23,6 +24,8 @@ type Props = {
   qrInterior: string | null;
   /** mensaje de voz opcional del autor (audio-carta) */
   audioUrl?: string | null;
+  /** vídeo-saludo opcional del autor */
+  videoUrl?: string | null;
 };
 
 // Esquirlas doradas del lacre al romperse: dirección de vuelo de cada una.
@@ -70,6 +73,7 @@ export function EnvelopePresenter({
   background,
   qrInterior,
   audioUrl = null,
+  videoUrl = null,
 }: Props) {
   const esquela = parseCanvas(esquelaCanvas, EMPTY_ESQUELA);
   const sobre = parseCanvas(sobreCanvas, EMPTY_SOBRE);
@@ -362,7 +366,7 @@ export function EnvelopePresenter({
 
         {/* Audio-carta y QR: en el flujo, bajo el escenario (dentro de la hoja
             animada se solapaban con los controles y estiraban el lienzo) */}
-        {opened && (audioUrl || qrInterior) && (
+        {opened && (audioUrl || videoUrl || qrInterior) && (
           <div className="relative z-20 mt-2 flex flex-wrap items-center justify-center gap-3">
             {audioUrl && (
               <motion.div
@@ -371,6 +375,15 @@ export function EnvelopePresenter({
                 transition={{ delay: 0.25, duration: 0.6, ease: PAPER_EASE }}
               >
                 <AudioCard src={audioUrl} />
+              </motion.div>
+            )}
+            {videoUrl && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6, ease: PAPER_EASE }}
+              >
+                <VideoCard src={videoUrl} />
               </motion.div>
             )}
             {qrInterior && (

@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { SITE } from "@/lib/site";
+import { isAuthenticated } from "@/lib/auth/session";
 import { EnvelopePresenter } from "@/components/envelope/EnvelopePresenter";
 import { MarcarLeida } from "@/components/album/MarcarLeida";
 import { NavBar } from "@/components/layout/NavBar";
@@ -35,8 +36,9 @@ export default async function CartaPage({
   // Modo día D: antes de la fecha las cartas duermen TAMBIÉN por enlace
   // directo (si no, un link filtrado se saltaba el candado y la cuenta
   // regresiva del álbum). Se redirige al cielo, que muestra la cuenta.
+  // Excepción: la dueña (sesión del taller) puede abrirlas para la vista previa.
   if (SITE.revealDate && Date.now() < new Date(SITE.revealDate).getTime()) {
-    redirect(SITE.albumPath);
+    if (!(await isAuthenticated())) redirect(SITE.albumPath);
   }
 
   const letter = await getPublicLetter(slug);
@@ -62,6 +64,7 @@ export default async function CartaPage({
       }}
       qrInterior={letter.qrInteriorDataUrl}
       audioUrl={letter.audioUrl}
+      videoUrl={letter.videoUrl}
       />
     </>
   );

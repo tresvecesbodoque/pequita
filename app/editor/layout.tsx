@@ -47,6 +47,12 @@ export default async function EditorLayout({
             Libro
           </Link>
           <Link
+            href="/editor/videos"
+            className="rounded-full px-3 py-1.5 hover:bg-black/5"
+          >
+            Vídeos
+          </Link>
+          <Link
             href="/para-ella?preview=1"
             target="_blank"
             className="rounded-full px-3 py-1.5 text-[var(--accent)] hover:bg-black/5"
