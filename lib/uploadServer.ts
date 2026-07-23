@@ -164,29 +164,30 @@ async function putToStorage(
 // vídeos suben directo del cliente a R2. En dev (sin R2) devuelve uploadUrl=null
 // y el cliente cae a /api/media (disco, sin límite en localhost).
 
-type UploadKind = "foto" | "voz" | "video";
+// `kind` puede ser voz/video, "foto", o cualquier categoría de imagen del editor
+// (esquelas, decorativos, fotos, escaneos, fondos, sobres).
+function targetConf(kind: string): { prefix: string; types: Set<string> } | null {
+  if (kind === "voz") return { prefix: "voces", types: AUDIO_TYPES };
+  if (kind === "video") return { prefix: "videos", types: VIDEO_TYPES };
+  if (kind === "foto") return { prefix: "fotos", types: WEB_SAFE_IMAGE };
+  if (UPLOAD_CATEGORIES.has(kind)) return { prefix: kind, types: WEB_SAFE_IMAGE };
+  return null;
+}
 
-const KIND_CFG: Record<UploadKind, { prefix: string; types: Set<string> }> = {
-  foto: { prefix: "fotos", types: WEB_SAFE_IMAGE },
-  voz: { prefix: "voces", types: AUDIO_TYPES },
-  video: { prefix: "videos", types: VIDEO_TYPES },
-};
-
-function extPara(kind: UploadKind, baseType: string): string {
-  if (kind === "foto") return EXT_BY_TYPE[baseType] ?? "img";
-  if (kind === "video") return baseType === "video/quicktime" ? "mov" : baseType.split("/")[1] || "webm";
-  return baseType.split("/")[1] || "webm";
+function extPara(baseType: string): string {
+  if (baseType.startsWith("image/")) return EXT_BY_TYPE[baseType] ?? "img";
+  if (baseType === "video/quicktime") return "mov";
+  return baseType.split("/")[1] || "bin";
 }
 
 export type UploadTarget = { uploadUrl: string | null; publicUrl: string; key: string };
 
 export async function createUploadTarget(kind: string, contentType: string): Promise<UploadTarget> {
-  const k = kind as UploadKind;
-  const conf = KIND_CFG[k];
+  const conf = targetConf(kind);
   if (!conf) throw new UploadError("Tipo de subida inválido.", 400);
   const baseType = (contentType || "").split(";")[0].trim().toLowerCase();
   if (!conf.types.has(baseType)) throw new UploadError("Formato no soportado.", 400);
-  const key = `uploads/${conf.prefix}/${nanoid(12)}.${extPara(k, baseType)}`;
+  const key = `uploads/${conf.prefix}/${nanoid(12)}.${extPara(baseType)}`;
 
   const cfg = r2Config();
   if (!cfg) {
