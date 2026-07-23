@@ -22,7 +22,7 @@ function posicion(slug: string, i: number, total: number) {
   const x = 8 + (i + 0.5) * (84 / total) + ((h % 7) - 3);
   // Franja vertical acotada: con el rango antiguo (22..68 de un lienzo de 70)
   // el cielo quedaba con medio viewport de vacío entre planeta y leyenda.
-  const y = 10 + ((h >> 3) % 24);
+  const y = 10 + ((h >>> 3) % 24);
   return { x: Math.max(5, Math.min(95, x)), y };
 }
 
