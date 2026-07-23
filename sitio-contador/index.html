@@ -26,7 +26,6 @@
     background:
       radial-gradient(1600px 900px at 50% -10%, #1b2748 0%, transparent 62%),
       linear-gradient(180deg, #0e1730 0%, #0a1020 100%);
-    background-attachment: fixed;
     overflow-x: hidden;
   }
   .cielo { position: fixed; inset: 0; pointer-events: none; }
@@ -45,15 +44,17 @@
     margin-bottom: 26px;
   }
 
-  /* El poema, en cursiva, grisáceo y sin negrita */
+  /* El poema, en cursiva, grisáceo y sin negrita. CADA verso en UNA sola línea
+     en cualquier pantalla: nowrap + tamaño escalado al ancho (vw), calibrado para
+     que el verso más largo siempre quepa sin partirse ni salirse. */
   .poema {
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(1.05rem, 3.6vw, 1.4rem);
-    line-height: 1.9;
+    font-size: clamp(0.68rem, 3.55vw, 1.28rem);
+    line-height: 1.95;
     color: rgba(234, 228, 214, .55);
-    letter-spacing: .01em;
-    text-wrap: balance;
+    letter-spacing: 0;
+    white-space: nowrap;
   }
 
   .nota {
@@ -88,16 +89,20 @@
   .btn:hover { transform: translateY(-2px); }
   @media (prefers-reduced-motion: reduce) { .cielo span { animation: none; } }
 
-  /* Móvil: texto más contenido y con aire a los bordes. */
-  @media (max-width: 480px) {
-    body { padding: 34px 20px; }
-    .marca { font-size: 1.15rem; margin-bottom: 20px; }
-    .nota { font-size: .95rem; line-height: 1.7; }
-    .poema { font-size: 1rem; line-height: 1.8; margin-top: 22px; }
-    .saludo { font-size: 1.9rem; }
-    .reloj { margin-top: 26px; gap: 8px; }
-    .bloque { min-width: 60px; padding: 10px 5px; }
-    .num { font-size: 1.7rem; }
+  /* Móvil: texto más contenido y con aire a los bordes. Las líneas largas del
+     poema deben caber sin tocar los bordes. */
+  @media (max-width: 560px) {
+    body { padding: 30px 12px; }
+    .marca { font-size: 1.1rem; margin-bottom: 18px; }
+    .nota { font-size: .92rem; line-height: 1.7; }
+    .poema { margin-top: 22px; }
+    .saludo { font-size: 1.85rem; }
+    .reloj { margin-top: 24px; gap: 8px; }
+    .bloque { min-width: 58px; padding: 10px 5px; }
+    .num { font-size: 1.6rem; }
+  }
+  @media (max-width: 360px) {
+    .nota { font-size: .88rem; }
   }
 </style>
 </head>
