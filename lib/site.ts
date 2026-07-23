@@ -33,7 +33,9 @@ export const SITE = {
    * Nota: Chile en agosto está en horario estándar UTC−4 (el de verano UTC−3
    * empieza en septiembre), por eso el offset -04:00 = "00:00:01 hora Santiago".
    */
-  revealDate: "2026-08-07T00:00:01-04:00" as string | null,
+  // ⚠️ RAMA DE VISTA PREVIA: fecha en el pasado para ver el estado "día D".
+  // En main la fecha real es 2026-08-07T00:00:01-04:00. NO fusionar esta rama.
+  revealDate: "2020-08-07T00:00:01-04:00" as string | null,
   /**
    * Slug de la carta destacada ("empieza por aquí"): brilla en el álbum para
    * sugerir por dónde comenzar. Déjalo en null para no destacar ninguna.
