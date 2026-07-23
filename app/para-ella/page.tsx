@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { AlbumEnvelopes, type SobreItem } from "@/components/album/AlbumEnvelopes";
 import { AlbumGate } from "@/components/album/AlbumGate";
@@ -132,6 +133,17 @@ export default async function AlbumPage() {
         ) : (
           <div id="candado">
             <AlbumGate recipientName={SITE.recipientName} />
+          </div>
+        )}
+
+        {!beforeReveal && unlocked && (
+          <div className="relative z-10 mt-10">
+            <Link
+              href="/pelicula"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--gold)] px-6 py-3 text-[var(--gold)] transition-colors hover:bg-[var(--gold)]/10"
+            >
+              🎬 Ver la película de tu familia
+            </Link>
           </div>
         )}
       </section>

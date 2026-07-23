@@ -48,6 +48,9 @@ model Letter {
   // Audio-carta: mensaje de voz opcional grabado por el familiar (URL al blob)
   audioUrl            String?
 
+  // Vídeo-saludo breve (15-20s) opcional; se compilan en la "película" final.
+  videoUrl            String?
+
   // Token secreto para que el autor corrija su carta mientras esté pendiente.
   editToken           String?  @unique
 

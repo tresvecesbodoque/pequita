@@ -1,0 +1,1 @@
+ALTER TABLE "Letter" ADD COLUMN "videoUrl" TEXT;

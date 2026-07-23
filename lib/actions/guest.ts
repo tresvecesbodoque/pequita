@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { processAndStoreImage, storeAudio, UploadError } from "@/lib/uploadServer";
+import { processAndStoreImage, storeAudio, storeVideo, UploadError } from "@/lib/uploadServer";
 import { getTheme } from "@/lib/letterThemes";
 import { buildGuestEsquela, buildGuestSobre } from "@/lib/guestCanvas";
 
@@ -127,6 +127,7 @@ export async function submitGuestLetter(
     .filter((f): f is File => f instanceof File && f.size > 0)
     .slice(0, 3);
   const audio = formData.get("audio");
+  const video = formData.get("video");
 
   // Firma(s) a mano alzada: PNG pequeño en data URL, dibujado en nuestro pad.
   const validSignature = (raw: string) =>
@@ -172,6 +173,17 @@ export async function submitGuestLetter(
     }
   }
 
+  // Vídeo-saludo breve opcional (entra en la "película" final)
+  let videoUrl: string | null = null;
+  if (video instanceof File && video.size > 0) {
+    try {
+      videoUrl = await storeVideo(video);
+    } catch (e) {
+      if (e instanceof UploadError) return { error: e.message };
+      return { error: "No se pudo guardar el vídeo. Prueba de nuevo o envía sin él." };
+    }
+  }
+
   const theme = getTheme(themeId);
 
   // Lienzos personalizados con el estudio de invitado (opcionales, saneados)
@@ -207,6 +219,7 @@ export async function submitGuestLetter(
       authorName: displayName,
       authorMessage: message,
       audioUrl,
+      videoUrl,
       editToken,
       esquelaCanvas: customEsquela ?? JSON.stringify(esquela),
       sobreCanvas: customSobre ?? JSON.stringify(sobre),

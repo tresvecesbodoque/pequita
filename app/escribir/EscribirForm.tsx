@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { SignaturePad } from "@/components/ui/SignaturePad";
 import { VoiceRecorder } from "@/components/ui/VoiceRecorder";
+import { VideoRecorder } from "@/components/ui/VideoRecorder";
 
 const FONTS = [
   { label: "Manuscrita", value: "var(--font-hand)" },
@@ -42,6 +43,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   const [fotos, setFotos] = useState<FotoLocal[]>([]);
   const [signature, setSignature] = useState<string | null>(null);
   const [audio, setAudio] = useState<Blob | null>(null);
+  const [video, setVideo] = useState<Blob | null>(null);
   // Carta a cuatro manos: segundo firmante opcional.
   const [showSecond, setShowSecond] = useState(false);
   const [authorName2, setAuthorName2] = useState("");
@@ -109,6 +111,17 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
     if (audio) {
       const ext = (audio.type.split(";")[0].split("/")[1] || "webm").trim();
       fd.set("audio", new File([audio], `voz.${ext}`, { type: audio.type }));
+    }
+    if (video) {
+      // Si es un File subido conserva su nombre/tipo; si es un Blob grabado, le
+      // ponemos extensión según el mimeType.
+      if (video instanceof File) {
+        fd.set("video", video);
+      } else {
+        const base = (video.type.split(";")[0] || "video/webm").toLowerCase();
+        const ext = base === "video/quicktime" ? "mov" : base.split("/")[1] || "webm";
+        fd.set("video", new File([video], `saludo.${ext}`, { type: video.type }));
+      }
     }
     if (signature) fd.set("signature", signature);
     if (showSecond && authorName2.trim()) fd.set("authorName2", authorName2.trim());
@@ -411,6 +424,17 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
             Tu voz (opcional)
           </span>
           <VoiceRecorder onChange={setAudio} />
+        </div>
+
+        {/* Vídeo-saludo breve: se compila en la "película" final */}
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-[var(--muted)]">
+            Un vídeo-saludo (opcional, 15-20s)
+          </span>
+          <p className="-mt-1 text-xs text-[var(--muted)]">
+            Grábale o súbele un saludo corto. Todos se unen en una película para {recipientName}.
+          </p>
+          <VideoRecorder onChange={setVideo} />
         </div>
 
         {state?.error && (

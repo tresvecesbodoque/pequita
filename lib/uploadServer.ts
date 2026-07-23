@@ -70,6 +70,14 @@ const AUDIO_TYPES = new Set([
   "audio/wav",
 ]);
 
+// Tipos de vídeo: MediaRecorder (webm/mp4) y subidas de móvil (mp4/mov).
+const VIDEO_TYPES = new Set([
+  "video/webm",
+  "video/mp4",
+  "video/quicktime",
+  "video/ogg",
+]);
+
 const EXT_BY_TYPE: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -165,6 +173,23 @@ export async function storeAudio(file: File, maxBytes = 3 * 1024 * 1024): Promis
   const filename = `${nanoid(12)}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
   return putToStorage(`uploads/voces/${filename}`, buffer, baseType);
+}
+
+/** Guarda un vídeo-saludo tal cual (sin transcodificar). Tope generoso: un clip
+ *  de 15-20s a buena calidad cabe de sobra en 80 MB. */
+export async function storeVideo(file: File, maxBytes = 80 * 1024 * 1024): Promise<string> {
+  if (file.size > maxBytes) {
+    const mb = Math.round(maxBytes / 1024 / 1024);
+    throw new UploadError(`El vídeo es demasiado grande (máx. ${mb} MB).`, 413);
+  }
+  const baseType = (file.type || "").split(";")[0].trim().toLowerCase();
+  if (!VIDEO_TYPES.has(baseType)) {
+    throw new UploadError("Formato de vídeo no soportado.", 400);
+  }
+  const ext = baseType === "video/quicktime" ? "mov" : baseType.split("/")[1];
+  const filename = `${nanoid(12)}.${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  return putToStorage(`uploads/videos/${filename}`, buffer, baseType);
 }
 
 // ── Imágenes (originales, a máxima calidad) ─────────────────────────────────
