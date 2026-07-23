@@ -12,18 +12,21 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
+  /* Evita el auto-inflado de texto de iOS Safari (letras "gigantes" en móvil). */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   body {
     min-height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 32px 24px;
+    padding: 40px 26px;
     color: var(--ink);
     font-family: ui-serif, Georgia, "Times New Roman", serif;
     background:
-      radial-gradient(1200px 600px at 50% -10%, #1b2748 0%, transparent 60%),
+      radial-gradient(1600px 900px at 50% -10%, #1b2748 0%, transparent 62%),
       linear-gradient(180deg, #0e1730 0%, #0a1020 100%);
+    background-attachment: fixed;
     overflow-x: hidden;
   }
   .cielo { position: fixed; inset: 0; pointer-events: none; }
@@ -84,6 +87,18 @@
   }
   .btn:hover { transform: translateY(-2px); }
   @media (prefers-reduced-motion: reduce) { .cielo span { animation: none; } }
+
+  /* Móvil: texto más contenido y con aire a los bordes. */
+  @media (max-width: 480px) {
+    body { padding: 34px 20px; }
+    .marca { font-size: 1.15rem; margin-bottom: 20px; }
+    .nota { font-size: .95rem; line-height: 1.7; }
+    .poema { font-size: 1rem; line-height: 1.8; margin-top: 22px; }
+    .saludo { font-size: 1.9rem; }
+    .reloj { margin-top: 26px; gap: 8px; }
+    .bloque { min-width: 60px; padding: 10px 5px; }
+    .num { font-size: 1.7rem; }
+  }
 </style>
 </head>
 <body>
