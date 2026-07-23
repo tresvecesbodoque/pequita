@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { isAlbumUnlocked } from "@/lib/albumAccess";
+import { isAuthenticated } from "@/lib/auth/session";
 import { AlbumGate } from "@/components/album/AlbumGate";
 import { Countdown } from "@/components/album/Countdown";
 import { MontajePlayer, type Clip } from "@/components/album/MontajePlayer";
@@ -28,10 +29,18 @@ async function getClips(): Promise<Clip[]> {
   }));
 }
 
-export default async function PeliculaPage() {
-  const unlocked = await isAlbumUnlocked();
+export default async function PeliculaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const { preview } = await searchParams;
+  const previewMode = (await isAuthenticated()) && preview !== undefined;
+
+  const unlocked = previewMode || (await isAlbumUnlocked());
   const revealAt = SITE.revealDate ? new Date(SITE.revealDate) : null;
-  const beforeReveal = revealAt !== null && Date.now() < revealAt.getTime();
+  const beforeReveal =
+    !previewMode && revealAt !== null && Date.now() < revealAt.getTime();
   const clips = await getClips();
 
   return (

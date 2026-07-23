@@ -8,6 +8,7 @@ import { Constelacion } from "@/components/album/Constelacion";
 import { Countdown } from "@/components/album/Countdown";
 import { NavBar } from "@/components/layout/NavBar";
 import { isAlbumUnlocked } from "@/lib/albumAccess";
+import { isAuthenticated } from "@/lib/auth/session";
 import { stampEmojiForPreset } from "@/lib/letterThemes";
 import { SITE } from "@/lib/site";
 
@@ -50,15 +51,27 @@ function tiltForSlug(slug: string): number {
 
 // Página SOLO de visualización: aquí no hay taller, ni edición, ni formularios.
 // El CIELO se ve siempre; las CARTAS (sobres y constelación) piden la clave.
-export default async function AlbumPage() {
-  const unlocked = await isAlbumUnlocked();
+export default async function AlbumPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ preview?: string }>;
+}) {
+  const { preview } = await searchParams;
+  // Vista previa SOLO para la dueña (sesión del taller): el álbum se ve abierto y
+  // despierto aunque desde el home público siga dormido hasta el día D.
+  const isOwner = await isAuthenticated();
+  const previewMode = isOwner && preview !== undefined;
+
+  const unlocked = previewMode || (await isAlbumUnlocked());
   // Los sobres se VEN siempre (atenuados y con candado sin clave);
   // solo se pueden ABRIR con la clave.
   const letters = await getAlbumLetters();
 
-  // Modo día D: antes de la fecha, el álbum duerme (aunque haya clave).
+  // Modo día D: antes de la fecha, el álbum duerme (aunque haya clave). En vista
+  // previa se ignora, para que la dueña pueda revisarlo antes.
   const revealAt = SITE.revealDate ? new Date(SITE.revealDate) : null;
-  const beforeReveal = revealAt !== null && Date.now() < revealAt.getTime();
+  const beforeReveal =
+    !previewMode && revealAt !== null && Date.now() < revealAt.getTime();
 
   // Datos serializables para la rejilla de sobres (componente cliente).
   const items: SobreItem[] = letters.map((l) => ({
@@ -75,6 +88,11 @@ export default async function AlbumPage() {
   return (
     <main className="min-h-screen">
       <NavBar claro />
+      {previewMode && (
+        <div className="sticky top-0 z-50 bg-[var(--accent)] px-4 py-2 text-center text-sm font-semibold text-white">
+          👁 Vista previa (solo tú la ves así). Desde el enlace público sigue dormido hasta el día.
+        </div>
+      )}
       {/* Cielo del Principito: portada del álbum */}
       <section className="starfield px-5 pb-24 pt-20 text-center sm:pt-24">
         {/* avioneta mensajera cruzando el cielo, con papelito de cuenta regresiva */}
@@ -139,7 +157,7 @@ export default async function AlbumPage() {
         {!beforeReveal && unlocked && (
           <div className="relative z-10 mt-10">
             <Link
-              href="/pelicula"
+              href={previewMode ? "/pelicula?preview=1" : "/pelicula"}
               className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--gold)] px-6 py-3 text-[var(--gold)] transition-colors hover:bg-[var(--gold)]/10"
             >
               🎬 Ver la película de tu familia

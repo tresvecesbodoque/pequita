@@ -46,6 +46,14 @@ export default async function EditorLayout({
           >
             Libro
           </Link>
+          <Link
+            href="/para-ella?preview=1"
+            target="_blank"
+            className="rounded-full px-3 py-1.5 text-[var(--accent)] hover:bg-black/5"
+            title="Ver el álbum como quedará, aunque siga dormido en el enlace público"
+          >
+            👁 Vista previa
+          </Link>
           <LogoutButton />
         </nav>
       </header>
