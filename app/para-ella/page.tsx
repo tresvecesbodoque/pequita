@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
-import { AlbumEnvelope } from "@/components/album/AlbumEnvelope";
+import { AlbumEnvelopes, type SobreItem } from "@/components/album/AlbumEnvelopes";
 import { AlbumGate } from "@/components/album/AlbumGate";
+import { AvionMensajero } from "@/components/album/AvionMensajero";
 import { Constelacion } from "@/components/album/Constelacion";
 import { Countdown } from "@/components/album/Countdown";
 import { NavBar } from "@/components/layout/NavBar";
@@ -58,18 +59,25 @@ export default async function AlbumPage() {
   const revealAt = SITE.revealDate ? new Date(SITE.revealDate) : null;
   const beforeReveal = revealAt !== null && Date.now() < revealAt.getTime();
 
+  // Datos serializables para la rejilla de sobres (componente cliente).
+  const items: SobreItem[] = letters.map((l) => ({
+    id: l.id,
+    slug: l.slug,
+    sobreColor: l.sobreColor ?? "#e7d8b5",
+    label: l.authorName ? `De ${l.authorName}` : l.title,
+    tilt: tiltForSlug(l.slug),
+    stampEmoji: stampEmojiForPreset(l.backgroundPresetId),
+    dateLabel: fechaCorta(l.createdAt),
+    featured: SITE.firstLetterSlug === l.slug,
+  }));
+
   return (
     <main className="min-h-screen">
       <NavBar claro />
       {/* Cielo del Principito: portada del álbum */}
       <section className="starfield px-5 pb-24 pt-20 text-center sm:pt-24">
-        {/* avioneta mensajera cruzando el cielo */}
-        <svg className="avioneta" viewBox="0 0 120 40" fill="none" aria-hidden>
-          <path d="M18 24 h56 c8 0 12 -4 12 -8 h-48" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M36 16 l-8 -10 h10 l12 10" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M36 24 l-6 8 h9 l8 -8" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M92 20 q10 2 22 0" stroke="var(--night-ink)" strokeOpacity="0.5" strokeWidth="1.6" strokeDasharray="1 6" strokeLinecap="round" />
-        </svg>
+        {/* avioneta mensajera cruzando el cielo, con papelito de cuenta regresiva */}
+        {beforeReveal && <AvionMensajero isoDate={SITE.revealDate} />}
 
         <div className="relative z-10 mx-auto max-w-2xl">
           <p className="text-[0.7rem] uppercase tracking-[0.45em] text-[var(--night-ink)]/60">
@@ -159,21 +167,7 @@ export default async function AlbumPage() {
               <div className="hairline flex-1" />
             </div>
 
-            <div className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-3 lg:grid-cols-4">
-              {letters.map((l) => (
-                <AlbumEnvelope
-                  key={l.id}
-                  slug={l.slug}
-                  sobreColor={l.sobreColor ?? "#e7d8b5"}
-                  label={l.authorName ? `De ${l.authorName}` : l.title}
-                  tilt={tiltForSlug(l.slug)}
-                  locked={!unlocked || beforeReveal}
-                  stampEmoji={stampEmojiForPreset(l.backgroundPresetId)}
-                  dateLabel={fechaCorta(l.createdAt)}
-                  featured={SITE.firstLetterSlug === l.slug}
-                />
-              ))}
-            </div>
+            <AlbumEnvelopes items={items} locked={!unlocked || beforeReveal} />
           </>
         )}
         </div>

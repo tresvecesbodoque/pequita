@@ -12,6 +12,7 @@ export function AlbumEnvelope({
   stampEmoji = "⭐",
   dateLabel,
   featured = false,
+  read = false,
 }: {
   slug: string;
   label: string;
@@ -26,6 +27,8 @@ export function AlbumEnvelope({
   dateLabel?: string;
   /** carta destacada "empieza por aquí": brilla */
   featured?: boolean;
+  /** ya leída en este dispositivo: se atenúa y muestra "leída" para no confundir */
+  read?: boolean;
 }) {
   const color = sobreColor || "#e7d8b5";
   const ink = readableInk(color);
@@ -33,10 +36,27 @@ export function AlbumEnvelope({
   return (
     <Link
       href={locked ? "#candado" : `/carta/${slug}`}
-      className={`group block ${locked ? "opacity-55 saturate-[0.6]" : ""}`}
+      className={`group relative block ${locked ? "opacity-55 saturate-[0.6]" : ""} ${
+        read && !locked ? "opacity-60" : ""
+      }`}
       style={{ transform: `rotate(${tilt}deg)` }}
-      aria-label={locked ? "Carta bloqueada: escribe la clave arriba" : undefined}
+      aria-label={
+        locked
+          ? "Carta bloqueada: escribe la clave arriba"
+          : read
+            ? "Carta ya leída"
+            : undefined
+      }
     >
+      {/* Cinta "leída": para que Isi distinga de un vistazo las que ya abrió. */}
+      {read && !locked && (
+        <span className="absolute z-20 -ml-1.5 -mt-1.5 inline-flex items-center gap-1 rounded-full border border-[var(--foreground)]/40 bg-[var(--gold)] px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-[#3a2a12] shadow-sm">
+          <svg viewBox="0 0 24 24" className="h-2.5 w-2.5" aria-hidden>
+            <path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          leída
+        </span>
+      )}
       {featured && !locked && (
         <p
           className="mb-1 text-center text-xs font-semibold text-[var(--accent)]"

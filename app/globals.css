@@ -235,6 +235,37 @@ html {
   animation: cruzar 22s linear infinite;
 }
 
+/* Avioneta que arrastra un papelito con la cuenta regresiva (AvionMensajero). */
+.avion-vuelo {
+  position: absolute;
+  top: 12%;
+  left: -22%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: cruzar 22s linear infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+.avion-vuelo .avion-svg {
+  width: 64px;
+  opacity: 0.9;
+  flex: none;
+}
+.avion-vuelo .avion-papel {
+  transform: rotate(-3deg);
+  background: #f4ede0;
+  color: #3a2a12;
+  border: 1.5px solid rgba(124, 27, 34, 0.55);
+  border-radius: 3px;
+  padding: 2px 7px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: 2px 3px 0 rgba(124, 27, 34, 0.22);
+}
+
 @keyframes cruzar {
   0% {
     transform: translateX(0) translateY(0) rotate(-4deg);
@@ -251,7 +282,8 @@ html {
   .starfield::after {
     animation: none;
   }
-  .avioneta {
+  .avioneta,
+  .avion-vuelo {
     display: none;
   }
 }
