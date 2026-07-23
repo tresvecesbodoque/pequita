@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/Input";
 import { SignaturePad } from "@/components/ui/SignaturePad";
 import { VoiceRecorder } from "@/components/ui/VoiceRecorder";
 import { VideoRecorder } from "@/components/ui/VideoRecorder";
+import { uploadMedia } from "@/lib/uploadClient";
 
 const FONTS = [
   { label: "Manuscrita", value: "var(--font-hand)" },
@@ -51,6 +52,9 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   // Lienzos personalizados en el estudio (misma interfaz que el taller).
   const [custom, setCustom] = useState<{ esq: string; sob: string } | null>(null);
   const [greeting, setGreeting] = useState<string | null>(null);
+  // Subida de media a R2 (previa al envío del formulario).
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const DRAFT_KEY = "pequita-borrador";
@@ -100,29 +104,48 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
     return () => clearTimeout(t);
   }, [message, authorName, theme, font, authorName2]);
 
-  // El action de React no permite adjuntar el Blob de audio desde un input,
-  // así que lo añadimos al FormData justo antes de despachar.
-  function enviar(fd: FormData) {
-    // Las fotos viven en el estado (hasta 3); se adjuntan aquí con los nombres
-    // que espera la acción: photo, photo2, photo3.
-    fotos.forEach((f, i) => {
-      fd.set(i === 0 ? "photo" : `photo${i + 1}`, f.file);
-    });
-    if (audio) {
-      const ext = (audio.type.split(";")[0].split("/")[1] || "webm").trim();
-      fd.set("audio", new File([audio], `voz.${ext}`, { type: audio.type }));
-    }
-    if (video) {
-      // Si es un File subido conserva su nombre/tipo; si es un Blob grabado, le
-      // ponemos extensión según el mimeType.
-      if (video instanceof File) {
-        fd.set("video", video);
-      } else {
-        const base = (video.type.split(";")[0] || "video/webm").toLowerCase();
-        const ext = base === "video/quicktime" ? "mov" : base.split("/")[1] || "webm";
-        fd.set("video", new File([video], `saludo.${ext}`, { type: video.type }));
+  // Las fotos/audio/vídeo se suben DIRECTO a R2 antes de despachar el formulario
+  // (evita el límite de 4.5 MB de las funciones de Vercel). Al action solo le
+  // pasamos las URLs resultantes.
+  async function enviar(fd: FormData) {
+    setUploadError(null);
+    try {
+      setUploading(true);
+
+      // Fotos (hasta 3): subimos el original y guardamos su URL + proporción.
+      const fotoMetas: { url: string; ratio: number }[] = [];
+      for (const f of fotos) {
+        const url = await uploadMedia(f.file, "foto");
+        fotoMetas.push({ url, ratio: f.ratio });
       }
+      fd.set("photosMeta", JSON.stringify(fotoMetas));
+
+      if (audio) {
+        const ext = (audio.type.split(";")[0].split("/")[1] || "webm").trim();
+        const file = new File([audio], `voz.${ext}`, { type: audio.type });
+        fd.set("audioUrl", await uploadMedia(file, "voz"));
+      }
+
+      if (video) {
+        const file =
+          video instanceof File
+            ? video
+            : (() => {
+                const base = (video.type.split(";")[0] || "video/webm").toLowerCase();
+                const ext = base === "video/quicktime" ? "mov" : base.split("/")[1] || "webm";
+                return new File([video], `saludo.${ext}`, { type: video.type });
+              })();
+        fd.set("videoUrl", await uploadMedia(file, "video"));
+      }
+    } catch {
+      setUploading(false);
+      setUploadError(
+        "No se pudieron subir tus archivos. Revisa tu conexión e inténtalo de nuevo."
+      );
+      return; // no despachamos si falló la subida
     }
+    setUploading(false);
+
     if (signature) fd.set("signature", signature);
     if (showSecond && authorName2.trim()) fd.set("authorName2", authorName2.trim());
     if (showSecond && signature2) fd.set("signature2", signature2);
@@ -437,14 +460,14 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
           <VideoRecorder onChange={setVideo} />
         </div>
 
-        {state?.error && (
+        {(state?.error || uploadError) && (
           <p className="rounded-xl bg-[var(--accent)]/10 px-4 py-2.5 text-sm text-[var(--accent)]">
-            {state.error}
+            {uploadError ?? state?.error}
           </p>
         )}
 
-        <Button type="submit" disabled={pending} className="w-full py-3 text-base">
-          {pending ? "Enviando…" : "Enviar mi carta ✉"}
+        <Button type="submit" disabled={pending || uploading} className="w-full py-3 text-base">
+          {uploading ? "Subiendo…" : pending ? "Enviando…" : "Enviar mi carta ✉"}
         </Button>
 
         <p className="text-center text-xs text-[var(--muted)]">

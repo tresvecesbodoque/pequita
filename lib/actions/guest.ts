@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { processAndStoreImage, storeAudio, storeVideo, UploadError } from "@/lib/uploadServer";
+import { isOwnMediaUrl } from "@/lib/uploadServer";
 import { getTheme } from "@/lib/letterThemes";
 import { buildGuestEsquela, buildGuestSobre } from "@/lib/guestCanvas";
 
@@ -122,12 +122,6 @@ export async function submitGuestLetter(
   const themeId = String(formData.get("theme") ?? "");
   const fontInput = String(formData.get("font") ?? "");
   const fontFamily = ALLOWED_FONTS.has(fontInput) ? fontInput : "var(--font-hand)";
-  // Hasta 3 fotos: photo (compat), photo2, photo3.
-  const photoFiles = [formData.get("photo"), formData.get("photo2"), formData.get("photo3")]
-    .filter((f): f is File => f instanceof File && f.size > 0)
-    .slice(0, 3);
-  const audio = formData.get("audio");
-  const video = formData.get("video");
 
   // Firma(s) a mano alzada: PNG pequeño en data URL, dibujado en nuestro pad.
   const validSignature = (raw: string) =>
@@ -144,45 +138,29 @@ export async function submitGuestLetter(
     return { error: `El mensaje es muy largo (máx. ${MAX_MESSAGE} caracteres).` };
   }
 
-  // Fotos opcionales (máx. 3)
+  // La media (fotos/voz/vídeo) ya se subió DIRECTO a R2 desde el navegador
+  // (presigned, sin pasar por la función → sin el límite de 4.5 MB de Vercel).
+  // Aquí solo llegan URLs, que validamos para que sean de nuestro almacén.
   const photos: { url: string; ratio: number }[] = [];
-  for (const photo of photoFiles) {
-    try {
-      // Original a máxima calidad (sin redimensionar). Tope generoso para fotos.
-      const stored = await processAndStoreImage(photo, "fotos", {
-        maxBytes: 25 * 1024 * 1024,
-      });
-      photos.push({
-        url: stored.url,
-        ratio: stored.width && stored.height ? stored.height / stored.width : 1,
-      });
-    } catch (e) {
-      if (e instanceof UploadError) return { error: e.message };
-      return { error: "No se pudo procesar una de las fotos. Prueba con otra." };
+  try {
+    const raw = JSON.parse(String(formData.get("photosMeta") ?? "[]"));
+    if (Array.isArray(raw)) {
+      for (const p of raw.slice(0, 3)) {
+        const url = String(p?.url ?? "");
+        const ratio = Number(p?.ratio);
+        if (isOwnMediaUrl(url)) {
+          photos.push({ url, ratio: Number.isFinite(ratio) && ratio > 0 ? ratio : 1 });
+        }
+      }
     }
+  } catch {
+    // photosMeta corrupto: la carta simplemente va sin fotos
   }
 
-  // Audio-carta opcional
-  let audioUrl: string | null = null;
-  if (audio instanceof File && audio.size > 0) {
-    try {
-      audioUrl = await storeAudio(audio);
-    } catch (e) {
-      if (e instanceof UploadError) return { error: e.message };
-      return { error: "No se pudo guardar el audio. Prueba de nuevo o envía sin voz." };
-    }
-  }
-
-  // Vídeo-saludo breve opcional (entra en la "película" final)
-  let videoUrl: string | null = null;
-  if (video instanceof File && video.size > 0) {
-    try {
-      videoUrl = await storeVideo(video);
-    } catch (e) {
-      if (e instanceof UploadError) return { error: e.message };
-      return { error: "No se pudo guardar el vídeo. Prueba de nuevo o envía sin él." };
-    }
-  }
+  const audioRaw = String(formData.get("audioUrl") ?? "");
+  const audioUrl = isOwnMediaUrl(audioRaw) ? audioRaw : null;
+  const videoRaw = String(formData.get("videoUrl") ?? "");
+  const videoUrl = isOwnMediaUrl(videoRaw) ? videoRaw : null;
 
   const theme = getTheme(themeId);
 

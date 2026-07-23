@@ -2,6 +2,7 @@ import "server-only";
 import { writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import sharp from "sharp";
 import { nanoid } from "nanoid";
 
@@ -156,6 +157,54 @@ async function putToStorage(
   await mkdir(dir, { recursive: true });
   await writeFile(join(process.cwd(), "public", key), body);
   return `/${key}`;
+}
+
+// ── Subida directa del navegador a R2 (presigned) ──────────────────────────
+// Evita el límite de 4.5 MB de las funciones de Vercel: fotos a máxima calidad y
+// vídeos suben directo del cliente a R2. En dev (sin R2) devuelve uploadUrl=null
+// y el cliente cae a /api/media (disco, sin límite en localhost).
+
+type UploadKind = "foto" | "voz" | "video";
+
+const KIND_CFG: Record<UploadKind, { prefix: string; types: Set<string> }> = {
+  foto: { prefix: "fotos", types: WEB_SAFE_IMAGE },
+  voz: { prefix: "voces", types: AUDIO_TYPES },
+  video: { prefix: "videos", types: VIDEO_TYPES },
+};
+
+function extPara(kind: UploadKind, baseType: string): string {
+  if (kind === "foto") return EXT_BY_TYPE[baseType] ?? "img";
+  if (kind === "video") return baseType === "video/quicktime" ? "mov" : baseType.split("/")[1] || "webm";
+  return baseType.split("/")[1] || "webm";
+}
+
+export type UploadTarget = { uploadUrl: string | null; publicUrl: string; key: string };
+
+export async function createUploadTarget(kind: string, contentType: string): Promise<UploadTarget> {
+  const k = kind as UploadKind;
+  const conf = KIND_CFG[k];
+  if (!conf) throw new UploadError("Tipo de subida inválido.", 400);
+  const baseType = (contentType || "").split(";")[0].trim().toLowerCase();
+  if (!conf.types.has(baseType)) throw new UploadError("Formato no soportado.", 400);
+  const key = `uploads/${conf.prefix}/${nanoid(12)}.${extPara(k, baseType)}`;
+
+  const cfg = r2Config();
+  if (!cfg) {
+    // Dev sin R2: el cliente subirá por /api/media (disco).
+    return { uploadUrl: null, publicUrl: `/${key}`, key };
+  }
+  const cmd = new PutObjectCommand({ Bucket: cfg.bucket, Key: key, ContentType: baseType });
+  const uploadUrl = await getSignedUrl(s3Client(cfg), cmd, { expiresIn: 600 });
+  return { uploadUrl, publicUrl: `${cfg.publicUrl}/${key}`, key };
+}
+
+/** Valida que una URL de media venga de nuestro almacén (R2 público o /uploads
+ *  local); evita que el cliente inyecte URLs externas arbitrarias. */
+export function isOwnMediaUrl(u: string): boolean {
+  if (!u) return false;
+  const pub = process.env.R2_PUBLIC_URL?.replace(/\/+$/, "");
+  if (pub && u.startsWith(pub + "/uploads/")) return true;
+  return u.startsWith("/uploads/");
 }
 
 // ── Audio ──────────────────────────────────────────────────────────────────
