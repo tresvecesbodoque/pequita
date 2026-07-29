@@ -102,10 +102,20 @@ la página funciona igual, solo pierde memoria.
 
 ## 3. Catálogo de eventos (60)
 
-**Estado (2026-07-29):** construidos y verificados en navegador los trece de la
-Fase 1 — E01, E02, E04, E09, E18, E21, E26, E27, E31, E35, E39, E46 y el motor
-completo (pesos, cooldown, veto de repetición, pausa con pestaña oculta,
-memoria compartida con el minijuego). El resto sigue siendo plan.
+**Estado (2026-07-29, v2): los 60 construidos, y rediseñados uno a uno.**
+El motor ya no es una ruleta: cada evento tiene su condición propia y su
+descanso en horas; el ritmo es de 10–20 s con ración de 6 por sesión y aviso de
+vuelta con hora concreta. Además: zorro y rosa animados por código, el 7 mágico
+con 77 bpm y lluvia de sietes, los siete toques que muestran lo que llevamos
+juntos desde el 7-3-2026 a las 21:00, y la canción del día. El detalle está en
+`GUIA-EVENTOS.md`; lo que sigue es el catálogo original.
+
+**Nota histórica: los 60 quedaron construidos y verificados en navegador.**
+El motor y el catálogo viven en `eventos.js` + `eventos.css`; el HTML se quedó
+con el contador y el minijuego. Cinco eventos dependen de datos que solo puede
+dar él (§5) y quedan dormidos hasta que rellene `CONFIG`, arriba del todo de
+`eventos.js`: E29 y E36 (qué es el 2/7), E33 (fecha desde la que llevan
+juntos), E42 (día del mes) y E60 (un audio suyo).
 
 Esfuerzo: **S** = menos de 30 min · **M** = 1–2 h · **L** = medio día.
 ✱ = necesita un dato personal tuyo (§5).

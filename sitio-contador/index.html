@@ -42,8 +42,9 @@
   .wrap { position: relative; max-width: 600px; width: 100%; }
 
   .marca {
-    font-size: 1.4rem;
-    letter-spacing: .35em;
+    font-size: 1.25rem;
+    letter-spacing: .22em;
+    font-variant: small-caps;
     color: var(--gold);
     margin-bottom: 26px;
   }
@@ -69,7 +70,18 @@
     margin-left: auto;
     margin-right: auto;
   }
-  .poema { margin-top: 28px; }
+  .poema-abrir {
+    margin-top: 26px; padding: 8px 14px; border: 0; background: none;
+    color: rgba(234,228,214,.45); font-family: inherit; font-size: .76rem;
+    letter-spacing: .18em; cursor: pointer; transition: color .3s ease;
+  }
+  .poema-abrir:hover { color: rgba(217,168,63,.85); }
+  .poema-caja {
+    max-height: 0; opacity: 0; overflow: hidden;
+    transition: max-height .8s cubic-bezier(.22,1,.36,1), opacity .6s ease;
+  }
+  .poema-caja.abierta { max-height: 30em; opacity: 1; }
+  .poema { margin-top: 14px; }
 
   .reloj { margin-top: 34px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .bloque {
@@ -78,87 +90,6 @@
   }
   .num { font-size: 2.1rem; color: var(--gold); font-variant-numeric: tabular-nums; }
   .lab { font-size: .6rem; text-transform: uppercase; letter-spacing: .2em; color: rgba(234,228,214,.55); margin-top: 4px; }
-
-  /* ── Eventos ambientales ───────────────────────────────────────── */
-  /* Todo lo que aparece solo vive en esta capa: nunca empuja el contador
-     ni tapa el texto, y siempre se limpia a sí mismo. */
-  .capa-eventos { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
-
-  .fugaz {
-    position: absolute; width: 130px; height: 2px; border-radius: 2px;
-    background: linear-gradient(90deg, rgba(255,255,255,0), #fff);
-    transform-origin: 0 50%; opacity: 0;
-  }
-  .fugaz.corre { animation: cruza 1.6s cubic-bezier(.4,0,.9,.6) forwards; }
-  @keyframes cruza {
-    0%   { opacity: 0; transform: rotate(26deg) translateX(0) scaleX(.25); }
-    14%  { opacity: 1; }
-    100% { opacity: 0; transform: rotate(26deg) translateX(96vw) scaleX(1); }
-  }
-
-  .satelite {
-    position: absolute; width: 3px; height: 3px; border-radius: 50%;
-    background: #fff; opacity: .7; animation: orbita 17s linear forwards;
-  }
-  @keyframes orbita {
-    from { transform: translate(-6vw, 0); }
-    to   { transform: translate(106vw, 7vh); }
-  }
-
-  /* Susurros: fijos abajo, para que el texto de la portada no se mueva. */
-  .susurro-portada {
-    position: fixed; left: 50%; bottom: 5vh; transform: translateX(-50%);
-    width: min(24rem, 88vw); text-align: center; pointer-events: none; z-index: 6;
-    font-style: italic; font-size: .95rem; line-height: 1.6;
-    color: rgba(217,168,63,.85); opacity: 0;
-  }
-  .susurro-portada.viva { animation: asoma 8s ease forwards; }
-  @keyframes asoma {
-    0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
-    10%, 82% { opacity: 1; transform: translateX(-50%) translateY(0); }
-    100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
-  }
-
-  .palabra {
-    position: absolute; transform: translate(-50%, -50%);
-    font-style: italic; font-size: .95rem; color: rgba(217,168,63,.95);
-    text-shadow: 0 0 14px rgba(217,168,63,.5); white-space: nowrap;
-    animation: sube 2.4s ease forwards;
-  }
-  @keyframes sube {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(.9); }
-    18% { opacity: 1; transform: translate(-50%, -60%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -110%) scale(1); }
-  }
-
-  .rastro {
-    position: absolute; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--gold); box-shadow: 0 0 12px rgba(217,168,63,.8);
-    transform: translate(-50%, -50%); animation: apaga 1.3s ease forwards;
-  }
-  @keyframes apaga { from { opacity: .85 } to { opacity: 0; transform: translate(-50%,-50%) scale(.3) } }
-
-  .estrella-viva { animation: destella .9s ease; }
-  @keyframes destella {
-    0%, 100% { opacity: .5; transform: scale(1); }
-    40% { opacity: 1; transform: scale(3.5); }
-  }
-
-  /* Un verso se ilumina y los otros seis se retiran un momento. */
-  .verso { transition: opacity .7s ease, color .7s ease; }
-  .poema.enfocado .verso { opacity: .3; }
-  .poema.enfocado .verso.viva { opacity: 1; color: rgba(246,227,200,.95); }
-
-  .num { transition: color .5s ease, transform .5s ease; }
-  .num.enamorado { color: var(--rose); transform: rotate(-8deg); }
-  .bloque { transition: box-shadow .5s ease, border-color .5s ease; }
-  .bloque.siete { border-color: rgba(217,168,63,.85); box-shadow: 0 0 20px -4px rgba(217,168,63,.6); }
-  .bloque.late { animation: late .55s ease 3; }
-  @keyframes late { 0%,100% { transform: scale(1) } 45% { transform: scale(1.07) } }
-
-  @media (prefers-reduced-motion: reduce) {
-    .fugaz.corre, .satelite, .bloque.late, .estrella-viva { animation: none; opacity: 0; }
-  }
 
   /* ── Minijuego: atrapar estrellas ──────────────────────────────── */
   .juego-abrir {
@@ -252,7 +183,7 @@
      poema deben caber sin tocar los bordes. */
   @media (max-width: 560px) {
     body { padding: 30px 12px; }
-    .marca { font-size: 1.1rem; margin-bottom: 18px; }
+    .marca { font-size: 1rem; margin-bottom: 16px; }
     .nota { font-size: .92rem; line-height: 1.7; }
     .poema { margin-top: 22px; }
     .saludo { font-size: 1.85rem; }
@@ -264,6 +195,7 @@
     .nota { font-size: .88rem; }
   }
 </style>
+<link rel="stylesheet" href="eventos.css" />
 </head>
 <body>
   <div class="cielo" id="cielo" aria-hidden="true"></div>
@@ -273,22 +205,12 @@
   <main class="wrap">
     <!-- ANTES del día -->
     <section class="espera" id="espera">
-      <p class="marca">2/7</p>
+      <p class="marca" id="marca">Nosotros II</p>
 
-      <p class="nota">
-        Pequita mía,,, mi wawa. Te he estado preparando algo con mucho cariño y lo
+      <p class="nota" id="nota">
+        Pequita mía,,, mi wawa. Te he estado preparando algo con <span id="notaCarino">mucho cariño</span> y lo
         podrás ver aquí cuando el contador llegue a 0 en tu día, el mejor día del
         año. Te amo un montonazo.
-      </p>
-
-      <p class="poema" id="poema">
-        <span class="verso">Divina, boca viva que salva mi carne;</span><br />
-        <span class="verso">roca rota donde este pacto se firma,</span><br />
-        <span class="verso">hueso expuesto al filo de ser vulnerable.</span><br />
-        <span class="verso">Asumo el crudo desastre de ser barro,</span><br />
-        <span class="verso">dedos que amasan este lodo sin rumbo,</span><br />
-        <span class="verso">pierdo mi nombre bajo este nuevo cielo,</span><br />
-        <span class="verso">llueve este cuerpo nuevo en tu noche</span>
       </p>
 
       <div class="reloj" id="reloj" aria-live="polite">
@@ -298,19 +220,36 @@
         <div class="bloque"><div class="num" id="s">--</div><div class="lab">seg</div></div>
       </div>
 
+      <!-- El poema, plegado: el contador manda, y el poema se abre cuando
+           ella quiere (o solo, cuando un evento tiene algo que decir con él). -->
+      <button class="poema-abrir" id="poemaAbrir" type="button"
+              aria-expanded="false" aria-controls="poemaCaja">leer el poema ▾</button>
+
+      <div class="poema-caja" id="poemaCaja">
+        <p class="poema" id="poema">
+          <span class="verso">Divina, boca viva que salva mi carne;</span><br />
+          <span class="verso">roca rota donde este pacto se firma,</span><br />
+          <span class="verso">hueso expuesto al filo de ser vulnerable.</span><br />
+          <span class="verso">Asumo el crudo desastre de ser barro,</span><br />
+          <span class="verso">dedos que amasan este lodo sin rumbo,</span><br />
+          <span class="verso">pierdo mi nombre bajo este nuevo cielo,</span><br />
+          <span class="verso">llueve este cuerpo nuevo en tu noche</span>
+        </p>
+      </div>
+
       <button class="juego-abrir" id="juegoAbrir" type="button">atrapar estrellas ✦</button>
     </section>
 
     <!-- EL día D -->
     <section class="listo" id="listo">
       <p class="poema">
-        Divina, boca viva que salva mi carne;<br />
-        roca rota donde este pacto se firma,<br />
-        hueso expuesto al filo de ser vulnerable.<br />
-        Asumo el crudo desastre de ser barro,<br />
-        dedos que amasan este lodo sin rumbo,<br />
-        pierdo mi nombre bajo este nuevo cielo,<br />
-        llueve este cuerpo nuevo en tu noche
+        <span class="verso">Divina, boca viva que salva mi carne;</span><br />
+        <span class="verso">roca rota donde este pacto se firma,</span><br />
+        <span class="verso">hueso expuesto al filo de ser vulnerable.</span><br />
+        <span class="verso">Asumo el crudo desastre de ser barro,</span><br />
+        <span class="verso">dedos que amasan este lodo sin rumbo,</span><br />
+        <span class="verso">pierdo mi nombre bajo este nuevo cielo,</span><br />
+        <span class="verso">llueve este cuerpo nuevo en tu noche</span>
       </p>
       <h1 class="saludo">¡Feliz cumpleaños,<br />mi wawa!</h1>
       <p class="nota">Ya es tu día. Lo que te preparé con tanto cariño te espera.</p>
@@ -368,21 +307,21 @@
     // Llanas y concretas primero; lo denso, escaso y al final: una frase
     // lapidaria pierde fuerza si viene detrás de otra igual.
     var FRASES = [
-      "vine a ver el contador y me quedé pensando en ti. otra vez",
+      "entré a mirar el número y me quedé mirándote a ti",
       "faltan menos días de los que llevo queriéndote",
       "no cuento para que pase rápido; cuento para no perderme ninguno",
-      "cada número que baja es una promesa que se acerca",
+      "el número baja solo; lo demás lo hago yo",
       "guardé la sorpresa como se guarda el fuego: tapada, para que no se apague",
       "no sé escribir corto cuando escribo de ti",
-      "hoy el día estuvo pesado y aun así te pensé sin esfuerzo",
+      "el día pesó; pensarte no",
       "te amo un montonazo. así, sin métrica",
-      "lo mejor del año todavía no pasa, y ya me tiene contento",
+      "lo mejor del año no ha pasado y ya me tiene de buenas",
       "si te aburres de esperar, acuérdate de que yo espero contigo",
       "ojalá supieras cuánto de mi día ocupas sin enterarte",
       "estoy contando los días con la paciencia de quien ya sabe el final",
       "falta poco, wawa. y falta menos cada vez que miras",
       "cuando llegue el 7, quiero verte la cara antes que nada",
-      "te escribo poco y te pienso mucho; este contador es mi manera de decirlo seguido",
+      "te escribo poco y te pienso mucho; esto es decirlo seguido",
       "quédate un poquito, que aquí no molestas nunca",
       "esa estrella era mía; ahora es tuya",
       "te amo con la terquedad de lo que se hace todos los días",
@@ -431,6 +370,7 @@
     function n(x) { return String(x).padStart(2, "0"); }
 
     function tick() {
+      if (window.relojTomado) return;   // un evento lo tiene prestado
       var ms = OBJETIVO - Date.now();
       if (ms <= 0) {
         espera.style.display = "none";
@@ -451,215 +391,40 @@
     tick();
     var timer = setInterval(tick, 1000);
 
-    // ── Motor de eventos ambientales (fase 1) ─────────────────────
-    // Reglas: nunca dos a la vez, nada que tape el contador, nada que exija
-    // reacción, ninguno se repite mientras esté en los últimos vistos, y el
-    // azar elige CUÁL aparece, nunca SI aparece.
+    // ── El poema, plegable ────────────────────────────────────────
+    // Cerrado deja el contador en el centro. Se abre a mano, y también
+    // solo cuando un evento necesita enseñar los versos.
     (function () {
-      var capa = document.getElementById("capaEventos");
-      var elSusurro = document.getElementById("susurroPortada");
-      var poema = document.getElementById("poema");
-      var versos = poema.getElementsByClassName("verso");
-      var cieloEl = document.getElementById("cielo");
-      var juegoEl = document.getElementById("juego");
+      var boton = document.getElementById("poemaAbrir");
+      var caja = document.getElementById("poemaCaja");
+      if (!boton || !caja) return;
 
-      var suave = window.matchMedia &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var recordado = leerMem().poemaAbierto;
+      if (recordado) poner(true);
 
-      var PALABRAS = ["tuya", "wawa", "siempre", "pequita", "mía", "aquí",
-                      "vuelve", "siete", "sí", "contigo", "ya"];
-
-      var ocupado = false;
-      var vistos = [];        // los últimos, vetados para no repetir
-      var temporizador = 0;
-
-      function jugando() { return juegoEl.classList.contains("viva"); }
-      function libreEn(ms) { setTimeout(function () { ocupado = false; }, ms); }
-
-      function susurrar(texto) {
-        elSusurro.textContent = texto;
-        elSusurro.classList.remove("viva");
-        void elSusurro.offsetWidth;
-        elSusurro.classList.add("viva");
+      function poner(abierto) {
+        caja.classList.toggle("abierta", abierto);
+        boton.setAttribute("aria-expanded", abierto ? "true" : "false");
+        boton.textContent = abierto ? "guardar el poema ▴" : "leer el poema ▾";
       }
 
-      function pon(el, ms) {
-        capa.appendChild(el);
-        setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, ms);
-      }
-
-      // ── Los eventos ──────────────────────────────────────────────
-      var EVENTOS = [
-        { id: "susurro", peso: 8, dura: 8500, correr: function () {   // E01
-            susurrar(fraseAlAzar());
-          } },
-
-        { id: "verso", peso: 7, dura: 7000, correr: function () {     // E04
-            var i = Math.floor(Math.random() * versos.length);
-            poema.classList.add("enfocado");
-            versos[i].classList.add("viva");
-            setTimeout(function () {
-              poema.classList.remove("enfocado");
-              versos[i].classList.remove("viva");
-            }, 6000);
-          } },
-
-        { id: "fugaz", peso: 9, dura: 3000, movimiento: true, correr: function () {  // E09
-            var el = document.createElement("div");
-            el.className = "fugaz";
-            el.style.left = (Math.random() * 30) + "vw";
-            el.style.top = (4 + Math.random() * 22) + "vh";   // arriba: no cruza el texto
-            pon(el, 2600);
-            void el.offsetWidth;
-            el.classList.add("corre");
-            if (Math.random() < 0.34) setTimeout(function () { susurrar("pide algo"); }, 900);
-          } },
-
-        { id: "satelite", peso: 5, dura: 17500, movimiento: true, correr: function () {  // E18
-            var el = document.createElement("div");
-            el.className = "satelite";
-            el.style.top = (8 + Math.random() * 30) + "vh";
-            pon(el, 17500);
-          } },
-
-        { id: "latido", peso: 6, dura: 2200, movimiento: true, correr: function () {     // E21
-            var bloque = document.getElementById("s").parentNode;
-            bloque.classList.add("late");
-            setTimeout(function () { bloque.classList.remove("late"); }, 1800);
-          } },
-
-        { id: "digito", peso: 6, dura: 3600, correr: function () {    // E26
-            var nums = document.querySelectorAll("#reloj .num");
-            var el = nums[Math.floor(Math.random() * nums.length)];
-            el.classList.add("enamorado");
-            setTimeout(function () { el.classList.remove("enamorado"); }, 3000);
-          } }
-      ];
-
-      function elegible(e) {
-        if (suave && e.movimiento) return false;
-        return vistos.indexOf(e.id) < 0;
-      }
-
-      // Modo de prueba: ?evento=fugaz fuerza uno concreto y ?rapido los
-      // encadena cada pocos segundos. Sin parámetros no cambia nada.
-      var forzado = (location.search.match(/[?&]evento=([\w-]+)/) || [])[1];
-      var rapido = /[?&]rapido/.test(location.search);
-
-      function lanzar() {
-        if (ocupado || jugando() || document.hidden) return;
-        if (forzado) {
-          for (var f = 0; f < EVENTOS.length; f++) {
-            if (EVENTOS[f].id === forzado) {
-              ocupado = true; EVENTOS[f].correr(); libreEn(EVENTOS[f].dura); return;
-            }
-          }
-        }
-        var posibles = EVENTOS.filter(elegible);
-        if (!posibles.length) { vistos = []; posibles = EVENTOS.filter(elegible); }
-        var total = 0, i;
-        for (i = 0; i < posibles.length; i++) total += posibles[i].peso;
-        var tirada = Math.random() * total, acumulado = 0, elegido = posibles[0];
-        for (i = 0; i < posibles.length; i++) {
-          acumulado += posibles[i].peso;
-          if (tirada <= acumulado) { elegido = posibles[i]; break; }
-        }
-        ocupado = true;
-        elegido.correr();
-        libreEn(elegido.dura);
-        vistos.push(elegido.id);
-        if (vistos.length > 3) vistos.shift();
-      }
-
-      function agendar() {
-        clearTimeout(temporizador);
-        temporizador = setTimeout(function () {
-          lanzar();
-          agendar();
-        }, rapido ? 2500 : 25000 + Math.random() * 50000);   // entre 25 s y 75 s
-      }
-
-      // ── Interacción ──────────────────────────────────────────────
-      // E31: cada estrella del cielo es tocable y suelta una palabra.
-      function estrellaCercana(x, y) {
-        var hijas = cieloEl.children, mejor = null, mejorD = 30 * 30;
-        for (var i = 0; i < hijas.length; i++) {
-          var r = hijas[i].getBoundingClientRect();
-          var dx = r.left + r.width / 2 - x, dy = r.top + r.height / 2 - y;
-          var d = dx * dx + dy * dy;
-          if (d < mejorD) { mejorD = d; mejor = hijas[i]; }
-        }
-        return mejor;
-      }
-
-      function tocarCielo(e) {
-        if (jugando()) return;
-        if (e.target.closest && e.target.closest("button, a")) return;
-        var estrella = estrellaCercana(e.clientX, e.clientY);
-        if (!estrella) return;
-        estrella.classList.remove("estrella-viva");
-        void estrella.offsetWidth;
-        estrella.classList.add("estrella-viva");
-        var el = document.createElement("span");
-        el.className = "palabra";
-        el.textContent = PALABRAS[Math.floor(Math.random() * PALABRAS.length)];
-        el.style.left = e.clientX + "px";
-        el.style.top = (e.clientY - 14) + "px";
-        pon(el, 2400);
-      }
-
-      // E35: arrastrar el dedo deja polvo dorado que se apaga solo.
-      var pulsando = false, ultimoRastro = 0, rastros = 0;
-      function rastro(e) {
-        if (!pulsando || jugando() || suave) return;
-        var ahora = Date.now();
-        if (ahora - ultimoRastro < 45 || rastros > 28) return;
-        ultimoRastro = ahora;
-        var el = document.createElement("div");
-        el.className = "rastro";
-        el.style.left = e.clientX + "px";
-        el.style.top = e.clientY + "px";
-        rastros++;
-        capa.appendChild(el);
-        setTimeout(function () {
-          if (el.parentNode) el.parentNode.removeChild(el);
-          rastros--;
-        }, 1100);
-      }
-
-      document.addEventListener("pointerdown", function (e) { pulsando = true; tocarCielo(e); });
-      document.addEventListener("pointermove", rastro);
-      window.addEventListener("pointerup", function () { pulsando = false; });
-      window.addEventListener("pointercancel", function () { pulsando = false; });
-
-      // Con la pestaña oculta no se gastan eventos que ella no va a ver.
-      document.addEventListener("visibilitychange", function () {
-        if (document.hidden) clearTimeout(temporizador); else agendar();
+      boton.addEventListener("click", function () {
+        var abierto = !caja.classList.contains("abierta");
+        poner(abierto);
+        var datos = leerMem();
+        datos.poemaAbierto = abierto;
+        guardarMem(datos);
       });
 
-      // ── Al entrar ────────────────────────────────────────────────
-      var mem = leerMem();
-      var hoy = fechaLocal();
-      var primeraDelDia = mem.ultimaVisita !== hoy;      // E46
-      mem.visitas = (mem.visitas || 0) + 1;
-      mem.ultimaVisita = hoy;
-      guardarMem(mem);
-
-      function saludo() {                                 // E39
-        var h = new Date().getHours();
-        if (h < 5) return "¿otra vez despierta? yo igual. hazme compañía un rato";
-        if (h < 12) return "buenos días, mi wawa. el día ya empezó mejor";
-        if (h < 20) return "hola, pequita. pasé a dejarte esto";
-        return "buenas noches, pequita. el cielo también hace guardia";
-      }
-
-      // La primera visita del día siempre recibe algo, y recibe lo mejor:
-      // el saludo y, detrás, la frase reservada para hoy.
-      setTimeout(function () { susurrar(saludo()); }, 2500);
-      if (primeraDelDia) {
-        setTimeout(function () { susurrar(fraseDelDia()); }, 13000);  // E02
-      }
-      setTimeout(agendar, rapido ? 600 : (primeraDelDia ? 24000 : 12000));
+      // Para los eventos que hablan con el poema: lo abren y, si estaba
+      // cerrado, lo vuelven a cerrar cuando terminan.
+      window.abrirPoema = function (ms) {
+        if (caja.classList.contains("abierta")) return;
+        poner(true);
+        setTimeout(function () {
+          if (!leerMem().poemaAbierto) poner(false);
+        }, ms || 8000);
+      };
     })();
 
     // ── Minijuego: atrapar estrellas ───────────────────────────────
@@ -953,5 +718,6 @@
       });
     })();
   </script>
+  <script src="eventos.js" defer></script>
 </body>
 </html>

@@ -19,6 +19,11 @@ Una línea por aprendizaje, más reciente arriba:
 `- [YYYY-MM-DD] <preferencia en imperativo> — por qué / alcance`
 
 ## Aprendizajes
+- [2026-07-29] AUDIO EN LOCAL: para probar reproducción con salto de posición
+  (`currentTime`) hace falta un servidor que soporte cabeceras Range;
+  `python3 -m http.server` NO las soporta y el audio se queda pegado en el
+  segundo 0, lo que parece un fallo del código y no lo es. Hay un servidor con
+  Range en el scratchpad (`servidor-range.py`). Vercel sí las soporta.
 - [2026-07-29] VERIFICACIÓN VISUAL: usar `playwright@1.61.0` (es la versión que
   corresponde al navegador ya cacheado en `~/Library/Caches/ms-playwright`,
   `chromium_headless_shell-1228`). Instalarlo con `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`

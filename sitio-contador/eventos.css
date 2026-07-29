@@ -1,0 +1,457 @@
+/* ══════════════════════════════════════════════════════════════════
+   Eventos de la portada — estilos (catálogo E01–E60).
+   Todo lo que aparece vive en capas fijas: nunca empuja el contador.
+   ══════════════════════════════════════════════════════════════════ */
+
+.capa-eventos { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
+.capa-eventos .tocable { pointer-events: auto; cursor: pointer; }
+
+/* ── Susurros y textos ─────────────────────────────────────────── */
+.susurro-portada {
+  position: fixed; left: 50%; bottom: 5vh; transform: translateX(-50%);
+  width: min(24rem, 88vw); text-align: center; pointer-events: none; z-index: 6;
+  font-style: italic; font-size: .95rem; line-height: 1.6;
+  color: rgba(217,168,63,.85); opacity: 0;
+}
+.susurro-portada.viva { animation: asoma 8s ease forwards; }
+@keyframes asoma {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  10%, 82% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+}
+
+.palabra {
+  position: absolute; transform: translate(-50%, -50%);
+  font-style: italic; font-size: .95rem; color: rgba(217,168,63,.95);
+  text-shadow: 0 0 14px rgba(217,168,63,.5); white-space: nowrap;
+  animation: sube 2.4s ease forwards;
+}
+@keyframes sube {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.9); }
+  18% { opacity: 1; transform: translate(-50%, -60%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -110%) scale(1); }
+}
+
+/* E05 — el verso que no existe */
+.verso-extra {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: 92vw; text-align: center; z-index: 6;
+  font-style: italic; font-size: clamp(.68rem, 3.4vw, 1.2rem);
+  color: rgba(246,227,200,.75); opacity: 0; pointer-events: none;
+}
+.verso-extra.viva { animation: asoma 7s ease forwards; }
+
+/* E06 — nota al margen, como un papelito pegado */
+.margen {
+  position: fixed; z-index: 6; max-width: 11rem; padding: 10px 12px;
+  font-size: .78rem; line-height: 1.5; color: rgba(246,227,200,.9);
+  background: rgba(255,255,255,.05); border: 1px dashed rgba(217,168,63,.45);
+  border-radius: 4px; transform: rotate(-3deg); opacity: 0;
+  animation: pega 9s ease forwards; pointer-events: none;
+}
+@keyframes pega {
+  0% { opacity: 0; transform: rotate(-3deg) translateY(10px); }
+  8%, 86% { opacity: 1; transform: rotate(-3deg) translateY(0); }
+  100% { opacity: 0; }
+}
+
+/* E07 — corrección en vivo sobre la nota */
+.tachado { text-decoration: line-through; opacity: .55; }
+.reescrito { color: #f6e3c8; }
+
+/* ── Cosas que cruzan el cielo ─────────────────────────────────── */
+.fugaz {
+  position: absolute; width: 130px; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0), #fff);
+  transform-origin: 0 50%; opacity: 0;
+}
+.fugaz.corre { animation: cruza 1.6s cubic-bezier(.4,0,.9,.6) forwards; }
+@keyframes cruza {
+  0%   { opacity: 0; transform: rotate(26deg) translateX(0) scaleX(.25); }
+  14%  { opacity: 1; }
+  100% { opacity: 0; transform: rotate(26deg) translateX(96vw) scaleX(1); }
+}
+
+/* E10 — la fugaz que se arrepiente */
+.fugaz-lenta {
+  position: absolute; width: 6px; height: 6px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 14px rgba(255,255,255,.9);
+  transition: transform 1.2s cubic-bezier(.3,0,.7,1), opacity .6s ease;
+}
+.tiembla { animation: tiembla .12s linear 8; }
+@keyframes tiembla { 0%,100% { margin-left: 0 } 50% { margin-left: 3px } }
+
+.satelite {
+  position: absolute; width: 3px; height: 3px; border-radius: 50%;
+  background: #fff; opacity: .7; animation: orbita 17s linear forwards;
+}
+@keyframes orbita {
+  from { transform: translate(-6vw, 0); }
+  to   { transform: translate(106vw, 7vh); }
+}
+
+/* E11 — avioneta con banderín */
+.avioneta { position: absolute; display: flex; align-items: center; gap: 10px; animation: vuela 15s linear forwards; }
+.avioneta svg { flex: none; }
+.avioneta .banderin {
+  padding: 5px 12px; font-size: .78rem; font-style: italic; white-space: nowrap;
+  color: #2a1e08; background: rgba(217,168,63,.92);
+  border-radius: 3px; box-shadow: 2px 2px 0 rgba(124,27,34,.5);
+}
+@keyframes vuela { from { transform: translateX(-60vw) } to { transform: translateX(110vw) } }
+
+/* E12 zorro · E13 rosa: criaturas animadas por partes, no imágenes.
+   Los objetos físicos se mueven; no se funden (regla de DESIGN.md). */
+.criatura { position: absolute; bottom: 0; }
+
+/* ── El zorro: entra andando, se sienta, barre la cola, parpadea ── */
+.zorro { animation: zorro-entra 1.5s cubic-bezier(.3,.7,.4,1) both, zorro-se-va 1.4s ease-in 8.6s both; }
+.zorro.se-va { animation: zorro-se-va 1.2s ease-in both; }
+@keyframes zorro-entra {
+  0%   { transform: translateX(-38vw) translateY(4px); }
+  55%  { transform: translateX(-8vw) translateY(-3px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+@keyframes zorro-se-va {
+  from { transform: translateX(0); opacity: 1; }
+  to   { transform: translateX(-40vw); opacity: 0; }
+}
+.zorro .cola { transform-origin: 74px 68px; animation: cola 3.4s ease-in-out infinite; }
+@keyframes cola { 0%,100% { transform: rotate(-7deg) } 50% { transform: rotate(11deg) } }
+.zorro .oreja.izq { transform-origin: 27px 30px; animation: oreja 5s ease-in-out infinite; }
+.zorro .oreja.der { transform-origin: 52px 30px; animation: oreja 5s ease-in-out .7s infinite; }
+@keyframes oreja { 0%,88%,100% { transform: rotate(0) } 94% { transform: rotate(-9deg) } }
+.zorro .parpados { stroke-dasharray: 6; stroke-dashoffset: 6; animation: parpadeo 4.6s linear infinite; }
+@keyframes parpadeo { 0%,92%,100% { stroke-dashoffset: 6 } 95% { stroke-dashoffset: 0 } }
+.zorro .cabeza { transform-origin: 45px 42px; transition: transform .5s ease; }
+.zorro.mirando .cabeza { transform: rotate(-7deg) translateY(-2px); }
+
+/* ── La rosa: crece, abre en tres tiempos y se mece ── */
+.rosa { transform-origin: 50% 100%; animation: rosa-crece 1.8s cubic-bezier(.3,.8,.4,1) both, rosa-se-va 1.2s ease-in 9s both; }
+@keyframes rosa-crece { from { transform: translateY(70%) scaleY(.5) } to { transform: translateY(0) scaleY(1) } }
+@keyframes rosa-se-va { from { transform: translateY(0) } to { transform: translateY(80%) } }
+.rosa .flor { transform-origin: 30px 30px; animation: mece 5.5s ease-in-out 2s infinite; }
+@keyframes mece { 0%,100% { transform: rotate(-3deg) } 50% { transform: rotate(3deg) } }
+.rosa .capa3 { opacity: 0; animation: abre .7s ease 1.1s forwards; }
+.rosa .capa2 { opacity: 0; animation: abre .7s ease 1.5s forwards; }
+.rosa .capa1 { opacity: 0; animation: abre .7s ease 1.9s forwards; }
+@keyframes abre { from { opacity: 0 } to { opacity: 1 } }
+.rosa .hoja { opacity: 0; animation: abre .8s ease 2.2s forwards; }
+.rosa.abierta .flor { transform: scale(1.12); transition: transform .8s ease; }
+.petalo {
+  position: absolute; font-size: .9rem; font-style: italic; color: var(--rose);
+  animation: cae-petalo 3.4s ease forwards; white-space: nowrap;
+}
+@keyframes cae-petalo {
+  0% { opacity: 0; transform: translateY(-10px) rotate(0); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(70px) rotate(24deg); }
+}
+
+/* E14 — luciérnagas: alas que baten y la panza encendida */
+.luciernaga {
+  position: absolute; width: 24px; height: 16px;
+  transition: transform .9s ease-out, opacity .8s ease;
+  animation: revolotea 3.4s ease-in-out infinite;
+}
+.luciernaga .panza { animation: panza 2.6s ease-in-out infinite; }
+.luciernaga svg { overflow: visible; filter: drop-shadow(0 0 8px rgba(246,227,200,.75)); }
+.luciernaga .ala { transform-origin: 12px 6px; animation: aletea var(--aleteo, .2s) linear infinite; }
+.luciernaga .ala.der { animation-delay: .05s; }
+@keyframes aletea { 0%,100% { transform: scaleY(1) } 50% { transform: scaleY(.35) } }
+@keyframes panza { 0%,100% { opacity: .45 } 45% { opacity: 1 } }
+@keyframes revolotea {
+  0%,100% { margin-top: 0 } 30% { margin-top: -7px } 65% { margin-top: 5px }
+}
+
+/* E15 — globo */
+.globo { position: absolute; animation: flota 14s linear forwards; }
+@keyframes flota { from { transform: translateY(110vh) } to { transform: translateY(-30vh) } }
+
+/* E16 — la luna, con su fase real */
+.luna { position: absolute; top: 7vh; right: 7vw; opacity: 0; animation: asoma-luna 16s ease forwards; }
+@keyframes asoma-luna { 0% { opacity: 0 } 10%,85% { opacity: .95 } 100% { opacity: 0 } }
+
+/* E17 constelación · E08/E20 palabras de estrellas */
+.punto-fino {
+  position: absolute; width: 3px; height: 3px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 8px rgba(255,255,255,.9);
+  opacity: 0; transition: opacity .8s ease, transform 1.2s ease;
+}
+.punto-fino.viva { opacity: .95; }
+
+/* E19 — polvo dorado subiendo */
+.polvo {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 45vh;
+  background: linear-gradient(0deg, rgba(217,168,63,.22), transparent 75%);
+  opacity: 0; animation: respira 9s ease forwards;
+}
+@keyframes respira { 0% { opacity: 0 } 25%,70% { opacity: 1 } 100% { opacity: 0 } }
+
+/* E43 — lluvia */
+.gota {
+  position: absolute; width: 1px; height: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0), rgba(200,220,255,.55));
+  animation: llueve linear forwards;
+}
+@keyframes llueve { from { transform: translateY(-10vh) } to { transform: translateY(110vh) } }
+
+/* ── El reloj se porta raro ────────────────────────────────────── */
+.num { transition: color .5s ease, transform .5s ease; }
+.num.enamorado { color: var(--rose); transform: rotate(-8deg); }
+.bloque { transition: box-shadow .5s ease, border-color .5s ease; }
+.bloque.siete { border-color: rgba(217,168,63,.85); box-shadow: 0 0 20px -4px rgba(217,168,63,.6); }
+.bloque.late { animation: late .55s ease 3; }
+@keyframes late { 0%,100% { transform: scale(1) } 45% { transform: scale(1.07) } }
+.bloque.extra { animation: entra-bloque .6s ease both; }
+@keyframes entra-bloque { from { opacity: 0; transform: scale(.7) } to { opacity: 1; transform: scale(1) } }
+
+/* ── El poema ──────────────────────────────────────────────────── */
+.verso { transition: opacity .7s ease, color .7s ease, transform .9s ease; }
+.poema.enfocado .verso { opacity: .3; }
+.poema.enfocado .verso.viva { opacity: 1; color: rgba(246,227,200,.95); }
+.verso.ganado { color: rgba(246,227,200,.95); opacity: 1; }   /* E50 */
+.verso.baila { transform: translateX(var(--desvio, 0)); }      /* E58 */
+
+/* ── Interacción ───────────────────────────────────────────────── */
+.rastro {
+  position: absolute; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold); box-shadow: 0 0 12px rgba(217,168,63,.8);
+  transform: translate(-50%, -50%); animation: apaga 1.3s ease forwards;
+}
+@keyframes apaga { from { opacity: .85 } to { opacity: 0; transform: translate(-50%,-50%) scale(.3) } }
+
+.estrella-viva { animation: destella .9s ease; }
+@keyframes destella {
+  0%, 100% { opacity: .5; transform: scale(1); }
+  40% { opacity: 1; transform: scale(3.5); }
+}
+
+/* E32 — amanece al mantener pulsado */
+body { transition: filter 1.6s ease; }
+body.amanece { filter: brightness(1.45) saturate(1.1); }
+
+/* E38 — inactividad: el cielo baja la voz */
+body.quieta .cielo { opacity: .35; transition: opacity 2s ease; }
+.cielo { transition: opacity 2s ease; }
+
+/* E47 — guardia nocturna: cielo más hondo y estrellas más grandes */
+body.madrugada { background: radial-gradient(1600px 900px at 50% -10%, #131c38 0%, transparent 62%), linear-gradient(180deg, #080e20 0%, #05080f 100%); }
+body.madrugada .cielo span { width: 3px; height: 3px; opacity: .75; }
+
+/* E40 — domingo un punto más cálido */
+body.domingo { background: radial-gradient(1600px 900px at 50% -10%, #24274a 0%, transparent 62%), linear-gradient(180deg, #131630 0%, #0d1020 100%); }
+
+/* ── Frasco de luciérnagas (E48) y sellos (E49) ────────────────── */
+.frasco {
+  position: fixed; left: 16px; bottom: 16px; z-index: 7;
+  display: flex; align-items: center; gap: 7px; padding: 8px 12px;
+  border: 1px solid rgba(217,168,63,.35); border-radius: 999px;
+  background: rgba(255,255,255,.04); color: var(--gold);
+  font-family: inherit; font-size: .78rem; cursor: pointer;
+}
+.frasco:hover { background: rgba(217,168,63,.12); }
+.frasco .luz { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+
+.coleccion {
+  position: fixed; inset: 0; z-index: 45; display: none;   /* por encima del panel de pruebas */
+  padding: 8vh 22px 22px; overflow-y: auto;
+  background: rgba(7,12,25,.94); backdrop-filter: blur(6px);
+}
+.coleccion.viva { display: block; animation: entra .4s ease both; }
+@keyframes entra { from { opacity: 0 } to { opacity: 1 } }
+.coleccion h2 { font-size: 1.1rem; font-weight: 400; letter-spacing: .2em; color: var(--gold); text-align: center; margin-bottom: 6px; }
+.coleccion .cuenta { text-align: center; font-size: .78rem; color: rgba(234,228,214,.5); margin-bottom: 22px; }
+.coleccion ul { list-style: none; max-width: 30rem; margin: 0 auto 26px; }
+.coleccion li {
+  font-style: italic; font-size: .92rem; line-height: 1.6; padding: 9px 0;
+  border-bottom: 1px dashed rgba(217,168,63,.18); color: rgba(234,228,214,.8);
+}
+.calendario { display: flex; flex-wrap: wrap; gap: 6px; max-width: 30rem; margin: 0 auto 26px; justify-content: center; }
+.calendario span {
+  width: 22px; height: 22px; border-radius: 50%; font-size: .62rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(217,168,63,.25); color: rgba(234,228,214,.35);
+}
+.calendario span.sellado { background: rgba(217,168,63,.85); color: #2a1e08; border-color: transparent; }
+.coleccion .cerrar {
+  display: block; margin: 0 auto; padding: 12px 26px; border-radius: 999px;
+  border: 1.5px solid rgba(217,168,63,.45); background: none;
+  color: var(--gold); font-family: inherit; font-size: .95rem; cursor: pointer;
+}
+
+/* ── Sobres dormidos (E51) ─────────────────────────────────────── */
+.sobre { position: fixed; right: 18px; bottom: 18px; z-index: 6; animation: duerme 4s ease-in-out infinite; }
+@keyframes duerme { 0%,100% { transform: rotate(-4deg) translateY(0) } 50% { transform: rotate(3deg) translateY(-5px) } }
+
+/* ── Víspera y día D (E52–E54) ─────────────────────────────────── */
+body.amaneciendo { background: linear-gradient(180deg, #2b2340 0%, #14162c 55%, #0a1020 100%); }
+.cuenta-final {
+  position: fixed; inset: 0; z-index: 25; display: flex;
+  flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+  background: linear-gradient(180deg, #0e1730 0%, #0a1020 100%);
+}
+.cuenta-final .seg { font-size: clamp(5rem, 34vw, 12rem); color: var(--gold); line-height: 1; font-variant-numeric: tabular-nums; }
+.cuenta-final .dice { font-style: italic; color: rgba(234,228,214,.8); text-align: center; max-width: 22rem; padding: 0 20px; }
+.confeti { position: absolute; width: 7px; height: 12px; animation: cae-confeti linear forwards; }
+@keyframes cae-confeti {
+  from { transform: translateY(-12vh) rotate(0); opacity: 1 }
+  to { transform: translateY(112vh) rotate(720deg); opacity: .2 }
+}
+
+/* ── Legendarios ───────────────────────────────────────────────── */
+/* E57 — el planeta */
+.planeta {
+  position: absolute; left: 50%; bottom: -34vh; width: 130vw; height: 60vh;
+  transform: translateX(-50%); border-radius: 50% 50% 0 0;
+  background: linear-gradient(180deg, #241030 0%, #14162c 100%);
+  border-top: 1.5px solid rgba(217,168,63,.4); opacity: 0;
+  animation: respira 11s ease forwards;
+}
+/* E59 — carta relámpago */
+.carta-rapida {
+  position: fixed; left: 50%; top: 50%; z-index: 8; width: min(21rem, 84vw);
+  transform: translate(-50%, -50%); padding: 22px 20px;
+  background: #f6e8d6; color: #4d2126; border-radius: 3px;
+  box-shadow: 4px 6px 0 rgba(0,0,0,.35); font-size: .92rem; line-height: 1.7;
+  animation: carta 11s ease forwards;
+}
+@keyframes carta {
+  0% { opacity: 0; transform: translate(-50%, -140%) rotate(-8deg) scaleY(.2); }
+  12% { opacity: 1; transform: translate(-50%, -50%) rotate(-1deg) scaleY(1); }
+  88% { opacity: 1; transform: translate(-50%, -50%) rotate(-1deg) scaleY(1); }
+  100% { opacity: 0; transform: translate(-50%, -30%) rotate(2deg) scaleY(.9); }
+}
+/* E60 — tu voz */
+.voz {
+  position: fixed; left: 50%; bottom: 14vh; transform: translateX(-50%); z-index: 7;
+  padding: 11px 22px; border-radius: 999px; border: 1.5px solid rgba(217,168,63,.5);
+  background: rgba(255,255,255,.05); color: var(--gold);
+  font-family: inherit; font-size: .9rem; cursor: pointer;
+}
+
+/* ── El 7 mágico en grande: 77 bpm y lluvia de sietes ──────────── */
+/* 77 pulsos por minuto = uno cada 779 ms. */
+body.siete-dias .bloque { animation: late77 779ms ease-in-out infinite; }
+@keyframes late77 {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217,168,63,0); }
+  18% { box-shadow: 0 0 22px -2px rgba(217,168,63,.75); }
+}
+.siete-cae {
+  position: absolute; top: -8vh; color: var(--gold);
+  font-family: ui-serif, Georgia, serif; text-shadow: 0 0 14px rgba(217,168,63,.6);
+  animation-name: cae-siete; animation-timing-function: cubic-bezier(.4,0,.8,.7);
+  animation-fill-mode: forwards;
+}
+@keyframes cae-siete {
+  from { transform: translateY(0) rotate(-8deg); opacity: 0; }
+  12% { opacity: 1; }
+  to { transform: translateY(112vh) rotate(14deg); opacity: .25; }
+}
+
+/* ── Lo que llevamos juntos (7 toques en el reloj) ─────────────── */
+.marcador-siete {
+  height: 14px; margin-top: 8px; text-align: center; letter-spacing: .5em;
+  color: rgba(217,168,63,.55); font-size: .9rem; opacity: 0; transition: opacity .3s ease;
+}
+.marcador-siete.viva { opacity: 1; }
+.bloque.juntos .num { font-size: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.bloque.juntos .detalle { font-size: .72rem; color: rgba(234,228,214,.65); font-variant-numeric: tabular-nums; }
+
+/* ── Volumen de la canción del día ─────────────────────────────── */
+.volumen {
+  position: fixed; right: 10px; top: 50%; transform: translateY(-50%);
+  z-index: 8; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  opacity: .45; transition: opacity .3s ease;
+}
+.volumen:hover, .volumen.sonando { opacity: .9; }
+.volumen .nota-musical { color: var(--gold); font-size: .95rem; }
+.volumen input[type="range"] {
+  -webkit-appearance: none; appearance: none; background: none;
+  width: 96px; height: 20px; transform: rotate(-90deg) translateX(-38px);
+  transform-origin: 50% 50%; cursor: pointer;
+}
+.volumen input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px; background: rgba(217,168,63,.35); border-radius: 2px;
+}
+.volumen input[type="range"]::-moz-range-track {
+  height: 2px; background: rgba(217,168,63,.35); border-radius: 2px;
+}
+.volumen input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 12px; margin-top: -5px;
+  border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px rgba(217,168,63,.8);
+}
+.volumen input[type="range"]::-moz-range-thumb {
+  width: 12px; height: 12px; border: 0; border-radius: 50%;
+  background: var(--gold); box-shadow: 0 0 10px rgba(217,168,63,.8);
+}
+body.con-pruebas .volumen { display: none; }
+
+/* ══════════════════════════════════════════════════════════════════
+   Panel de pruebas (solo con ?pruebas). No se carga en la visita normal.
+   ══════════════════════════════════════════════════════════════════ */
+.pruebas-pestana {
+  position: fixed; right: 14px; top: 12px; z-index: 41;
+  padding: 7px 14px; border-radius: 999px;
+  border: 1px solid rgba(217,168,63,.4); background: rgba(10,16,32,.9);
+  color: var(--gold); font-family: inherit; font-size: .72rem;
+  letter-spacing: .14em; cursor: pointer;
+}
+.pruebas {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 42;
+  max-height: 62vh; display: none; flex-direction: column; overflow: hidden;
+  background: #080d1a; border-top: 1px solid rgba(217,168,63,.3);
+  box-shadow: 0 -14px 40px rgba(0,0,0,.5);
+}
+.pruebas.viva { display: flex; }
+.pruebas-cabecera {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border-bottom: 1px dashed rgba(217,168,63,.2); color: var(--gold);
+  font-size: .82rem; flex: none;
+}
+.pruebas-cabecera strong { font-weight: 400; letter-spacing: .12em; flex: 1; }
+.pruebas-ambiente { display: flex; align-items: center; gap: 5px; color: rgba(234,228,214,.7); font-size: .74rem; }
+.pruebas-ocultar {
+  padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(217,168,63,.35);
+  background: none; color: var(--gold); font-family: inherit; font-size: .74rem; cursor: pointer;
+}
+/* flex:1 + min-height:0 = este es el que hace scroll. Sin min-height:0 el
+   bloque no encoge y los últimos grupos se salen de la pantalla. */
+.pruebas-cuerpo {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto;
+  padding: 10px 14px 20px; -webkit-overflow-scrolling: touch;
+}
+.pruebas-titulo {
+  font-size: .68rem; letter-spacing: .16em; text-transform: uppercase;
+  color: rgba(234,228,214,.4); margin: 14px 0 8px;
+}
+.pruebas-rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.2rem, 1fr)); gap: 7px; }
+.pruebas-racion { font-size: .7rem; color: rgba(234,228,214,.45); letter-spacing: .1em; }
+.pruebas-rejilla button .estado {
+  display: block; font-style: normal; font-size: .62rem; margin-top: 3px;
+  letter-spacing: .04em; color: rgba(234,228,214,.35);
+}
+.pruebas-rejilla button .estado.listo { color: rgba(217,168,63,.85); }
+.pruebas-rejilla button .estado.no { color: rgba(201,107,116,.7); }
+.pruebas-rejilla button {
+  padding: 10px 8px; border-radius: 9px; border: 1px solid rgba(217,168,63,.28);
+  background: rgba(255,255,255,.04); color: rgba(246,227,200,.92);
+  font-family: inherit; font-size: .76rem; line-height: 1.25; cursor: pointer;
+  transition: background .18s ease, border-color .18s ease;
+}
+.pruebas-rejilla button:hover { background: rgba(217,168,63,.14); }
+.pruebas-rejilla button.recien { background: var(--gold); color: #2a1e08; border-color: var(--gold); }
+
+/* Con el panel abierto, susurro y frasco suben para no quedar debajo */
+body.con-pruebas .susurro-portada { bottom: 66vh; }
+body.con-pruebas .frasco { display: none; }
+
+/* ── Movimiento reducido: se ve, pero no se mueve ──────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .fugaz.corre, .satelite, .bloque.late, .estrella-viva, .avioneta,
+  .globo, .gota, .confeti, .sobre, .siete-cae { animation: none; opacity: 0; }
+  .criatura { animation: asoma 9s ease forwards; }
+  .zorro .cola, .zorro .oreja, .zorro .parpados, .rosa .flor { animation: none; }
+  .rosa .capa1, .rosa .capa2, .rosa .capa3, .rosa .hoja { opacity: 1; animation: none; }
+  body.siete-dias .bloque { animation: none; box-shadow: 0 0 20px -4px rgba(217,168,63,.6); }
+}
