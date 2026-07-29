@@ -27,6 +27,10 @@
       radial-gradient(1600px 900px at 50% -10%, #1b2748 0%, transparent 62%),
       linear-gradient(180deg, #0e1730 0%, #0a1020 100%);
     overflow-x: hidden;
+    /* Arrastrar el dedo deja rastro dorado; no debe seleccionar el poema
+       ni sacar la lupa de iOS. */
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
   }
   .cielo { position: fixed; inset: 0; pointer-events: none; }
   .cielo span {
@@ -75,6 +79,161 @@
   .num { font-size: 2.1rem; color: var(--gold); font-variant-numeric: tabular-nums; }
   .lab { font-size: .6rem; text-transform: uppercase; letter-spacing: .2em; color: rgba(234,228,214,.55); margin-top: 4px; }
 
+  /* ── Eventos ambientales ───────────────────────────────────────── */
+  /* Todo lo que aparece solo vive en esta capa: nunca empuja el contador
+     ni tapa el texto, y siempre se limpia a sí mismo. */
+  .capa-eventos { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
+
+  .fugaz {
+    position: absolute; width: 130px; height: 2px; border-radius: 2px;
+    background: linear-gradient(90deg, rgba(255,255,255,0), #fff);
+    transform-origin: 0 50%; opacity: 0;
+  }
+  .fugaz.corre { animation: cruza 1.6s cubic-bezier(.4,0,.9,.6) forwards; }
+  @keyframes cruza {
+    0%   { opacity: 0; transform: rotate(26deg) translateX(0) scaleX(.25); }
+    14%  { opacity: 1; }
+    100% { opacity: 0; transform: rotate(26deg) translateX(96vw) scaleX(1); }
+  }
+
+  .satelite {
+    position: absolute; width: 3px; height: 3px; border-radius: 50%;
+    background: #fff; opacity: .7; animation: orbita 17s linear forwards;
+  }
+  @keyframes orbita {
+    from { transform: translate(-6vw, 0); }
+    to   { transform: translate(106vw, 7vh); }
+  }
+
+  /* Susurros: fijos abajo, para que el texto de la portada no se mueva. */
+  .susurro-portada {
+    position: fixed; left: 50%; bottom: 5vh; transform: translateX(-50%);
+    width: min(24rem, 88vw); text-align: center; pointer-events: none; z-index: 6;
+    font-style: italic; font-size: .95rem; line-height: 1.6;
+    color: rgba(217,168,63,.85); opacity: 0;
+  }
+  .susurro-portada.viva { animation: asoma 8s ease forwards; }
+  @keyframes asoma {
+    0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    10%, 82% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+  }
+
+  .palabra {
+    position: absolute; transform: translate(-50%, -50%);
+    font-style: italic; font-size: .95rem; color: rgba(217,168,63,.95);
+    text-shadow: 0 0 14px rgba(217,168,63,.5); white-space: nowrap;
+    animation: sube 2.4s ease forwards;
+  }
+  @keyframes sube {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(.9); }
+    18% { opacity: 1; transform: translate(-50%, -60%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -110%) scale(1); }
+  }
+
+  .rastro {
+    position: absolute; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold); box-shadow: 0 0 12px rgba(217,168,63,.8);
+    transform: translate(-50%, -50%); animation: apaga 1.3s ease forwards;
+  }
+  @keyframes apaga { from { opacity: .85 } to { opacity: 0; transform: translate(-50%,-50%) scale(.3) } }
+
+  .estrella-viva { animation: destella .9s ease; }
+  @keyframes destella {
+    0%, 100% { opacity: .5; transform: scale(1); }
+    40% { opacity: 1; transform: scale(3.5); }
+  }
+
+  /* Un verso se ilumina y los otros seis se retiran un momento. */
+  .verso { transition: opacity .7s ease, color .7s ease; }
+  .poema.enfocado .verso { opacity: .3; }
+  .poema.enfocado .verso.viva { opacity: 1; color: rgba(246,227,200,.95); }
+
+  .num { transition: color .5s ease, transform .5s ease; }
+  .num.enamorado { color: var(--rose); transform: rotate(-8deg); }
+  .bloque { transition: box-shadow .5s ease, border-color .5s ease; }
+  .bloque.siete { border-color: rgba(217,168,63,.85); box-shadow: 0 0 20px -4px rgba(217,168,63,.6); }
+  .bloque.late { animation: late .55s ease 3; }
+  @keyframes late { 0%,100% { transform: scale(1) } 45% { transform: scale(1.07) } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fugaz.corre, .satelite, .bloque.late, .estrella-viva { animation: none; opacity: 0; }
+  }
+
+  /* ── Minijuego: atrapar estrellas ──────────────────────────────── */
+  .juego-abrir {
+    display: inline-block; margin-top: 26px; padding: 10px 20px;
+    border: 1.5px solid rgba(217,168,63,.45); border-radius: 999px;
+    background: rgba(255,255,255,.04); color: var(--gold);
+    font-family: inherit; font-size: .95rem; letter-spacing: .06em;
+    cursor: pointer; transition: transform .2s ease, background .2s ease;
+  }
+  .juego-abrir:hover { transform: translateY(-2px); background: rgba(217,168,63,.12); }
+
+  .juego {
+    position: fixed; inset: 0; z-index: 20; display: none;
+    /* Opaco: el contador no debe verse por detrás. El cielo de la portada se
+       repinta dentro del lienzo para que la partida no parezca otra página. */
+    background:
+      radial-gradient(1200px 700px at 50% -10%, #1b2748 0%, transparent 60%),
+      linear-gradient(180deg, #0b1428 0%, #070c19 100%);
+    touch-action: none; user-select: none; -webkit-user-select: none;
+  }
+  .juego.viva { display: block; }
+  .juego canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .juego-hud {
+    position: absolute; top: 0; left: 0; right: 0; padding: 16px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: .95rem; color: var(--gold); pointer-events: none;
+  }
+  .juego-hud .marcador { font-variant-numeric: tabular-nums; }
+  .juego-hud .tiempo { color: rgba(234,228,214,.6); font-variant-numeric: tabular-nums; }
+  .juego-salir {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    border: 0; background: none; color: rgba(234,228,214,.4);
+    font-family: inherit; font-size: .8rem; letter-spacing: .18em;
+    cursor: pointer; padding: 8px 14px;
+  }
+
+  /* Susurros dentro de la partida: aparecen y se van solos. */
+  .juego-susurro {
+    position: absolute; left: 50%; top: 22%; transform: translateX(-50%);
+    width: min(22rem, 84vw); text-align: center; pointer-events: none;
+    font-style: italic; font-size: 1rem; line-height: 1.6;
+    color: rgba(234,228,214,.85); opacity: 0;
+  }
+  .juego-susurro.viva { animation: susurra 3.4s ease forwards; }
+  @keyframes susurra {
+    0% { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    18%, 72% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  }
+
+  .juego-fin {
+    position: absolute; inset: 0; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; padding: 40px 26px; text-align: center;
+    background: rgba(7,12,25,.82); backdrop-filter: blur(6px);
+  }
+  .juego-fin.viva { display: flex; animation: entra .5s ease both; }
+  @keyframes entra { from { opacity: 0 } to { opacity: 1 } }
+  .juego-fin .cifra {
+    font-size: clamp(2.6rem, 12vw, 4rem); color: var(--gold); line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .juego-fin .pie { font-size: .8rem; letter-spacing: .16em; color: rgba(234,228,214,.5); }
+  .juego-fin .frase {
+    font-style: italic; color: rgba(234,228,214,.85); max-width: 24rem;
+    line-height: 1.65; margin-top: 6px;
+  }
+  .juego-fin .botones { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+  .juego-fin button {
+    padding: 13px 26px; border-radius: 999px; border: 1.5px solid rgba(217,168,63,.45);
+    background: none; color: var(--gold); font-family: inherit; font-size: .95rem; cursor: pointer;
+  }
+  .juego-fin button.principal { background: var(--gold); color: #2a1e08; border-color: var(--gold); font-weight: 700; }
+
   .listo { display: none; }
   .saludo {
     margin-top: 30px; font-size: clamp(2rem, 7vw, 3rem); color: var(--gold);
@@ -108,6 +267,8 @@
 </head>
 <body>
   <div class="cielo" id="cielo" aria-hidden="true"></div>
+  <div class="capa-eventos" id="capaEventos" aria-hidden="true"></div>
+  <p class="susurro-portada" id="susurroPortada" aria-live="polite"></p>
 
   <main class="wrap">
     <!-- ANTES del día -->
@@ -120,14 +281,14 @@
         año. Te amo un montonazo.
       </p>
 
-      <p class="poema">
-        Divina, boca viva que salva mi carne;<br />
-        roca rota donde este pacto se firma,<br />
-        hueso expuesto al filo de ser vulnerable.<br />
-        Asumo el crudo desastre de ser barro,<br />
-        dedos que amasan este lodo sin rumbo,<br />
-        pierdo mi nombre bajo este nuevo cielo,<br />
-        llueve este cuerpo nuevo en tu noche
+      <p class="poema" id="poema">
+        <span class="verso">Divina, boca viva que salva mi carne;</span><br />
+        <span class="verso">roca rota donde este pacto se firma,</span><br />
+        <span class="verso">hueso expuesto al filo de ser vulnerable.</span><br />
+        <span class="verso">Asumo el crudo desastre de ser barro,</span><br />
+        <span class="verso">dedos que amasan este lodo sin rumbo,</span><br />
+        <span class="verso">pierdo mi nombre bajo este nuevo cielo,</span><br />
+        <span class="verso">llueve este cuerpo nuevo en tu noche</span>
       </p>
 
       <div class="reloj" id="reloj" aria-live="polite">
@@ -136,6 +297,8 @@
         <div class="bloque"><div class="num" id="m">--</div><div class="lab">min</div></div>
         <div class="bloque"><div class="num" id="s">--</div><div class="lab">seg</div></div>
       </div>
+
+      <button class="juego-abrir" id="juegoAbrir" type="button">atrapar estrellas ✦</button>
     </section>
 
     <!-- EL día D -->
@@ -155,6 +318,29 @@
     </section>
   </main>
 
+  <!-- Minijuego: caen estrellas y se atrapan con el dedo. Acelera con el
+       tiempo y con cada acierto. No se puede perder: solo se acaba. -->
+  <div class="juego" id="juego" aria-hidden="true">
+    <canvas id="lienzo"></canvas>
+    <div class="juego-hud">
+      <span class="marcador" id="marcador">✦ 0</span>
+      <span class="tiempo" id="tiempo">0:60</span>
+    </div>
+    <button class="juego-salir" id="juegoSalir" type="button">volver</button>
+    <p class="juego-susurro" id="susurro"></p>
+
+    <div class="juego-fin" id="juegoFin">
+      <p class="pie" id="finTitulo">atrapaste</p>
+      <p class="cifra" id="finCifra">0</p>
+      <p class="pie" id="finRecord"></p>
+      <p class="frase" id="finFrase"></p>
+      <div class="botones">
+        <button class="principal" id="finOtra" type="button">otra vez</button>
+        <button id="finVolver" type="button">volver al conteo</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ── Configuración ──────────────────────────────────────────────
     // 00:00:01 hora Santiago (Chile en agosto = UTC−4).
@@ -163,6 +349,73 @@
     // ───────────────────────────────────────────────────────────────
 
     document.querySelector(".btn").setAttribute("href", DESTINO);
+
+    // ── Memoria compartida (una sola clave para juego y eventos) ───
+    var MEM = "pequita.contador";
+    function leerMem() {
+      try { return JSON.parse(localStorage.getItem(MEM) || "{}"); }
+      catch (e) { return {}; }
+    }
+    function guardarMem(datos) {
+      try { localStorage.setItem(MEM, JSON.stringify(datos)); } catch (e) {}
+    }
+    function fechaLocal(d) {
+      d = d || new Date();
+      return d.getFullYear() + "-" + n(d.getMonth() + 1) + "-" + n(d.getDate());
+    }
+
+    // ── Banco de frases compartido ────────────────────────────────
+    // Llanas y concretas primero; lo denso, escaso y al final: una frase
+    // lapidaria pierde fuerza si viene detrás de otra igual.
+    var FRASES = [
+      "vine a ver el contador y me quedé pensando en ti. otra vez",
+      "faltan menos días de los que llevo queriéndote",
+      "no cuento para que pase rápido; cuento para no perderme ninguno",
+      "cada número que baja es una promesa que se acerca",
+      "guardé la sorpresa como se guarda el fuego: tapada, para que no se apague",
+      "no sé escribir corto cuando escribo de ti",
+      "hoy el día estuvo pesado y aun así te pensé sin esfuerzo",
+      "te amo un montonazo. así, sin métrica",
+      "lo mejor del año todavía no pasa, y ya me tiene contento",
+      "si te aburres de esperar, acuérdate de que yo espero contigo",
+      "ojalá supieras cuánto de mi día ocupas sin enterarte",
+      "estoy contando los días con la paciencia de quien ya sabe el final",
+      "falta poco, wawa. y falta menos cada vez que miras",
+      "cuando llegue el 7, quiero verte la cara antes que nada",
+      "te escribo poco y te pienso mucho; este contador es mi manera de decirlo seguido",
+      "quédate un poquito, que aquí no molestas nunca",
+      "esa estrella era mía; ahora es tuya",
+      "te amo con la terquedad de lo que se hace todos los días",
+      "hay amores que se anuncian; el nuestro se repite. prefiero el nuestro",
+      "contigo el tiempo dejó de ser trámite y se volvió lugar",
+      "aprendí a querer despacio para que durara. está durando",
+      "no te extraño en abstracto: extraño cosas exactas",
+      "te elegiría de nuevo, con la misma torpeza y más ganas",
+      "aquí no hay magia; hay alguien que te piensa todos los días",
+      "del crudo desastre de ser barro, tú eres la parte que vale",
+      "y todavía no termino de escribirte"
+    ];
+
+    // Bolsa barajada: no se repite ninguna hasta agotar el banco entero.
+    var bolsaFrases = [];
+    function fraseAlAzar() {
+      if (!bolsaFrases.length) {
+        bolsaFrases = FRASES.slice();
+        for (var i = bolsaFrases.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = bolsaFrases[i]; bolsaFrases[i] = bolsaFrases[j]; bolsaFrases[j] = t;
+        }
+      }
+      return bolsaFrases.pop();
+    }
+
+    // La frase del día es la misma durante toda la jornada: si vuelve a
+    // entrar por la tarde, reconoce la de la mañana.
+    function fraseDelDia() {
+      var clave = fechaLocal(), suma = 0;
+      for (var i = 0; i < clave.length; i++) suma = (suma * 31 + clave.charCodeAt(i)) % 100000;
+      return FRASES[suma % FRASES.length];
+    }
 
     (function () {
       var c = document.getElementById("cielo"), html = "";
@@ -189,10 +442,516 @@
       document.getElementById("d").textContent = Math.floor(s / 86400);
       document.getElementById("h").textContent = n(Math.floor((s % 86400) / 3600));
       document.getElementById("m").textContent = n(Math.floor((s % 3600) / 60));
-      document.getElementById("s").textContent = n(s % 60);
+      var seg = n(s % 60);
+      document.getElementById("s").textContent = seg;
+      // El 7 mágico: cada vez que asoma un 7 en los segundos, la caja se
+      // enciende un instante. Nunca texto; solo luz.
+      document.getElementById("s").parentNode.classList.toggle("siete", seg.indexOf("7") >= 0);
     }
     tick();
     var timer = setInterval(tick, 1000);
+
+    // ── Motor de eventos ambientales (fase 1) ─────────────────────
+    // Reglas: nunca dos a la vez, nada que tape el contador, nada que exija
+    // reacción, ninguno se repite mientras esté en los últimos vistos, y el
+    // azar elige CUÁL aparece, nunca SI aparece.
+    (function () {
+      var capa = document.getElementById("capaEventos");
+      var elSusurro = document.getElementById("susurroPortada");
+      var poema = document.getElementById("poema");
+      var versos = poema.getElementsByClassName("verso");
+      var cieloEl = document.getElementById("cielo");
+      var juegoEl = document.getElementById("juego");
+
+      var suave = window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      var PALABRAS = ["tuya", "wawa", "siempre", "pequita", "mía", "aquí",
+                      "vuelve", "siete", "sí", "contigo", "ya"];
+
+      var ocupado = false;
+      var vistos = [];        // los últimos, vetados para no repetir
+      var temporizador = 0;
+
+      function jugando() { return juegoEl.classList.contains("viva"); }
+      function libreEn(ms) { setTimeout(function () { ocupado = false; }, ms); }
+
+      function susurrar(texto) {
+        elSusurro.textContent = texto;
+        elSusurro.classList.remove("viva");
+        void elSusurro.offsetWidth;
+        elSusurro.classList.add("viva");
+      }
+
+      function pon(el, ms) {
+        capa.appendChild(el);
+        setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, ms);
+      }
+
+      // ── Los eventos ──────────────────────────────────────────────
+      var EVENTOS = [
+        { id: "susurro", peso: 8, dura: 8500, correr: function () {   // E01
+            susurrar(fraseAlAzar());
+          } },
+
+        { id: "verso", peso: 7, dura: 7000, correr: function () {     // E04
+            var i = Math.floor(Math.random() * versos.length);
+            poema.classList.add("enfocado");
+            versos[i].classList.add("viva");
+            setTimeout(function () {
+              poema.classList.remove("enfocado");
+              versos[i].classList.remove("viva");
+            }, 6000);
+          } },
+
+        { id: "fugaz", peso: 9, dura: 3000, movimiento: true, correr: function () {  // E09
+            var el = document.createElement("div");
+            el.className = "fugaz";
+            el.style.left = (Math.random() * 30) + "vw";
+            el.style.top = (4 + Math.random() * 22) + "vh";   // arriba: no cruza el texto
+            pon(el, 2600);
+            void el.offsetWidth;
+            el.classList.add("corre");
+            if (Math.random() < 0.34) setTimeout(function () { susurrar("pide algo"); }, 900);
+          } },
+
+        { id: "satelite", peso: 5, dura: 17500, movimiento: true, correr: function () {  // E18
+            var el = document.createElement("div");
+            el.className = "satelite";
+            el.style.top = (8 + Math.random() * 30) + "vh";
+            pon(el, 17500);
+          } },
+
+        { id: "latido", peso: 6, dura: 2200, movimiento: true, correr: function () {     // E21
+            var bloque = document.getElementById("s").parentNode;
+            bloque.classList.add("late");
+            setTimeout(function () { bloque.classList.remove("late"); }, 1800);
+          } },
+
+        { id: "digito", peso: 6, dura: 3600, correr: function () {    // E26
+            var nums = document.querySelectorAll("#reloj .num");
+            var el = nums[Math.floor(Math.random() * nums.length)];
+            el.classList.add("enamorado");
+            setTimeout(function () { el.classList.remove("enamorado"); }, 3000);
+          } }
+      ];
+
+      function elegible(e) {
+        if (suave && e.movimiento) return false;
+        return vistos.indexOf(e.id) < 0;
+      }
+
+      // Modo de prueba: ?evento=fugaz fuerza uno concreto y ?rapido los
+      // encadena cada pocos segundos. Sin parámetros no cambia nada.
+      var forzado = (location.search.match(/[?&]evento=([\w-]+)/) || [])[1];
+      var rapido = /[?&]rapido/.test(location.search);
+
+      function lanzar() {
+        if (ocupado || jugando() || document.hidden) return;
+        if (forzado) {
+          for (var f = 0; f < EVENTOS.length; f++) {
+            if (EVENTOS[f].id === forzado) {
+              ocupado = true; EVENTOS[f].correr(); libreEn(EVENTOS[f].dura); return;
+            }
+          }
+        }
+        var posibles = EVENTOS.filter(elegible);
+        if (!posibles.length) { vistos = []; posibles = EVENTOS.filter(elegible); }
+        var total = 0, i;
+        for (i = 0; i < posibles.length; i++) total += posibles[i].peso;
+        var tirada = Math.random() * total, acumulado = 0, elegido = posibles[0];
+        for (i = 0; i < posibles.length; i++) {
+          acumulado += posibles[i].peso;
+          if (tirada <= acumulado) { elegido = posibles[i]; break; }
+        }
+        ocupado = true;
+        elegido.correr();
+        libreEn(elegido.dura);
+        vistos.push(elegido.id);
+        if (vistos.length > 3) vistos.shift();
+      }
+
+      function agendar() {
+        clearTimeout(temporizador);
+        temporizador = setTimeout(function () {
+          lanzar();
+          agendar();
+        }, rapido ? 2500 : 25000 + Math.random() * 50000);   // entre 25 s y 75 s
+      }
+
+      // ── Interacción ──────────────────────────────────────────────
+      // E31: cada estrella del cielo es tocable y suelta una palabra.
+      function estrellaCercana(x, y) {
+        var hijas = cieloEl.children, mejor = null, mejorD = 30 * 30;
+        for (var i = 0; i < hijas.length; i++) {
+          var r = hijas[i].getBoundingClientRect();
+          var dx = r.left + r.width / 2 - x, dy = r.top + r.height / 2 - y;
+          var d = dx * dx + dy * dy;
+          if (d < mejorD) { mejorD = d; mejor = hijas[i]; }
+        }
+        return mejor;
+      }
+
+      function tocarCielo(e) {
+        if (jugando()) return;
+        if (e.target.closest && e.target.closest("button, a")) return;
+        var estrella = estrellaCercana(e.clientX, e.clientY);
+        if (!estrella) return;
+        estrella.classList.remove("estrella-viva");
+        void estrella.offsetWidth;
+        estrella.classList.add("estrella-viva");
+        var el = document.createElement("span");
+        el.className = "palabra";
+        el.textContent = PALABRAS[Math.floor(Math.random() * PALABRAS.length)];
+        el.style.left = e.clientX + "px";
+        el.style.top = (e.clientY - 14) + "px";
+        pon(el, 2400);
+      }
+
+      // E35: arrastrar el dedo deja polvo dorado que se apaga solo.
+      var pulsando = false, ultimoRastro = 0, rastros = 0;
+      function rastro(e) {
+        if (!pulsando || jugando() || suave) return;
+        var ahora = Date.now();
+        if (ahora - ultimoRastro < 45 || rastros > 28) return;
+        ultimoRastro = ahora;
+        var el = document.createElement("div");
+        el.className = "rastro";
+        el.style.left = e.clientX + "px";
+        el.style.top = e.clientY + "px";
+        rastros++;
+        capa.appendChild(el);
+        setTimeout(function () {
+          if (el.parentNode) el.parentNode.removeChild(el);
+          rastros--;
+        }, 1100);
+      }
+
+      document.addEventListener("pointerdown", function (e) { pulsando = true; tocarCielo(e); });
+      document.addEventListener("pointermove", rastro);
+      window.addEventListener("pointerup", function () { pulsando = false; });
+      window.addEventListener("pointercancel", function () { pulsando = false; });
+
+      // Con la pestaña oculta no se gastan eventos que ella no va a ver.
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) clearTimeout(temporizador); else agendar();
+      });
+
+      // ── Al entrar ────────────────────────────────────────────────
+      var mem = leerMem();
+      var hoy = fechaLocal();
+      var primeraDelDia = mem.ultimaVisita !== hoy;      // E46
+      mem.visitas = (mem.visitas || 0) + 1;
+      mem.ultimaVisita = hoy;
+      guardarMem(mem);
+
+      function saludo() {                                 // E39
+        var h = new Date().getHours();
+        if (h < 5) return "¿otra vez despierta? yo igual. hazme compañía un rato";
+        if (h < 12) return "buenos días, mi wawa. el día ya empezó mejor";
+        if (h < 20) return "hola, pequita. pasé a dejarte esto";
+        return "buenas noches, pequita. el cielo también hace guardia";
+      }
+
+      // La primera visita del día siempre recibe algo, y recibe lo mejor:
+      // el saludo y, detrás, la frase reservada para hoy.
+      setTimeout(function () { susurrar(saludo()); }, 2500);
+      if (primeraDelDia) {
+        setTimeout(function () { susurrar(fraseDelDia()); }, 13000);  // E02
+      }
+      setTimeout(agendar, rapido ? 600 : (primeraDelDia ? 24000 : 12000));
+    })();
+
+    // ── Minijuego: atrapar estrellas ───────────────────────────────
+    // Sesenta segundos. Caen estrellas, corazones y luciérnagas; se atrapan
+    // tocándolas o barriendo el dedo. La velocidad sube por dos vías: cada
+    // nueve segundos (nivel) y un poquito con cada acierto. No hay forma de
+    // perder: lo que se escapa, se escapa, y el reloj es el único final.
+    (function () {
+      var DURACION = 60;   // segundos de partida
+      var NIVELES = 6;     // escalones de velocidad
+
+      var PIQUES = [
+        "más rápido, wawa",
+        "eso, eso",
+        "no se te escapan",
+        "esto ya es tuyo",
+        "ahora sí que corren"
+      ];
+
+      var caja = document.getElementById("juego");
+      var lienzo = document.getElementById("lienzo");
+      var ctx = lienzo.getContext("2d");
+      var elMarcador = document.getElementById("marcador");
+      var elTiempo = document.getElementById("tiempo");
+      var elSusurro = document.getElementById("susurro");
+      var elFin = document.getElementById("juegoFin");
+      var elCifra = document.getElementById("finCifra");
+      var elRecord = document.getElementById("finRecord");
+      var elFrase = document.getElementById("finFrase");
+
+      var suave = window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      var W = 0, H = 0;                 // medidas en píxeles CSS
+      var bichos = [], chispas = [], cielo = [];
+      var reloj = 0;                    // segundos vividos, para el titileo
+      var puntos = 0, restante = DURACION, nivel = 0, nivelVisto = 0;
+      var jugando = false, pulsando = false;
+      var proximo = 0, ultimo = 0, rafId = 0;
+
+      function susurrar(texto) {
+        elSusurro.textContent = texto;
+        elSusurro.classList.remove("viva");
+        void elSusurro.offsetWidth;   // reinicia la animación
+        elSusurro.classList.add("viva");
+      }
+
+      function medir() {
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        W = caja.clientWidth; H = caja.clientHeight;
+        lienzo.width = Math.round(W * dpr);
+        lienzo.height = Math.round(H * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        // El mismo cielo de la portada, dibujado dentro del lienzo.
+        cielo = [];
+        for (var i = 0; i < 60; i++) {
+          cielo.push({ x: Math.random() * W, y: Math.random() * H, f: Math.random() * Math.PI * 2 });
+        }
+      }
+
+      // ── Dificultad: sube con el reloj y, un poco, con el acierto ──
+      function velocidad() {
+        var porNivel = 1 + nivel * 0.30;
+        var porAcierto = 1 + Math.min(puntos, 40) * 0.006;
+        var techo = suave ? 1.9 : 3.4;
+        return Math.min(porNivel * porAcierto, techo);
+      }
+      function cadencia() {
+        var base = 700 - nivel * 85 - Math.min(puntos, 40) * 4;
+        return Math.max(suave ? 420 : 250, base);
+      }
+
+      function soltar() {
+        var r = Math.random();
+        var tipo = r < 0.10 ? "corazon" : (r < 0.20 ? "luciernaga" : "estrella");
+        var radio = tipo === "corazon" ? 20 : 16;
+        var caida = H * (tipo === "corazon" ? 0.17 : 0.23) * velocidad();
+        bichos.push({
+          tipo: tipo,
+          x: radio + 12 + Math.random() * Math.max(1, W - 2 * (radio + 12)),
+          y: -radio - 10,
+          r: radio,
+          vy: caida * (0.85 + Math.random() * 0.3),
+          vx: tipo === "luciernaga" ? (Math.random() < 0.5 ? -1 : 1) * W * 0.06 : 0,
+          giro: Math.random() * Math.PI,
+          vgiro: (Math.random() - 0.5) * 2.4,
+          fase: Math.random() * Math.PI * 2
+        });
+      }
+
+      function chispear(x, y, color) {
+        if (suave) return;
+        for (var i = 0; i < 10; i++) {
+          var a = Math.random() * Math.PI * 2, v = 40 + Math.random() * 120;
+          chispas.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, vida: 1, color: color });
+        }
+      }
+
+      function tocar(x, y) {
+        for (var i = bichos.length - 1; i >= 0; i--) {
+          var b = bichos[i];
+          var dx = b.x - x, dy = b.y - y;
+          if (dx * dx + dy * dy <= (b.r + 22) * (b.r + 22)) {
+            bichos.splice(i, 1);
+            puntos += b.tipo === "corazon" ? 3 : 1;
+            elMarcador.textContent = "✦ " + puntos;
+            chispear(b.x, b.y, b.tipo === "corazon" ? "#c96b74" : "#d9a83f");
+            if (puntos % 7 === 0) susurrar(fraseAlAzar());   // guiño al 7 de agosto
+            return;
+          }
+        }
+      }
+
+      // ── Dibujo ───────────────────────────────────────────────────
+      function estrella(x, y, r, giro) {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(giro); ctx.beginPath();
+        for (var i = 0; i < 10; i++) {
+          var rad = i % 2 ? r * 0.42 : r;
+          var a = (Math.PI / 5) * i - Math.PI / 2;
+          ctx[i ? "lineTo" : "moveTo"](Math.cos(a) * rad, Math.sin(a) * rad);
+        }
+        ctx.closePath(); ctx.fill(); ctx.restore();
+      }
+      function corazon(x, y, r) {
+        ctx.save(); ctx.translate(x, y); ctx.scale(r / 16, r / 16); ctx.beginPath();
+        ctx.moveTo(0, 12);
+        ctx.bezierCurveTo(-18, -2, -11, -18, 0, -8);
+        ctx.bezierCurveTo(11, -18, 18, -2, 0, 12);
+        ctx.closePath(); ctx.fill(); ctx.restore();
+      }
+
+      function pintarCielo() {
+        ctx.fillStyle = "#ffffff";
+        for (var e = 0; e < cielo.length; e++) {
+          var s = cielo[e];
+          ctx.globalAlpha = suave ? 0.35 : 0.2 + 0.35 * (0.5 + 0.5 * Math.sin(reloj * 2 + s.f));
+          ctx.fillRect(s.x, s.y, 2, 2);
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function pintar() {
+        ctx.clearRect(0, 0, W, H);
+        pintarCielo();
+        for (var i = 0; i < bichos.length; i++) {
+          var b = bichos[i];
+          ctx.shadowBlur = suave ? 0 : 18;
+          if (b.tipo === "corazon") {
+            ctx.fillStyle = "#c96b74"; ctx.shadowColor = "rgba(201,107,116,.8)";
+            corazon(b.x, b.y, b.r);
+          } else if (b.tipo === "luciernaga") {
+            var brillo = 0.55 + 0.45 * Math.sin(b.fase);
+            ctx.fillStyle = "rgba(246,227,200," + brillo.toFixed(2) + ")";
+            ctx.shadowColor = "rgba(246,227,200,.9)";
+            ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.55, 0, Math.PI * 2); ctx.fill();
+          } else {
+            ctx.fillStyle = "#d9a83f"; ctx.shadowColor = "rgba(217,168,63,.85)";
+            estrella(b.x, b.y, b.r, b.giro);
+          }
+        }
+        ctx.shadowBlur = 0;
+        for (var j = 0; j < chispas.length; j++) {
+          var c = chispas[j];
+          ctx.globalAlpha = Math.max(c.vida, 0);
+          ctx.fillStyle = c.color;
+          ctx.beginPath(); ctx.arc(c.x, c.y, 2.2, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      function paso(ahora) {
+        if (!jugando) return;
+        rafId = requestAnimationFrame(paso);
+        var dt = Math.min((ahora - ultimo) / 1000, 0.05);
+        ultimo = ahora;
+        reloj += dt;
+
+        restante -= dt;
+        if (restante <= 0) { terminar(); return; }
+        elTiempo.textContent = "0:" + String(Math.ceil(restante)).padStart(2, "0");
+
+        // Escalón de velocidad: se anuncia para que se note que acelera.
+        nivel = Math.min(Math.floor((DURACION - restante) / 9), NIVELES);
+        if (nivel > nivelVisto) {
+          nivelVisto = nivel;
+          susurrar(PIQUES[Math.min(nivel - 1, PIQUES.length - 1)]);
+        }
+
+        proximo -= dt * 1000;
+        if (proximo <= 0) { soltar(); proximo = cadencia(); }
+
+        for (var i = bichos.length - 1; i >= 0; i--) {
+          var b = bichos[i];
+          b.y += b.vy * dt;
+          b.giro += b.vgiro * dt;
+          b.fase += dt * 6;
+          if (b.vx) {
+            b.x += Math.sin(b.fase * 0.6) * b.vx * dt * 6;
+            if (b.x < b.r) b.x = b.r;
+            if (b.x > W - b.r) b.x = W - b.r;
+          }
+          if (b.y - b.r > H) bichos.splice(i, 1);   // se escapó, sin castigo
+        }
+        for (var j = chispas.length - 1; j >= 0; j--) {
+          var c = chispas[j];
+          c.x += c.vx * dt; c.y += c.vy * dt; c.vy += 260 * dt; c.vida -= dt * 1.6;
+          if (c.vida <= 0) chispas.splice(j, 1);
+        }
+        pintar();
+      }
+
+      function empezar() {
+        medir();
+        bichos = []; chispas = [];
+        puntos = 0; restante = DURACION; nivel = 0; nivelVisto = 0; proximo = 320;
+        elMarcador.textContent = "✦ 0";
+        elTiempo.textContent = "0:" + DURACION;
+        elFin.classList.remove("viva");
+        jugando = true;
+        ultimo = performance.now();
+        rafId = requestAnimationFrame(paso);
+        susurrar("tócalas antes de que se caigan");
+      }
+
+      function terminar() {
+        jugando = false;
+        cancelAnimationFrame(rafId);
+        elTiempo.textContent = "0:00";
+        ctx.clearRect(0, 0, W, H);
+        pintarCielo();   // el cielo se queda detrás del resultado
+
+        var datos = leerMem();
+        var j = datos.juego || { record: 0, total: 0, partidas: 0 };
+        var esRecord = puntos > j.record;
+        j.record = Math.max(j.record, puntos);
+        j.total += puntos;
+        j.partidas += 1;
+        datos.juego = j;
+        guardarMem(datos);
+
+        elCifra.textContent = puntos;
+        elRecord.textContent = esRecord && puntos > 0
+          ? "récord nuevo · llevas " + j.total + " en total"
+          : "tu récord: " + j.record + " · llevas " + j.total + " en total";
+        elFrase.textContent = puntos === 0
+          ? "no atrapaste ninguna, y da igual: viniste, que es lo que quería"
+          : (puntos < 12 ? "las estrellas son difíciles; yo tampoco te atrapé a la primera"
+            : (puntos < 30 ? fraseAlAzar() : "eso ha sido rapidísimo. te amo un montonazo"));
+        elFin.classList.add("viva");
+      }
+
+      function abrir() {
+        caja.classList.add("viva");
+        caja.setAttribute("aria-hidden", "false");
+        empezar();
+      }
+      function cerrar() {
+        jugando = false;
+        cancelAnimationFrame(rafId);
+        caja.classList.remove("viva");
+        caja.setAttribute("aria-hidden", "true");
+        elFin.classList.remove("viva");
+      }
+
+      document.getElementById("juegoAbrir").addEventListener("click", abrir);
+      document.getElementById("juegoSalir").addEventListener("click", cerrar);
+      document.getElementById("finOtra").addEventListener("click", empezar);
+      document.getElementById("finVolver").addEventListener("click", cerrar);
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && caja.classList.contains("viva")) cerrar();
+      });
+
+      // Tocar o barrer el dedo: a alta velocidad, barrer es más justo.
+      lienzo.addEventListener("pointerdown", function (e) {
+        pulsando = true; tocar(e.clientX, e.clientY);
+      });
+      lienzo.addEventListener("pointermove", function (e) {
+        if (pulsando) tocar(e.clientX, e.clientY);
+      });
+      window.addEventListener("pointerup", function () { pulsando = false; });
+      window.addEventListener("pointercancel", function () { pulsando = false; });
+      window.addEventListener("resize", function () { if (caja.classList.contains("viva")) medir(); });
+
+      // Si se va a otra pestaña, la partida espera: ni gasta batería ni reloj.
+      document.addEventListener("visibilitychange", function () {
+        if (!caja.classList.contains("viva")) return;
+        if (document.hidden) { jugando = false; cancelAnimationFrame(rafId); }
+        else if (restante > 0 && !elFin.classList.contains("viva")) {
+          jugando = true; ultimo = performance.now(); rafId = requestAnimationFrame(paso);
+        }
+      });
+    })();
   </script>
 </body>
 </html>

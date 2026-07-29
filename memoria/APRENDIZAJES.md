@@ -19,6 +19,11 @@ Una línea por aprendizaje, más reciente arriba:
 `- [YYYY-MM-DD] <preferencia en imperativo> — por qué / alcance`
 
 ## Aprendizajes
+- [2026-07-29] VERIFICACIÓN VISUAL: usar `playwright@1.61.0` (es la versión que
+  corresponde al navegador ya cacheado en `~/Library/Caches/ms-playwright`,
+  `chromium_headless_shell-1228`). Instalarlo con `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`
+  en el scratchpad; cualquier otra versión se baja un Chromium nuevo (~150 MB) sin
+  necesidad. Para páginas estáticas, servirlas con `python3 -m http.server --bind 127.0.0.1`.
 - [2026-07-23] SUBIDA DE MEDIA: las funciones de Vercel topan el cuerpo en 4.5 MB, así
   que fotos a máxima calidad y vídeos NO pueden pasar por un Server Action ni por una
   route. El navegador sube DIRECTO a R2 con URL prefirmada (presigned PUT) vía
