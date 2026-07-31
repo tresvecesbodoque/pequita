@@ -52,10 +52,14 @@
     background: #fff; opacity: .5; animation: titila 3s infinite ease-in-out;
   }
   @keyframes titila { 0%,100% { opacity: .2 } 50% { opacity: .9 } }
-  .capa-eventos { transition: opacity 1.4s ease; }
-  /* El día ya llegó: se apagan las estrellas y la capa de eventos. */
+  .capa-eventos, .susurro-portada { transition: opacity 1.4s ease; }
+  /* El día ya llegó: se apagan las estrellas y los eventos. El susurro de la
+     portada vive fuera de .capa-eventos, así que hay que apagarlo aparte. */
   html.dia .cielo,
   html.dia .capa-eventos { opacity: 0; pointer-events: none; }
+  /* El susurro se pinta con una animación `forwards`, que gana a cualquier
+     opacidad normal: hay que cortarle la animación para poder apagarlo. */
+  html.dia .susurro-portada { animation: none; opacity: 0; pointer-events: none; }
   @media (prefers-reduced-motion: reduce) {
     body, body::before, .cielo, .capa-eventos { transition: none; }
   }

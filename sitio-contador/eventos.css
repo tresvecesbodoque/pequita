@@ -265,8 +265,8 @@ body.domingo { background: radial-gradient(1600px 900px at 50% -10%, #24274a 0%,
 .frasco {
   position: fixed; left: 16px; bottom: 16px; z-index: 7;
   display: flex; align-items: center; gap: 7px; padding: 8px 12px;
-  border: 1px solid rgba(217,168,63,.35); border-radius: 999px;
-  background: rgba(255,255,255,.04); color: var(--gold);
+  border: 1px solid var(--borde); border-radius: 999px;
+  background: var(--cristal); color: var(--gold);
   font-family: inherit; font-size: .78rem; cursor: pointer;
 }
 .frasco:hover { background: rgba(217,168,63,.12); }
