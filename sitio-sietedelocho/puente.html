@@ -4,8 +4,18 @@
 <meta charset="utf-8" />
 <meta name="robots" content="noindex" />
 <title>puente</title>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(180deg, #0e1730 0%, #0a1020 100%);
+    color: rgba(234,228,214,.7); font-family: ui-serif, Georgia, serif;
+    font-style: italic; text-align: center; padding: 26px;
+  }
+</style>
 </head>
 <body>
+<p>voy por tu frasco…</p>
 <!--
   PUENTE DE MEMORIA ENTRE DOMINIOS
 
@@ -56,11 +66,22 @@
     responder(e.origin);
   });
 
-  // Aviso de que ya está en pie, por si el mensaje del sitio llegó antes.
   if (parent !== window) {
+    // Aviso de que ya está en pie, por si el mensaje del sitio llegó antes.
     try { parent.postMessage({ tipo: "pequita:puente-listo", origen: location.origin }, "*"); }
     catch (e) {}
+    return;
   }
+
+  // Abierta a mano (no dentro del sitio): traspaso por enlace. Safari y
+  // Firefox no dejan leer el almacenamiento de otro dominio desde un iframe,
+  // así que ahí el puente de arriba vuelve vacío. Entrando por este enlace se
+  // lee como dueña de la casa y se lleva todo al sitio nuevo en la parte de
+  // la dirección que va tras la almohadilla, que no viaja a ningún servidor.
+  var CASA = "https://misiete.vercel.app";
+  if (location.origin === CASA) { location.replace(CASA + "/"); return; }
+  var carga = { origen: location.origin, mem: loGuardado() };
+  location.replace(CASA + "/#rescate=" + encodeURIComponent(JSON.stringify(carga)));
 })();
 </script>
 </body>

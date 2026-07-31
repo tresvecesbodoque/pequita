@@ -446,6 +446,23 @@
         guardarMem(apartado);
       }
 
+      // Traspaso por enlace: si viene de abrir a mano el puente de una
+      // dirección vieja, la memoria llega en la propia dirección. Es la vía
+      // que funciona en Safari y Firefox, que no dejan leer el almacenamiento
+      // de otro dominio dentro de un iframe. Se aplica aquí mismo, antes de
+      // que eventos.js exista, así que no hace falta recargar.
+      var porEnlace = location.hash.match(/^#rescate=([\s\S]+)$/);
+      if (porEnlace) {
+        try { history.replaceState(null, "", location.pathname + location.search); }
+        catch (e) { location.hash = ""; }
+        var carga = {};
+        try { carga = JSON.parse(decodeURIComponent(porEnlace[1])) || {}; } catch (e) {}
+        var conLoTraido = fundirRescate(carga.mem || {}) || leerMem();
+        conLoTraido.puentes = conLoTraido.puentes || {};
+        if (carga.origen) conLoTraido.puentes[carga.origen] = true;
+        guardarMem(conLoTraido);
+      }
+
       var pendientes = VIEJOS.filter(function (o) {
         return o !== location.origin && !(leerMem().puentes || {})[o];
       });
