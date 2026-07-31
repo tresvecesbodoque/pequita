@@ -3,6 +3,8 @@
    Todo lo que aparece vive en capas fijas: nunca empuja el contador.
    ══════════════════════════════════════════════════════════════════ */
 
+:root { --extra: 15s; }
+
 .capa-eventos { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
 .capa-eventos .tocable { pointer-events: auto; cursor: pointer; }
 
@@ -13,7 +15,7 @@
   font-style: italic; font-size: .95rem; line-height: 1.6;
   color: rgba(217,168,63,.85); opacity: 0;
 }
-.susurro-portada.viva { animation: asoma 8s ease forwards; }
+.susurro-portada.viva { animation: asoma calc(8s + var(--extra)) ease forwards; }
 @keyframes asoma {
   0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
   10%, 82% { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -24,7 +26,7 @@
   position: absolute; transform: translate(-50%, -50%);
   font-style: italic; font-size: .95rem; color: rgba(217,168,63,.95);
   text-shadow: 0 0 14px rgba(217,168,63,.5); white-space: nowrap;
-  animation: sube 2.4s ease forwards;
+  animation: sube calc(2.4s + var(--extra)) ease forwards;
 }
 @keyframes sube {
   0% { opacity: 0; transform: translate(-50%, -50%) scale(.9); }
@@ -39,7 +41,7 @@
   font-style: italic; font-size: clamp(.68rem, 3.4vw, 1.2rem);
   color: rgba(246,227,200,.75); opacity: 0; pointer-events: none;
 }
-.verso-extra.viva { animation: asoma 7s ease forwards; }
+.verso-extra.viva { animation: asoma calc(7s + var(--extra)) ease forwards; }
 
 /* E06 — nota al margen, como un papelito pegado */
 .margen {
@@ -47,7 +49,7 @@
   font-size: .78rem; line-height: 1.5; color: rgba(246,227,200,.9);
   background: rgba(255,255,255,.05); border: 1px dashed rgba(217,168,63,.45);
   border-radius: 4px; transform: rotate(-3deg); opacity: 0;
-  animation: pega 9s ease forwards; pointer-events: none;
+  animation: pega calc(9s + var(--extra)) ease forwards; pointer-events: none;
 }
 @keyframes pega {
   0% { opacity: 0; transform: rotate(-3deg) translateY(10px); }
@@ -65,7 +67,7 @@
   background: linear-gradient(90deg, rgba(255,255,255,0), #fff);
   transform-origin: 0 50%; opacity: 0;
 }
-.fugaz.corre { animation: cruza 1.6s cubic-bezier(.4,0,.9,.6) forwards; }
+.fugaz.corre { animation: cruza calc(1.6s + var(--extra)) cubic-bezier(.4,0,.9,.6) forwards; }
 @keyframes cruza {
   0%   { opacity: 0; transform: rotate(26deg) translateX(0) scaleX(.25); }
   14%  { opacity: 1; }
@@ -83,7 +85,7 @@
 
 .satelite {
   position: absolute; width: 3px; height: 3px; border-radius: 50%;
-  background: #fff; opacity: .7; animation: orbita 17s linear forwards;
+  background: #fff; opacity: .7; animation: orbita calc(17s + var(--extra)) linear forwards;
 }
 @keyframes orbita {
   from { transform: translate(-6vw, 0); }
@@ -91,12 +93,24 @@
 }
 
 /* E11 — avioneta con banderín */
-.avioneta { position: absolute; display: flex; align-items: center; gap: 10px; animation: vuela 15s linear forwards; }
+.avioneta { position: absolute; display: flex; align-items: center; gap: 0; animation: vuela calc(15s + var(--extra)) linear forwards; }
 .avioneta svg { flex: none; }
+/* El banderín va remolcado DETRÁS del avión, colgando de una cuerda, y
+   ondea como una tela de verdad. */
 .avioneta .banderin {
   padding: 5px 12px; font-size: .78rem; font-style: italic; white-space: nowrap;
   color: #2a1e08; background: rgba(217,168,63,.92);
-  border-radius: 3px; box-shadow: 2px 2px 0 rgba(124,27,34,.5);
+  border-radius: 2px; box-shadow: 2px 2px 0 rgba(124,27,34,.5);
+  transform-origin: 100% 50%; animation: flamea 1.4s ease-in-out infinite;
+}
+.avioneta .cuerda {
+  flex: none; width: 14px; height: 1px; background: rgba(217,168,63,.55);
+  transform-origin: 100% 50%; animation: flamea 1.4s ease-in-out infinite;
+}
+@keyframes flamea {
+  0%, 100% { transform: rotate(-2.5deg) skewY(1.5deg) scaleY(1); }
+  35%      { transform: rotate(1.5deg) skewY(-2deg) scaleY(.96); }
+  70%      { transform: rotate(-1deg) skewY(1deg) scaleY(1.03); }
 }
 @keyframes vuela { from { transform: translateX(-60vw) } to { transform: translateX(110vw) } }
 
@@ -105,7 +119,7 @@
 .criatura { position: absolute; bottom: 0; }
 
 /* ── El zorro: entra andando, se sienta, barre la cola, parpadea ── */
-.zorro { animation: zorro-entra 1.5s cubic-bezier(.3,.7,.4,1) both, zorro-se-va 1.4s ease-in 8.6s both; }
+.zorro { animation: zorro-entra 1.5s cubic-bezier(.3,.7,.4,1) both, zorro-se-va 1.4s ease-in calc(8.6s + var(--extra)) both; }
 .zorro.se-va { animation: zorro-se-va 1.2s ease-in both; }
 @keyframes zorro-entra {
   0%   { transform: translateX(-38vw) translateY(4px); }
@@ -127,7 +141,7 @@
 .zorro.mirando .cabeza { transform: rotate(-7deg) translateY(-2px); }
 
 /* ── La rosa: crece, abre en tres tiempos y se mece ── */
-.rosa { transform-origin: 50% 100%; animation: rosa-crece 1.8s cubic-bezier(.3,.8,.4,1) both, rosa-se-va 1.2s ease-in 9s both; }
+.rosa { transform-origin: 50% 100%; animation: rosa-crece 1.8s cubic-bezier(.3,.8,.4,1) both, rosa-se-va 1.2s ease-in calc(9s + var(--extra)) both; }
 @keyframes rosa-crece { from { transform: translateY(70%) scaleY(.5) } to { transform: translateY(0) scaleY(1) } }
 @keyframes rosa-se-va { from { transform: translateY(0) } to { transform: translateY(80%) } }
 .rosa .flor { transform-origin: 30px 30px; animation: mece 5.5s ease-in-out 2s infinite; }
@@ -140,7 +154,7 @@
 .rosa.abierta .flor { transform: scale(1.12); transition: transform .8s ease; }
 .petalo {
   position: absolute; font-size: .9rem; font-style: italic; color: var(--rose);
-  animation: cae-petalo 3.4s ease forwards; white-space: nowrap;
+  animation: cae-petalo calc(3.4s + var(--extra)) ease forwards; white-space: nowrap;
 }
 @keyframes cae-petalo {
   0% { opacity: 0; transform: translateY(-10px) rotate(0); }
@@ -165,11 +179,11 @@
 }
 
 /* E15 — globo */
-.globo { position: absolute; animation: flota 14s linear forwards; }
+.globo { position: absolute; animation: flota calc(14s + var(--extra)) linear forwards; }
 @keyframes flota { from { transform: translateY(110vh) } to { transform: translateY(-30vh) } }
 
 /* E16 — la luna, con su fase real */
-.luna { position: absolute; top: 7vh; right: 7vw; opacity: 0; animation: asoma-luna 16s ease forwards; }
+.luna { position: absolute; top: 7vh; right: 7vw; opacity: 0; animation: asoma-luna calc(16s + var(--extra)) ease forwards; }
 @keyframes asoma-luna { 0% { opacity: 0 } 10%,85% { opacity: .95 } 100% { opacity: 0 } }
 
 /* E17 constelación · E08/E20 palabras de estrellas */
@@ -184,7 +198,7 @@
 .polvo {
   position: absolute; left: 0; right: 0; bottom: 0; height: 45vh;
   background: linear-gradient(0deg, rgba(217,168,63,.22), transparent 75%);
-  opacity: 0; animation: respira 9s ease forwards;
+  opacity: 0; animation: respira calc(9s + var(--extra)) ease forwards;
 }
 @keyframes respira { 0% { opacity: 0 } 25%,70% { opacity: 1 } 100% { opacity: 0 } }
 
@@ -201,7 +215,7 @@
 .num.enamorado { color: var(--rose); transform: rotate(-8deg); }
 .bloque { transition: box-shadow .5s ease, border-color .5s ease; }
 .bloque.siete { border-color: rgba(217,168,63,.85); box-shadow: 0 0 20px -4px rgba(217,168,63,.6); }
-.bloque.late { animation: late .55s ease 3; }
+.bloque.late { animation: late .55s ease 14; }
 @keyframes late { 0%,100% { transform: scale(1) } 45% { transform: scale(1.07) } }
 .bloque.extra { animation: entra-bloque .6s ease both; }
 @keyframes entra-bloque { from { opacity: 0; transform: scale(.7) } to { opacity: 1; transform: scale(1) } }
@@ -256,7 +270,7 @@ body.domingo { background: radial-gradient(1600px 900px at 50% -10%, #24274a 0%,
 .coleccion {
   position: fixed; inset: 0; z-index: 45; display: none;   /* por encima del panel de pruebas */
   padding: 8vh 22px 22px; overflow-y: auto;
-  background: rgba(7,12,25,.94); backdrop-filter: blur(6px);
+  background: #070c19;   /* opaco: detrás no debe leerse nada */
 }
 .coleccion.viva { display: block; animation: entra .4s ease both; }
 @keyframes entra { from { opacity: 0 } to { opacity: 1 } }
@@ -273,11 +287,61 @@ body.domingo { background: radial-gradient(1600px 900px at 50% -10%, #24274a 0%,
   display: flex; align-items: center; justify-content: center;
   border: 1px solid rgba(217,168,63,.25); color: rgba(234,228,214,.35);
 }
+.calendario span.diaD { border-color: rgba(217,168,63,.9); color: var(--gold); font-weight: 700; }
 .calendario span.sellado { background: rgba(217,168,63,.85); color: #2a1e08; border-color: transparent; }
+.coleccion .apartado {
+  max-width: 30rem; margin: 0 auto 8px; text-align: center;
+  font-size: .68rem; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(234,228,214,.4);
+}
+.coleccion .vividos li.revivible {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  font-style: normal; font-size: .86rem;
+}
+.coleccion .vividos li.revivible span { display: flex; flex-direction: column; gap: 2px; text-align: left; }
+.coleccion .vividos li.revivible em {
+  font-style: normal; font-size: .68rem; color: rgba(234,228,214,.4); letter-spacing: .06em;
+}
+.coleccion .revivir {
+  flex: none; width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid rgba(217,168,63,.45); background: rgba(255,255,255,.04);
+  color: var(--gold); font-size: .8rem; cursor: pointer; line-height: 1;
+  transition: background .2s ease, transform .2s ease;
+}
+.coleccion .revivir:hover { background: rgba(217,168,63,.2); transform: scale(1.08); }
+
 .coleccion .cerrar {
   display: block; margin: 0 auto; padding: 12px 26px; border-radius: 999px;
   border: 1.5px solid rgba(217,168,63,.45); background: none;
   color: var(--gold); font-family: inherit; font-size: .95rem; cursor: pointer;
+}
+
+/* Nota de diagnóstico (?diag o botón del panel). No es para ella. */
+.diagnostico {
+  position: fixed; left: 50%; top: 12px; transform: translateX(-50%);
+  z-index: 50; max-width: 94vw; padding: 10px 14px; border-radius: 8px;
+  background: #070c19; border: 1px solid rgba(217,168,63,.45);
+  color: rgba(246,227,200,.9); font-family: ui-monospace, monospace;
+  font-size: .68rem; line-height: 1.6; text-align: center; cursor: pointer;
+  display: flex; flex-direction: column; gap: 2px; word-break: break-all;
+}
+.diagnostico b { color: var(--gold); font-weight: 400; font-size: .74rem; }
+
+/* Botón de detener: aparece solo mientras hay un evento en pantalla */
+.detener {
+  position: fixed; left: 50%; bottom: 15vh; transform: translateX(-50%) translateY(8px);
+  z-index: 9; padding: 8px 16px; border-radius: 999px;
+  border: 1px solid rgba(201,107,116,.5); background: rgba(10,16,32,.9);
+  color: rgba(201,107,116,.95); font-family: inherit; font-size: .72rem;
+  letter-spacing: .14em; cursor: pointer; opacity: 0; pointer-events: none;
+  transition: opacity .35s ease, transform .35s ease;
+}
+.detener.viva { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+body.con-pruebas .detener { bottom: 66vh; }
+
+/* Pistas dentro del frasco */
+.coleccion .pistas li {
+  font-style: italic; color: rgba(217,168,63,.8); border-bottom: 1px dashed rgba(217,168,63,.14);
 }
 
 /* ── Sobres dormidos (E51) ─────────────────────────────────────── */
@@ -306,7 +370,7 @@ body.amaneciendo { background: linear-gradient(180deg, #2b2340 0%, #14162c 55%, 
   transform: translateX(-50%); border-radius: 50% 50% 0 0;
   background: linear-gradient(180deg, #241030 0%, #14162c 100%);
   border-top: 1.5px solid rgba(217,168,63,.4); opacity: 0;
-  animation: respira 11s ease forwards;
+  animation: respira calc(11s + var(--extra)) ease forwards;
 }
 /* E59 — carta relámpago */
 .carta-rapida {
@@ -314,7 +378,7 @@ body.amaneciendo { background: linear-gradient(180deg, #2b2340 0%, #14162c 55%, 
   transform: translate(-50%, -50%); padding: 22px 20px;
   background: #f6e8d6; color: #4d2126; border-radius: 3px;
   box-shadow: 4px 6px 0 rgba(0,0,0,.35); font-size: .92rem; line-height: 1.7;
-  animation: carta 11s ease forwards;
+  animation: carta calc(11s + var(--extra)) ease forwards;
 }
 @keyframes carta {
   0% { opacity: 0; transform: translate(-50%, -140%) rotate(-8deg) scaleY(.2); }

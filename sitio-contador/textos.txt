@@ -1,0 +1,309 @@
+# ══════════════════════════════════════════════════════════════════
+#  TODOS LOS TEXTOS DEL SITIO
+#
+#  Reescribe lo que quieras. Reglas: una frase por línea, sin comillas
+#  ni comas. Las líneas que empiezan por # son comentarios y no salen.
+#  Los [corchetes] son las etiquetas de cada bloque: NO se tocan.
+#  Si borras todas las líneas de un bloque, vuelve el texto de fábrica.
+#  {hora} y {dias} se sustituyen solos por el número que toque.
+# ══════════════════════════════════════════════════════════════════
+
+
+# ── EL BANCO ──────────────────────────────────────────────────────
+# Susurros bajo el reloj, 8 segundos en pantalla, uno cada 10–20 s.
+# Es lo que más va a leer: sale en todas las visitas. No se repite
+# ninguna hasta agotar la lista entera. Cuanto más corta, mejor se lee.
+[banco]
+entré a mirar el número y me quedé pensando en ti
+falta menosssssss
+no te cuento el tiempo para que pase rápido; cuento para que valga cada segundo
+el número baja solo; lo demás lo hago yo
+guardé la sorpresa como se guarda el fuego: tapada, para que no se apague
+no sé escribir corto cuando escribo de ti
+el día pesó; pensarte no
+te amo un montonazo. así, sin métrica
+lo mejor del año no ha pasado y ya me tiene de buenas
+si te aburres de esperar, acuérdate de que yo espero contigo
+ojalá supieras cuánto de mi día ocupas sin enterarte
+estoy contando los días con la paciencia de quien ya sabe el final
+falta poco, wawa. y falta menos cada vez que miras
+te escribo poco y te pienso mucho
+quédate un poquito, que aquí no molestas nunca
+te amo con locura
+hay amores que se anuncian; el nuestro se repite. prefiero el nuestro
+contigo el tiempo dejó de ser trámite y se volvió lugar
+te elegiría mil veces con la misma torpeza y más ganas
+hay alguien que te piensa todos los días
+del crudo desastre de ser barro, tú eres la parte que vale
+y todavía no termino de escribirte
+
+
+# ── LOS SALUDOS ───────────────────────────────────────────────────
+# Uno por visita, a los 2,5 segundos, según la hora a la que entre.
+[saludo.madrugada]
+# de 00:00 a 05:00
+¿otra vez despierta? yo igual. hazme compañía un rato
+
+[saludo.manana]
+# de 05:00 a 12:00
+buenos días, mi wawa. el día ya empezó mejor
+
+[saludo.tarde]
+# de 12:00 a 20:00
+hola, pequita. pasé a dejarte algo y me quedé
+
+[saludo.noche]
+# de 20:00 a 00:00
+buenas noches, pequita. el cielo también hace guardia
+
+
+# ── PALABRAS AL TOCAR LAS ESTRELLAS ───────────────────────────────
+# Estas son las de reserva, y salen al azar. Si palabras.txt tiene
+# algo, mandan aquellas y salen en orden.
+[palabras]
+quédate
+siempre
+pequita
+te amo
+siete del tres
+falta poco
+
+
+# ── EL AVISO DE VUELTA ────────────────────────────────────────────
+# Cuando se agotan las seis sorpresas de la sesión. {hora} es la hora
+# concreta a la que vale la pena volver (entre 3 y 7 horas después).
+[avisos]
+por hoy ya te mostré bastante. vuelve como a las {hora} y traigo más
+hasta aquí llega esta tanda. a eso de las {hora} hay cosas nuevas
+me guardo el resto. vuelve a las {hora}, que no se me olvida
+
+
+# ── LAS CRIATURAS ─────────────────────────────────────────────────
+[zorro]
+# al tocarlo. Aparece cuando ella lleva 40 s sin tocar nada.
+me domesticaste!!! 
+
+[rosa]
+# el pétalo que cae al tocarla
+mi rosita única
+
+[globo]
+# al reventarlo
+eso también era para ti
+
+[luna]
+# al tocarla. Solo sale de noche y con luna llena.
+también te ves de noche
+
+[fugaz]
+# una de cada tres estrellas fugaces deja esto escrito
+pide algo
+
+[luciernagas.fin]
+# si quieres que las luciérnagas digan algo al irse, escríbelo aquí
+nos verás cuando la vida te traiga todo lo que has estado buscando 
+
+# ── EL RELOJ ──────────────────────────────────────────────────────
+[infinito]
+# los días parpadean a ∞ y vuelven. Solo si faltan más de 20 días.
+el tiempo también se equivoca
+
+[capicua]
+# cuando los dígitos son capicúa o todos iguales
+haz un deseo
+
+[dosSiete.marca]
+# al mantener pulsado "Nosotros II"
+segunda de siete estrofas. las otras te van a llegar
+
+[sietes]
+# el día que faltan 7, después de la lluvia de 77 sietes
+siete días. siete versos. siete estrofas
+
+
+# ── HORA, DÍA E HISTORIA ──────────────────────────────────────────
+[lunes]
+faltan menos, y yo también
+
+[dia7]
+# el día 7 de cada mes
+hoy es 7: el número que nos persigue
+
+[racha]
+# cuando lleva tres días seguidos entrando
+vienes todos los días… te vi
+
+[ausencia]
+# cuando vuelve después de más de tres días
+te fuiste un rato; el contador siguió, yo también
+
+[tardio]
+# a los 90 segundos con la página abierta
+¿sigues ahí? yo también
+
+[inactividad]
+# dos minutos sin tocar nada; el cielo baja la voz
+aquí te espero; es lo que mejor me sale
+
+[pulsacion]
+# al mantener el dedo quieto dos segundos; el fondo amanece
+quédate un poquito, que aquí no molestas nunca
+
+[giro]
+# al girar el teléfono a horizontal; las estrellas se caen
+se te cayó el cielo encima
+
+[lluvia]
+# gotas finas; solo en invierno y por la tarde
+que llueva; igual te pienso
+
+[margen]
+# papelito pegado al costado. {hora} es la hora real de esa visita.
+nota: te pensé a las {hora}, en medio de otra cosa
+
+[verso8]
+# un octavo verso que no existe, bajo el poema
+y todavía no termino de escribirte
+
+[segunda-vida]
+# después del cumpleaños, el contador sigue hacia arriba
+llevamos {dias} desde tu cumpleaños, y el contador sigue por gusto
+
+
+# ── LA CORRECCIÓN EN VIVO ─────────────────────────────────────────
+# En la nota de arriba, "mucho cariño" se tacha y se reescribe por
+# una de estas. Va rotando.
+[correcciones]
+muchísimo cariño
+un cariño que no cabe aquí
+mucho cariño y bastante insomnio
+cariño y semanas de trabajo
+mucho cariño, y me quedo corto
+
+
+# ── LOS BANDERINES DE LA AVIONETA ─────────────────────────────────
+# Cruzan la pantalla colgando de la avioneta. Cortos: si son largos,
+# el banderín no cabe en el móvil.
+[banderines]
+te amo un montonazo
+falta poco, wawa
+sigo aquí
+vuelvo en un rato
+esto lo escribí pensándote
+probablemente estoy pensando(te)
+
+
+# ── LAS CARTAS CORTAS ─────────────────────────────────────────────
+# Tres toques seguidos sobre la nota dorada. No se repite ninguna
+# hasta agotarlas.
+[cartas]
+Encontraste esto escarbando. Así encontraste todo lo mío: sin avisar.
+Si estás leyendo esto es que insististe. Me gusta que insistas.
+Dos líneas nada más: te amo, y ya falta menos.
+Nadie más va a leer esto. Es tuyo, como casi todo lo que escribo.
+La tercera estrofa ya está escrita. No la vas a ver hoy.
+
+[carta.diad]
+# la séptima: solo aparece el día del cumpleaños
+Séptima de siete. Hoy sí: entra y lee todo lo demás.
+
+
+# ── LOS DÍAS REDONDOS ─────────────────────────────────────────────
+# Una nota escrita para ese número exacto, en la primera visita de
+# ese día.
+[dias.30]
+Un mes. Cabe en la palma de la mano.
+
+[dias.21]
+Tres semanas. Ya se ve desde aquí.
+
+[dias.14]
+Dos semanas: no queda nada wawa.
+
+[dias.10]
+Diez. De aquí en adelante los cuento con los dedos.
+
+[dias.7]
+Siete días y siete versos. siete, siete, siete,,,,,,,
+
+[dias.3]
+Tres. Ya casi no hay que esperar.
+
+[dias.2]
+Mañana es la víspera. Duerme temprano, wawa.
+
+[dias.1]
+Hoy es el último día del año en que todavía no fue tu cumpleaños.
+
+
+# ── LOS LEGENDARIOS ───────────────────────────────────────────────
+[lluvia-estrellas]
+# después de las veinte fugaces seguidas
+todas para ti
+
+[eco]
+# el poema se desordena y suena un verso nuevo
+divina, boca viva… llueve este cuerpo nuevo en tu noche
+asumo el crudo desastre… bajo este nuevo cielo
+dedos que amasan… el filo de ser vulnerable
+
+[carta-relampago]
+# una hoja cae del cielo y se despliega. Es el texto más largo del
+# sitio: cabe un párrafo entero.
+Te escribo esto sabiendo que va a durar diez segundos en tu pantalla y años en mi cabeza. No hace falta que lo guardes: lo que quiero decirte no cabe en una hoja que se cae del cielo. Te amo, y llevo semanas preparándote algo que todavía no puedes ver.
+
+
+# ── LA VÍSPERA ────────────────────────────────────────────────────
+# El último minuto: los segundos enormes y una frase cada diez.
+[cuenta-final]
+ya está
+respira
+un poco más
+casi
+ahora sí
+feliz cumpleaños, wawa
+
+
+# ── EL MINIJUEGO ──────────────────────────────────────────────────
+# Los piques salen cada vez que el juego acelera (cada 9 segundos).
+[juego.piques]
+más rápido, wawa
+eso, eso
+no se te escapan
+esto ya es tuyo
+ahora sí que corren
+
+
+
+# Los cierres, según cuántas estrellas atrapó: ninguna, pocas, muchas.
+[juego.cierres]
+no atrapaste ninguna, y da igual: viniste, que es lo que quería
+las estrellas son difíciles; yo tampoco te atrapé a la primera
+eso ha sido rapidísimo. te amo un montonazo
+
+
+# ── CADA 7 ESTRELLAS ATRAPADAS ────────────────────────────────────
+# En el minijuego, cada vez que llega a un múltiplo de 7. Se mezclan
+# con las del banco: unas veces sale una de aquí y otras una de allí.
+[juego.siete]
+¿viste eso?
+te amooooooo
+ADMITO QUE ES REAAAAAAAL
+que seas muy feliz wawa
+te extraño mucho
+eres perfecta así tal como estás
+tan preciosa tú oye
+mírate que bonitaaaaaaa
+pexoxa tupenda
+Tannnnnnn linnnnnnnda que estás
+WOOOOOOOW WAPETONA SIGUE ASÍ
+
+
+# ── LA PISTA DEL RÉCORD ───────────────────────────────────────────
+# Solo sale cuando bate su propio récord Y atrapa 21 o más (tres
+# sietes). Adelanta lo del día 7 sin destriparlo. Después del 7 ya
+# no aparece nunca. Sale una al azar, sin repetir hasta agotarlas.
+[juego.pista]
+esto no se lo he dicho a nadie: el 7 vas a leer lo que llevan meses pensando quienes más te quieren
+te lo has ganado, así que va: el 7 se abre lo que quienes más te aman llevan guardando en silencio
+un secreto por el récord: el 7 vas a ver lo que han estado pensando de ti quienes más te aman

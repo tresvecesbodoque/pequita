@@ -34,6 +34,106 @@
     canciones: ["musica/01-morfina.mp3"]
   };
 
+  // ══════════════════════════════════════════════════════════════════
+  //  TEXTOS
+  //  Todo lo que dice el sitio vive en textos.txt, para poder reescribirlo
+  //  sin tocar código. Lo de aquí abajo es solo la copia de fábrica: si el
+  //  archivo trae un bloque, pisa a esta; si no, esta sigue en pie.
+  // ══════════════════════════════════════════════════════════════════
+  var TEXTOS = {
+    "saludo.madrugada": ["¿otra vez despierta? yo igual. hazme compañía un rato"],
+    "saludo.manana":    ["buenos días, mi wawa. el día ya empezó mejor"],
+    "saludo.tarde":     ["hola, pequita. pasé a dejarte algo y me quedé"],
+    "saludo.noche":     ["buenas noches, pequita. el cielo también hace guardia"],
+    palabras: ["quédate", "vuelve", "mírame", "otra vez", "sigo aquí",
+               "no me voy", "dilo", "sí", "tuya", "dos de siete", "ya falta poco"],
+    avisos: ["por hoy ya te mostré bastante. vuelve como a las {hora} y traigo más",
+             "hasta aquí llega esta tanda. a eso de las {hora} hay cosas nuevas",
+             "me guardo el resto. vuelve a las {hora}, que no se me olvida"],
+    zorro: ["me domesticaste, y ahora el resto del cielo me parece igual"],
+    rosa: ["no me riegues, quédate"],
+    globo: ["eso también era para ti"],
+    luna: ["también te ves de noche"],
+    fugaz: ["pide algo"],
+    "luciernagas.fin": [],
+    infinito: ["el tiempo también se equivoca"],
+    capicua: ["haz un deseo"],
+    "dosSiete.hora": ["2:07. dos de siete, como el poema"],
+    "dosSiete.marca": ["segunda de siete estrofas. las otras te van a llegar"],
+    sietes: ["siete días. siete versos. siete estrofas"],
+    lunes: ["faltan menos, y yo también"],
+    dia7: ["hoy es 7: el número que nos persigue"],
+    dia2: ["dos de siete. todavía quedan cinco por llegar"],
+    racha: ["vienes todos los días… te vi"],
+    ausencia: ["te fuiste un rato; el contador siguió, yo también"],
+    tardio: ["¿sigues ahí? yo también"],
+    inactividad: ["aquí te espero; es lo que mejor me sale"],
+    pulsacion: ["quédate un poquito, que aquí no molestas nunca"],
+    giro: ["se te cayó el cielo encima"],
+    lluvia: ["que llueva; igual te pienso"],
+    margen: ["nota: te pensé a las {hora}, en medio de otra cosa"],
+    verso8: ["y todavía no termino de escribirte"],
+    "segunda-vida": ["llevamos {dias} desde tu cumpleaños, y el contador sigue por gusto"],
+    correcciones: ["muchísimo cariño", "un cariño que no cabe aquí",
+                   "mucho cariño y bastante insomnio", "cariño y semanas de trabajo",
+                   "mucho cariño, y me quedo corto"],
+    banderines: ["te amo un montonazo", "falta poco, wawa", "sigo aquí",
+                 "vuelvo en un rato", "esto lo escribí pensándote"],
+    cartas: ["Encontraste esto escarbando. Así encontraste todo lo mío: sin avisar.",
+             "Si estás leyendo esto es que insististe. Me gusta que insistas.",
+             "Dos líneas nada más: te amo, y ya falta menos.",
+             "Nadie más va a leer esto. Es tuyo, como casi todo lo que escribo.",
+             "La tercera estrofa ya está escrita. No la vas a ver hoy.",
+             "Siete estrofas, y todas dicen lo mismo de maneras distintas."],
+    "carta.diad": ["Séptima de siete. Hoy sí: entra y lee todo lo demás."],
+    "dias.30": ["Un mes. Cabe en la palma de la mano."],
+    "dias.21": ["Tres semanas. Ya se ve desde aquí."],
+    "dias.14": ["Dos semanas: lo que dura un buen libro."],
+    "dias.10": ["Diez. De aquí en adelante los cuento con los dedos."],
+    "dias.7": ["Siete días y siete versos. No es casualidad, es cariño con calendario."],
+    "dias.3": ["Tres. Ya casi no hay que esperar, solo aguantar."],
+    "dias.2": ["Mañana es la víspera. Duerme temprano, wawa."],
+    "dias.1": ["Hoy es el último día del año en que todavía no fue tu cumpleaños."],
+    "lluvia-estrellas": ["todas para ti"],
+    eco: ["divina, boca viva… llueve este cuerpo nuevo en tu noche",
+          "asumo el crudo desastre… bajo este nuevo cielo",
+          "dedos que amasan… el filo de ser vulnerable"],
+    "carta-relampago": ["Te escribo esto sabiendo que va a durar diez segundos en tu " +
+      "pantalla y años en mi cabeza. No hace falta que lo guardes: lo que quiero " +
+      "decirte no cabe en una hoja que se cae del cielo. Te amo, y llevo semanas " +
+      "preparándote algo que todavía no puedes ver."],
+    "cuenta-final": ["ya está", "respira", "un poco más", "casi", "ahora sí",
+                     "feliz cumpleaños, wawa"],
+    "juego.piques": ["más rápido, wawa", "eso, eso", "no se te escapan",
+                     "esto ya es tuyo", "ahora sí que corren"],
+    "juego.cierres": ["no atrapaste ninguna, y da igual: viniste, que es lo que quería",
+                      "las estrellas son difíciles; yo tampoco te atrapé a la primera",
+                      "eso ha sido rapidísimo. te amo un montonazo"]
+  };
+  window.TEXTOS = TEXTOS;
+
+  function TL(clave) { return TEXTOS[clave] || []; }          // la lista entera
+  function T(clave) { return TL(clave)[0] || ""; }            // la primera línea
+
+  // Lee textos.txt: [etiqueta] abre bloque, # es comentario, el resto son
+  // líneas de texto. Un bloque vacío deja en pie el texto de fábrica.
+  function leerTextos(crudo) {
+    var bloques = {}, clave = null;
+    crudo.split("\n").forEach(function (linea) {
+      var l = linea.trim();
+      if (!l || l.charAt(0) === "#") return;
+      var m = l.match(/^\[([\w.-]+)\]$/);
+      if (m) { clave = m[1]; bloques[clave] = []; return; }
+      if (clave) bloques[clave].push(l);
+    });
+    Object.keys(bloques).forEach(function (k) {
+      if (bloques[k].length) TEXTOS[k] = bloques[k];
+    });
+    if (bloques.banco && bloques.banco.length && window.reemplazarBanco) {
+      window.reemplazarBanco(bloques.banco);
+    }
+  }
+
   // ── Utilidades ───────────────────────────────────────────────────
   var capa = document.getElementById("capaEventos");
   var elSusurro = document.getElementById("susurroPortada");
@@ -45,6 +145,9 @@
   var notaEl = document.getElementById("nota");
   var marcaEl = document.getElementById("marca");
   var cuerpo = document.body;
+  var ETIQUETAS = relojEl ? Array.prototype.map.call(relojEl.querySelectorAll(".lab"),
+    function (l) { return l.textContent; }) : [];
+  var NOTA_CARINO = (document.getElementById("notaCarino") || {}).textContent || "";
 
   var suave = window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -53,13 +156,61 @@
   function az(a, b) { return a + Math.random() * (b - a); }
   function uno(lista) { return lista[Math.floor(Math.random() * lista.length)]; }
 
+  // Todo lo que aparece se queda 15 segundos más de lo que pedía cada
+  // evento: si algo se le pasa, es porque no miró, no porque no diera tiempo.
+  var MAS = 15000;
+
+  // ══════════════════════════════════════════════════════════════════
+  //  LA ESCENA
+  //  Solo puede haber un evento en pantalla. Todo lo que crea (nodos y
+  //  temporizadores) queda apuntado en su escena, así que empezar otro
+  //  —o darle a detener— lo retira entero. Sin esto, repetir el avión
+  //  siete veces dejaba siete aviones volando a la vez.
+  // ══════════════════════════════════════════════════════════════════
+  var escenaActual = null;   // a quién se apuntan los plazos en este instante
+  var escenaViva = null;     // la que está en pantalla y hay que poder retirar
+  var _plazo = window.setTimeout.bind(window);
+  var _intervalo = window.setInterval.bind(window);
+
+  function conEscena(esc, fn) {
+    return function () {
+      var previa = escenaActual;
+      escenaActual = esc;
+      try { fn.apply(this, arguments); } finally { escenaActual = previa; }
+    };
+  }
+
+  // Estos dos tapan a los del navegador SOLO dentro de este archivo: si hay
+  // escena en marcha, el temporizador se apunta en ella y muere con ella.
+  function setTimeout(fn, ms) {
+    var esc = escenaActual;
+    var id = _plazo(esc ? conEscena(esc, fn) : fn, ms);
+    if (esc) esc.plazos.push(id);
+    return id;
+  }
+  function setInterval(fn, ms) {
+    var esc = escenaActual;
+    var id = _intervalo(esc ? conEscena(esc, fn) : fn, ms);
+    if (esc) esc.intervalos.push(id);
+    return id;
+  }
+
+  function apuntarNodo(el) {
+    if (escenaActual) escenaActual.nodos.push(el);
+    return el;
+  }
+
   function pon(el, ms) {
+    ms += MAS;
     capa.appendChild(el);
+    apuntarNodo(el);
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, ms);
     return el;
   }
   function ponFijo(el, ms) {
+    ms += MAS;
     document.body.appendChild(el);
+    apuntarNodo(el);
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, ms);
     return el;
   }
@@ -84,8 +235,17 @@
   mem.dias = mem.dias || [];
   mem.versos = mem.versos || 0;
   mem.cartas = mem.cartas || [];
+  mem.registro = mem.registro || [];      // lo que ha ido pasando, para revivirlo
 
-  function persistir() { guardarMem(mem); }
+  // Guarda MEZCLANDO con lo que ya hay en disco. Si escribiéramos nuestra
+  // copia entera, borraríamos lo que hayan guardado mientras tanto el
+  // minijuego (récord y partidas) o el poema plegable, porque ellos leen y
+  // escriben por su cuenta. Ese era el modo de perder el frasco.
+  function persistir() {
+    var disco = leerMem();
+    for (var k in mem) if (Object.prototype.hasOwnProperty.call(mem, k)) disco[k] = mem[k];
+    guardarMem(disco);
+  }
 
   function guardarEnFrasco(texto) {
     if (mem.coleccion.indexOf(texto) < 0) {
@@ -154,7 +314,7 @@
       setTimeout(function () {
         puntos.forEach(function (p) { if (p.parentNode) p.parentNode.removeChild(p); });
       }, 900);
-    }, 4200);
+    }, 4200 + MAS);
     return puntos;
   }
 
@@ -223,62 +383,13 @@
   }
 
   // ── Textos ───────────────────────────────────────────────────────
-  var PALABRAS = ["quédate", "vuelve", "mírame", "otra vez", "sigo aquí",
-                  "no me voy", "dilo", "sí", "tuya", "dos de siete",
-                  "ya falta poco"];
 
-  var BANDERINES = ["te amo un montonazo", "falta poco, wawa", "sigo aquí",
-                    "vuelvo en un rato", "esto lo escribí pensándote"];
 
-  var CARTAS_CORTAS = [                                              // E37
-    "Encontraste esto escarbando. Así encontraste todo lo mío: sin avisar.",
-    "Si estás leyendo esto es que insististe. Me gusta que insistas.",
-    "Dos líneas nada más: te amo, y ya falta menos.",
-    "Nadie más va a leer esto. Es tuyo, como casi todo lo que escribo.",
-    "La tercera estrofa ya está escrita. No la vas a ver hoy.",
-    "Siete estrofas, y todas dicen lo mismo de maneras distintas."
-  ];
-  // La séptima solo el día D.
-  var CARTA_DEL_DIA_D = "Séptima de siete. Hoy sí: entra y lee todo lo demás.";
 
-  // E07 — la nota se tacha y se reescribe. Cinco versiones, rotando.
-  var CORRECCIONES = [
-    "muchísimo cariño",
-    "un cariño que no cabe aquí",
-    "mucho cariño y bastante insomnio",
-    "cariño y semanas de trabajo",
-    "mucho cariño, y me quedo corto"
-  ];
 
-  // Cuando se agota la ración de la sesión. {hora} = hora concreta de vuelta.
-  var AVISOS = [                                                     // ración
-    "por hoy ya te mostré bastante. vuelve como a las {hora} y traigo más",
-    "hasta aquí llega esta tanda. a eso de las {hora} hay cosas nuevas",
-    "me guardo el resto. vuelve a las {hora}, que no se me olvida"
-  ];
 
-  var NOTAS_REDONDAS = {                                             // E30
-    30: "Un mes. Cabe en la palma de la mano.",
-    21: "Tres semanas. Ya se ve desde aquí.",
-    14: "Dos semanas: lo que dura un buen libro.",
-    10: "Diez. De aquí en adelante los cuento con los dedos.",
-    7:  "Siete días y siete versos. No es casualidad, es cariño con calendario.",
-    3:  "Tres. Ya casi no hay que esperar, solo aguantar.",
-    2:  "Mañana es la víspera. Duerme temprano, wawa.",
-    1:  "Hoy es el último día del año en que todavía no fue tu cumpleaños."
-  };
 
-  var CARTA_RELAMPAGO =                                              // E59
-    "Te escribo esto sabiendo que va a durar diez segundos en tu pantalla y " +
-    "años en mi cabeza. No hace falta que lo guardes: lo que quiero decirte " +
-    "no cabe en una hoja que se cae del cielo. Te amo, y llevo semanas " +
-    "preparándote algo que todavía no puedes ver.";
 
-  var VERSOS_NUEVOS = [                                              // E58
-    "divina, boca viva… llueve este cuerpo nuevo en tu noche",
-    "asumo el crudo desastre… bajo este nuevo cielo",
-    "dedos que amasan… el filo de ser vulnerable"
-  ];
 
   // ══════════════════════════════════════════════════════════════════
   //  CATÁLOGO DE AMBIENTE (los que salen solos, por azar)
@@ -286,11 +397,11 @@
   var AMBIENTE = [
 
     // ── Susurros de texto ────────────────────────────────────────
-    { id: "susurro", peso: 8, dura: 8500, correr: function () {           // E01
+    { id: "susurro", peso: 8, dura: 23500, correr: function () {           // E01
         susurrar(fraseAlAzar());
       } },
 
-    { id: "verso", peso: 7, dura: 7000, correr: function () {             // E04
+    { id: "verso", peso: 7, dura: 22000, correr: function () {             // E04
         if (window.abrirPoema) window.abrirPoema(7500);
         var i = Math.floor(Math.random() * versos.length);
         poema.classList.add("enfocado");
@@ -298,14 +409,14 @@
         setTimeout(function () {
           poema.classList.remove("enfocado");
           versos[i].classList.remove("viva");
-        }, 6000);
+        }, 6000 + MAS);
       } },
 
-    { id: "verso-extra", peso: 3, dura: 7500, correr: function () {       // E05
+    { id: "verso-extra", peso: 3, dura: 22500, correr: function () {       // E05
         if (window.abrirPoema) window.abrirPoema(8500);
         var el = document.createElement("p");
         el.className = "verso-extra";
-        el.textContent = "y todavía no termino de escribirte";
+        el.textContent = T("verso8");
         setTimeout(function () {
           var caja = poema.getBoundingClientRect();
           el.style.top = (caja.bottom + 6) + "px";
@@ -313,41 +424,40 @@
         ponFijo(el, 7200);
         void el.offsetWidth;
         el.classList.add("viva");
-        guardarEnFrasco("y todavía no termino de escribirte");
+        guardarEnFrasco(T("verso8"));
       } },
 
-    { id: "margen", peso: 4, dura: 9500, correr: function () {            // E06
+    { id: "margen", peso: 4, dura: 24500, correr: function () {            // E06
         var ahora = new Date();
         var el = document.createElement("div");
         el.className = "margen";
-        el.textContent = "nota: te pensé a las " +
-          ahora.getHours() + ":" + ("0" + ahora.getMinutes()).slice(-2) +
-          ", en medio de otra cosa";
+        el.textContent = T("margen").replace("{hora}",
+          ahora.getHours() + ":" + ("0" + ahora.getMinutes()).slice(-2));
         var derecha = Math.random() < 0.5;
         el.style.top = az(18, 62) + "vh";
         if (derecha) el.style.right = "4vw"; else el.style.left = "4vw";
         ponFijo(el, 9200);
       } },
 
-    { id: "correccion", peso: 3, dura: 6500, correr: function () {        // E07
+    { id: "correccion", peso: 3, dura: 21500, correr: function () {        // E07
         var span = document.getElementById("notaCarino");
         if (!span) return;
         var original = span.textContent;
-        var mejor = uno(CORRECCIONES);
+        var mejor = uno(TL("correcciones"));
         span.innerHTML = '<span class="tachado">' + original + '</span>';
         setTimeout(function () {
           span.innerHTML = '<span class="tachado">' + original + '</span> ' +
             '<span class="reescrito">' + mejor + '</span>';
         }, 1100);
-        setTimeout(function () { span.textContent = original; }, 6000);
+        setTimeout(function () { span.textContent = original; }, 6000 + MAS);
       } },
 
-    { id: "nombre", peso: 2, dura: 6500, correr: function () {            // E08
+    { id: "nombre", peso: 2, dura: 21500, correr: function () {            // E08
         escribirConPuntos("ISI", window.innerHeight * 0.12, 11);
       } },
 
     // ── Cosas que cruzan el cielo ────────────────────────────────
-    { id: "fugaz", peso: 9, dura: 3000, movimiento: true, correr: function () {   // E09
+    { id: "fugaz", peso: 9, dura: 18000, movimiento: true, correr: function () {   // E09
         var el = document.createElement("div");
         el.className = "fugaz";
         el.style.left = (Math.random() * 30) + "vw";
@@ -355,10 +465,10 @@
         pon(el, 2600);
         void el.offsetWidth;
         el.classList.add("corre");
-        if (Math.random() < 0.34) setTimeout(function () { susurrar("pide algo", false); }, 900);
+        if (Math.random() < 0.34) setTimeout(function () { susurrar(T("fugaz"), false); }, 900);
       } },
 
-    { id: "fugaz-lenta", peso: 3, dura: 7000, movimiento: true, correr: function () {  // E10
+    { id: "fugaz-lenta", peso: 3, dura: 22000, movimiento: true, correr: function () {  // E10
         var el = document.createElement("div");
         el.className = "fugaz-lenta";
         el.style.left = az(10, 40) + "vw";
@@ -385,15 +495,16 @@
         }, 4200);
       } },
 
-    { id: "avioneta", peso: 4, dura: 15500, movimiento: true, correr: function () {    // E11
+    { id: "avioneta", peso: 4, dura: 30500, movimiento: true, correr: function () {    // E11
         var el = document.createElement("div");
         el.className = "avioneta";
         el.style.top = az(10, 26) + "vh";
-        el.innerHTML = DIBUJO.avioneta + '<span class="banderin">' + uno(BANDERINES) + '</span>';
+        el.innerHTML = '<span class="banderin">' + uno(TL("banderines")) + '</span>' +
+          '<span class="cuerda"></span>' + DIBUJO.avioneta;
         pon(el, 15200);
       } },
 
-    { id: "zorro", peso: 2, dura: 9500, correr: function () {             // E12
+    { id: "zorro", peso: 2, dura: 24500, correr: function () {             // E12
         var el = document.createElement("div");
         el.className = "criatura zorro tocable";
         el.style.left = az(12, 62) + "vw";
@@ -401,13 +512,13 @@
         el.addEventListener("click", function () {
           // Levanta la cabeza antes de irse; no se desvanece, se va andando.
           el.classList.add("mirando");
-          susurrar("me domesticaste, y ahora el resto del cielo me parece igual");
-          setTimeout(function () { el.classList.add("se-va"); }, 1400);
+          susurrar(T("zorro"));
+          setTimeout(function () { el.classList.add("se-va"); }, 1400 + MAS);
         });
         pon(el, 9200);
       } },
 
-    { id: "rosa", peso: 2, dura: 9500, correr: function () {              // E13
+    { id: "rosa", peso: 2, dura: 24500, correr: function () {              // E13
         var el = document.createElement("div");
         el.className = "criatura rosa tocable";
         el.style.left = az(12, 66) + "vw";
@@ -416,7 +527,7 @@
           el.classList.add("abierta");
           var p = document.createElement("div");
           p.className = "petalo";
-          p.textContent = "no me riegues, quédate";
+          p.textContent = T("rosa");
           var caja = el.getBoundingClientRect();
           p.style.left = caja.left + "px";
           p.style.top = caja.top + "px";
@@ -425,7 +536,7 @@
         pon(el, 9200);
       } },
 
-    { id: "luciernagas", peso: 4, dura: 16000, correr: function () {      // E14
+    { id: "luciernagas", peso: 4, dura: 31000, correr: function () {      // E14
         var bichos = [];
         var cuantas = Math.round(az(5, 9));
         for (var i = 0; i < cuantas; i++) {
@@ -447,10 +558,10 @@
           });
         }
         document.addEventListener("pointermove", huir);
-        setTimeout(function () { document.removeEventListener("pointermove", huir); }, 15500);
+        setTimeout(function () { document.removeEventListener("pointermove", huir); }, 15500 + MAS);
       } },
 
-    { id: "globo", peso: 3, dura: 14500, movimiento: true, correr: function () {   // E15
+    { id: "globo", peso: 3, dura: 29500, movimiento: true, correr: function () {   // E15
         var el = document.createElement("div");
         el.className = "globo tocable";
         el.style.left = az(15, 75) + "vw";
@@ -459,22 +570,22 @@
           var caja = el.getBoundingClientRect();
           confeti(12, caja.left, caja.top);
           el.style.display = "none";
-          susurrar("eso también era para ti");
+          susurrar(T("globo"));
         });
         pon(el, 14200);
       } },
 
-    { id: "luna", peso: 3, dura: 16500, cuando: function () {             // E16
+    { id: "luna", peso: 3, dura: 31500, cuando: function () {             // E16
         var h = new Date().getHours(); return h >= 19 || h < 7;
       }, correr: function () {
         var el = document.createElement("div");
         el.className = "luna tocable";
         el.innerHTML = luna();
-        el.addEventListener("click", function () { susurrar("también te ves de noche"); });
+        el.addEventListener("click", function () { susurrar(T("luna")); });
         pon(el, 16200);
       } },
 
-    { id: "constelacion", peso: 2, dura: 9000, correr: function () {      // E17
+    { id: "constelacion", peso: 2, dura: 24000, correr: function () {      // E17
         var forma = [[0,20],[14,6],[30,2],[44,10],[38,26],[22,38],[6,30]];  // corazón torcido
         var x0 = window.innerWidth / 2 - 60, y0 = window.innerHeight * 0.16, k = 2.6;
         var svgEl = document.createElement("div");
@@ -492,43 +603,43 @@
         svgEl.style.transition = "opacity 1.2s ease";
         pon(svgEl, 8800);
         setTimeout(function () { svgEl.style.opacity = "1"; }, 50);
-        setTimeout(function () { svgEl.style.opacity = "0"; }, 6800);
+        setTimeout(function () { svgEl.style.opacity = "0"; }, 6800 + MAS);
       } },
 
-    { id: "satelite", peso: 5, dura: 17500, movimiento: true, correr: function () {   // E18
+    { id: "satelite", peso: 5, dura: 32500, movimiento: true, correr: function () {   // E18
         var el = document.createElement("div");
         el.className = "satelite";
         el.style.top = (8 + Math.random() * 30) + "vh";
         pon(el, 17500);
       } },
 
-    { id: "polvo", peso: 4, dura: 9500, correr: function () {             // E19
+    { id: "polvo", peso: 4, dura: 24500, correr: function () {             // E19
         pon(Object.assign(document.createElement("div"), { className: "polvo" }), 9200);
       } },
 
-    { id: "pecas", peso: 2, dura: 7000, correr: function () {             // E20
+    { id: "pecas", peso: 2, dura: 22000, correr: function () {             // E20
         escribirConPuntos("PEQUITA", window.innerHeight * 0.14, 9);
       } },
 
     // ── El reloj se porta raro ───────────────────────────────────
-    { id: "latido", peso: 6, dura: 2200, movimiento: true, correr: function () {     // E21
+    { id: "latido", peso: 6, dura: 17200, movimiento: true, correr: function () {     // E21
         var bloque = document.getElementById("s").parentNode;
         bloque.classList.add("late");
-        setTimeout(function () { bloque.classList.remove("late"); }, 1800);
+        setTimeout(function () { bloque.classList.remove("late"); }, 1800 + MAS);
       } },
 
-    { id: "infinito", peso: 2, dura: 5000, correr: function () {          // E22
+    { id: "infinito", peso: 2, dura: 20000, correr: function () {          // E22
         var d = document.getElementById("d"), valor = d.textContent;
         window.relojTomado = true;
         d.textContent = "∞";
         setTimeout(function () {
           d.textContent = valor;
           window.relojTomado = false;
-          susurrar("el tiempo también se equivoca", false);
-        }, 2000);
+          susurrar(T("infinito"), false);
+        }, 2000 + MAS);
       } },
 
-    { id: "marcha-atras", peso: 2, dura: 4500, correr: function () {      // E23
+    { id: "marcha-atras", peso: 2, dura: 19500, correr: function () {      // E23
         var s = document.getElementById("s");
         var valor = parseInt(s.textContent, 10) || 0;
         window.relojTomado = true;
@@ -540,7 +651,7 @@
         }, 500);
       } },
 
-    { id: "besos", peso: 3, dura: 9000, correr: function () {             // E24
+    { id: "besos", peso: 3, dura: 24000, correr: function () {             // E24
         var bloque = document.createElement("div");
         bloque.className = "bloque extra";
         bloque.innerHTML = '<div class="num" id="numBesos">0</div><div class="lab">besos</div>';
@@ -551,28 +662,28 @@
           clearInterval(t);
           bloque.style.transition = "opacity .8s"; bloque.style.opacity = "0";
           setTimeout(function () { if (bloque.parentNode) relojEl.removeChild(bloque); }, 800);
-        }, 7200);
+        }, 7200 + MAS);
       } },
 
-    { id: "etiquetas", peso: 4, dura: 7000, correr: function () {         // E25
+    { id: "etiquetas", peso: 4, dura: 22000, correr: function () {         // E25
         var labs = relojEl.querySelectorAll(".lab");
         var nuevas = ["días sin verte", "horas pensándote", "minutos tontos", "segundos"];
         var viejas = [];
         labs.forEach(function (l, i) { viejas.push(l.textContent); l.textContent = nuevas[i] || l.textContent; });
         setTimeout(function () {
           labs.forEach(function (l, i) { l.textContent = viejas[i]; });
-        }, 5500);
+        }, 5500 + MAS);
       } },
 
-    { id: "digito", peso: 6, dura: 3600, correr: function () {            // E26
+    { id: "digito", peso: 6, dura: 18600, correr: function () {            // E26
         var nums = document.querySelectorAll("#reloj .num");
         var el = nums[Math.floor(Math.random() * nums.length)];
         el.classList.add("enamorado");
-        setTimeout(function () { el.classList.remove("enamorado"); }, 3000);
+        setTimeout(function () { el.classList.remove("enamorado"); }, 3000 + MAS);
       } },
 
     // ── Clima ────────────────────────────────────────────────────
-    { id: "lluvia", peso: 3, dura: 14000, movimiento: true, correr: function () {    // E43
+    { id: "lluvia", peso: 3, dura: 29000, movimiento: true, correr: function () {    // E43
         for (var i = 0; i < 60; i++) {
           var g = document.createElement("div");
           g.className = "gota";
@@ -581,11 +692,11 @@
           g.style.animationDelay = az(0, 9) + "s";
           pon(g, 13500);
         }
-        setTimeout(function () { susurrar("que llueva; igual te pienso"); }, 2500);
+        setTimeout(function () { susurrar(T("lluvia")); }, 2500);
       } },
 
     // ── Legendarios (peso mínimo: ~1 de cada 40 visitas) ─────────
-    { id: "lluvia-estrellas", peso: 0.5, dura: 11000, movimiento: true, correr: function () {  // E56
+    { id: "lluvia-estrellas", peso: 0.5, dura: 26000, movimiento: true, correr: function () {  // E56
         for (var i = 0; i < 20; i++) {
           (function (k) {
             setTimeout(function () {
@@ -599,10 +710,10 @@
             }, k * 380);
           })(i);
         }
-        setTimeout(function () { susurrar("todas para ti"); }, 8200);
+        setTimeout(function () { susurrar(T("lluvia-estrellas")); }, 8200);
       } },
 
-    { id: "planeta", peso: 0.5, dura: 12000, correr: function () {        // E57
+    { id: "planeta", peso: 0.5, dura: 27000, correr: function () {        // E57
         var el = document.createElement("div");
         el.className = "planeta";
         pon(el, 11500);
@@ -611,10 +722,10 @@
         quien.innerHTML = svg(40, 26, '<circle cx="13" cy="9" r="5"/><path d="M13 14v14"/><path d="M6 34l7-6 7 6"/><path d="M6 22l7 3 7-3"/>');
         pon(quien, 11500);
         setTimeout(function () { quien.style.opacity = ".85"; }, 900);
-        setTimeout(function () { quien.style.opacity = "0"; }, 9000);
+        setTimeout(function () { quien.style.opacity = "0"; }, 9000 + MAS);
       } },
 
-    { id: "eco-poema", peso: 0.5, dura: 11000, correr: function () {      // E58
+    { id: "eco-poema", peso: 0.5, dura: 26000, correr: function () {      // E58
         if (window.abrirPoema) window.abrirPoema(11000);
         var lista = Array.prototype.slice.call(versos);
         lista.forEach(function (v) {
@@ -623,18 +734,18 @@
         });
         setTimeout(function () {
           poema.classList.add("enfocado");
-          susurrar(uno(VERSOS_NUEVOS));
+          susurrar(uno(TL("eco")));
         }, 1200);
         setTimeout(function () {
           lista.forEach(function (v) { v.classList.remove("baila"); });
           poema.classList.remove("enfocado");
-        }, 8000);
+        }, 8000 + MAS);
       } },
 
-    { id: "carta-rapida", peso: 0.5, dura: 12000, correr: function () {   // E59
+    { id: "carta-rapida", peso: 0.5, dura: 27000, correr: function () {   // E59
         var el = document.createElement("div");
         el.className = "carta-rapida";
-        el.textContent = CARTA_RELAMPAGO;
+        el.textContent = T("carta-relampago");
         ponFijo(el, 11500);
         guardarEnFrasco("(la carta que cayó del cielo)");
       } }
@@ -765,9 +876,85 @@
     return !e.cuando || e.cuando(c);
   }
 
+  // Deja constancia en el frasco de que esto pasó, con su hora.
+  function anotarEnRegistro(id) {
+    mem.registro = mem.registro || [];
+    mem.registro.push({ id: id, cuando: Date.now() });
+    if (mem.registro.length > 80) mem.registro.shift();
+    persistir();
+    pintarFrasco();
+  }
+
+  // Arranca una escena limpia: lo que hubiera en pantalla se retira.
+  function iniciarEscena(id, ms) {
+    detenerEscena();
+    var esc = { id: id, nodos: [], plazos: [], intervalos: [] };
+    escenaViva = esc;
+    escenaActual = esc;
+    mostrarDetener(true);
+    _plazo(function () { if (escenaViva === esc) detenerEscena(); }, (ms || 12000) + 1500);
+    return esc;
+  }
+
+  // Retira todo lo del evento en curso y deja la página como estaba.
+  function detenerEscena() {
+    var esc = escenaViva;
+    escenaViva = null;
+    escenaActual = null;
+    if (esc) {
+      esc.plazos.forEach(function (t) { clearTimeout(t); });
+      esc.intervalos.forEach(function (t) { clearInterval(t); });
+      esc.nodos.forEach(function (n) { if (n && n.parentNode) n.parentNode.removeChild(n); });
+    }
+    // Lo que los eventos tocan de la propia página y hay que devolver.
+    if (poema) poema.classList.remove("enfocado");
+    Array.prototype.forEach.call(document.querySelectorAll(".verso.viva"),
+      function (v) { v.classList.remove("viva"); });
+    Array.prototype.forEach.call(document.querySelectorAll(".verso.baila"),
+      function (v) { v.classList.remove("baila"); });
+    Array.prototype.forEach.call(document.querySelectorAll(".num.enamorado"),
+      function (n) { n.classList.remove("enamorado"); });
+    Array.prototype.forEach.call(document.querySelectorAll(".bloque.late"),
+      function (b) { b.classList.remove("late"); });
+    Array.prototype.forEach.call(document.querySelectorAll("#reloj .bloque.extra"),
+      function (b) { if (b.parentNode) b.parentNode.removeChild(b); });
+    Array.prototype.forEach.call(cieloEl.children, function (s) { s.style.transform = ""; });
+    if (relojEl) {
+      var labs = relojEl.querySelectorAll(".lab");
+      for (var i = 0; i < labs.length && i < ETIQUETAS.length; i++) labs[i].textContent = ETIQUETAS[i];
+    }
+    var carino = document.getElementById("notaCarino");
+    if (carino && NOTA_CARINO) carino.textContent = NOTA_CARINO;
+    cuerpo.classList.remove("amanece");
+    window.relojTomado = false;
+    mostrarDetener(false);
+    ocupado = false;
+  }
+  window.detenerEscena = detenerEscena;
+
+  // Botón de detener: solo está mientras hay algo en pantalla.
+  var botonDetener = null;
+  function mostrarDetener(si) {
+    if (!botonDetener) {
+      botonDetener = document.createElement("button");
+      botonDetener.className = "detener";
+      botonDetener.type = "button";
+      botonDetener.innerHTML = "&#9632; detener";
+      botonDetener.addEventListener("click", function (e) {
+        e.stopPropagation();
+        detenerEscena();
+      });
+      document.body.appendChild(botonDetener);
+    }
+    botonDetener.classList.toggle("viva", !!si);
+  }
+
   function correr(e) {
     ocupado = true;
+    iniciarEscena(e.id, e.dura);
     try { e.correr(); } catch (err) { ocupado = false; return; }
+    escenaActual = null;   // los plazos ya creados siguen apuntando a su escena
+    anotarEnRegistro(e.id);
     libreEn(e.dura);
     vistosSesion.push(e.id);
     anotarVisto(e.id);
@@ -778,10 +965,7 @@
     // El modo forzado es una herramienta de prueba: se salta el candado.
     if (!forzado && (ocupado || jugando() || document.hidden)) return;
     if (forzado) {
-      for (var f = 0; f < AMBIENTE.length; f++) {
-        if (AMBIENTE[f].id === forzado) { ocupado = true; AMBIENTE[f].correr(); libreEn(AMBIENTE[f].dura); return; }
-      }
-      if (FORZABLES[forzado]) { ocupado = true; FORZABLES[forzado](); libreEn(9000); return; }
+      revivir(forzado);
       return;
     }
     if (gastados >= RACION) { avisarVuelta(); return; }
@@ -816,7 +1000,7 @@
     var reloj = cuando.getHours() + ":" + ("0" + (Math.round(cuando.getMinutes() / 15) * 15 % 60)).slice(-2);
     mem.sesion = { vueltaA: cuando.getTime() };
     persistir();
-    susurrar(uno(AVISOS).replace("{hora}", reloj), false);
+    susurrar(uno(TL("avisos")).replace("{hora}", reloj), false);
   }
 
   function agendar() {
@@ -847,30 +1031,33 @@
     return mejor;
   }
 
-  // Si hay palabras propias en CONFIG, salen en orden, una por toque.
+  // Las palabras propias se leen de palabras.txt (una por línea, sin comillas
+  // ni comas: así no hay forma de romper el archivo al pegarlas). Si el
+  // archivo no existe o está vacío, siguen saliendo las once por defecto.
+  (function () {
+    if (!window.fetch) return;
+    fetch("palabras.txt", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.text() : ""; })
+      .then(function (texto) {
+        var lineas = texto.split("\n").map(function (l) { return l.trim(); })
+          .filter(function (l) { return l && l.charAt(0) !== "#"; });
+        if (lineas.length) CONFIG.palabrasEnOrden = lineas;
+      })
+      .catch(function () {});
+  })();
+
+  // Si hay palabras propias, salen en orden, una por toque.
   var iPalabra = 0, ultimaPalabra = "";
   function siguientePalabra() {
-    var propias = CONFIG.palabrasEnOrden || [Admito que es real
-  Me enseñaste que el amor es infinito y que me busque más
-  Ya no duele nada, llenas de morfina mi inseguridad
-  Dulce eternidad
-
-  Hum, es verdad
-  Te amará mi alma cuando mi cabeza deje de pensar
-  Cuando no haya tiempo y este corazón deje de palpitar
-  Deje de palpitar
-
-  Yo quiero que me entierren junto a ti
-  Bajo el sauce que sembramos
-  Que nos junte la raíz
-  En amor, siempre empatarnos];
+    var propias = CONFIG.palabrasEnOrden || [];
     if (propias.length) {
       var p = propias[iPalabra % propias.length];
       iPalabra++;
       return p;
     }
-    var p2 = uno(PALABRAS);
-    while (p2 === ultimaPalabra && PALABRAS.length > 1) p2 = uno(PALABRAS);
+    var lista = TL("palabras");
+    var p2 = uno(lista);
+    while (p2 === ultimaPalabra && lista.length > 1) p2 = uno(lista);
     ultimaPalabra = p2;
     return p2;
   }
@@ -918,7 +1105,7 @@
     origenPulsacion = { x: e.clientX, y: e.clientY };
     pulsacion = setTimeout(function () {
       cuerpo.classList.add("amanece");
-      susurrar("quédate un poquito, que aquí no molestas nunca");
+      susurrar(T("pulsacion"));
       setTimeout(function () { cuerpo.classList.remove("amanece"); }, 3200);
     }, 2000);
   }
@@ -998,7 +1185,7 @@
       bloque.style.transition = "opacity .8s";
       bloque.style.opacity = "0";
       setTimeout(function () { if (bloque.parentNode) bloque.parentNode.removeChild(bloque); }, 800);
-    }, 12000);
+    }, 12000 + MAS);
   }
 
   // E34 — girar el teléfono a horizontal: el cielo se cae. No pide permisos,
@@ -1015,7 +1202,7 @@
         setTimeout(function () { el.style.transform = ""; }, 2600);
       })(hijas[i]);
     }
-    susurrar("se te cayó el cielo encima", false);
+    susurrar(T("giro"), false);
   }
   if (window.matchMedia) {
     var apaisado = window.matchMedia("(orientation: landscape)");
@@ -1029,7 +1216,7 @@
     var pulsaMarca = 0;
     marcaEl.addEventListener("pointerdown", function () {
       pulsaMarca = setTimeout(function () {
-        susurrar(CONFIG.dosSiete.revelacion || CONFIG.dosSiete.texto);
+        susurrar(T("dosSiete.marca"));
       }, 900);
     });
     marcaEl.addEventListener("pointerup", function () { clearTimeout(pulsaMarca); });
@@ -1045,8 +1232,8 @@
       ventana = setTimeout(function () { toques = 0; }, 900);
       if (toques < 3) return;
       toques = 0;
-      var baraja = CARTAS_CORTAS.slice();
-      if (restante() <= 0) baraja.push(CARTA_DEL_DIA_D);      // la séptima
+      var baraja = TL("cartas").slice();
+      if (restante() <= 0) baraja.push(T("carta.diad"));      // la séptima
       var quedan = baraja.filter(function (c) { return mem.cartas.indexOf(c) < 0; });
       if (!quedan.length) { mem.cartas = []; quedan = baraja; }
       var carta = uno(quedan);
@@ -1063,7 +1250,7 @@
     reposo = setTimeout(function () {
       if (jugando()) return;
       cuerpo.classList.add("quieta");
-      susurrar("aquí te espero; es lo que mejor me sale");
+      susurrar(T("inactividad"));
     }, 120000);
   }
 
@@ -1100,6 +1287,30 @@
     var guardado = mem.volumen;
     var volumen = (guardado === undefined || guardado === null) ? 0.35 : guardado;
 
+    // En el iPhone, sonido.volume es de SOLO LECTURA: mover el deslizador no
+    // hacía nada. La única forma de mandar sobre el volumen ahí es meter el
+    // audio por un nodo de ganancia; y al llegar a cero, además, se pausa.
+    var contexto = null, ganancia = null;
+    function conectarGanancia() {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (contexto || !Ctx) return;
+      try {
+        contexto = new Ctx();
+        var fuente = contexto.createMediaElementSource(sonido);
+        ganancia = contexto.createGain();
+        fuente.connect(ganancia);
+        ganancia.connect(contexto.destination);
+        ganancia.gain.value = volumen;
+      } catch (e) { contexto = null; ganancia = null; }
+    }
+
+    function ponerVolumen(v) {
+      try { sonido.volume = v; } catch (e) {}          // sirve en escritorio
+      if (ganancia) ganancia.gain.value = v;           // lo único que sirve en iOS
+      sonido.muted = v <= 0.001;
+      if (v <= 0.001) { sonido.pause(); musicaEncendida = false; }
+    }
+
     document.body.appendChild(sonido);
 
     var caja = document.createElement("div");
@@ -1126,7 +1337,7 @@
       var paso = destino / 20, i = 0;
       var t = setInterval(function () {
         i++;
-        sonido.volume = Math.min(destino, paso * i);
+        ponerVolumen(Math.min(destino, paso * i));
         if (i >= 20) clearInterval(t);
       }, 100);
     }
@@ -1134,16 +1345,20 @@
     mando.addEventListener("input", function () {
       volumen = mando.value / 100;
       mem.volumen = volumen; persistir();
+      if (volumen <= 0.001) { ponerVolumen(0); caja.classList.remove("sonando"); return; }
       if (!musicaEncendida) { arrancarMusica(); return; }
-      sonido.volume = volumen;
+      ponerVolumen(volumen);
     });
 
     // El primer toque en cualquier parte enciende el sonido: ningún navegador
     // deja sonar audio antes, y así ella no tiene que pulsar nada aparte.
     window.arrancarMusica = function () {
       if (musicaEncendida || !sonido) return;
-      if (mem.volumen === 0) return;                 // lo silenció ella
+      if (volumen <= 0.001) return;                  // lo dejó en silencio
       musicaEncendida = true;
+      conectarGanancia();
+      if (contexto && contexto.state === "suspended") contexto.resume();
+      sonido.muted = false;
       cuadrar();
       var promesa = sonido.play();
       if (promesa && promesa.catch) promesa.catch(function () { musicaEncendida = false; });
@@ -1167,25 +1382,110 @@
     frasco.innerHTML = '<span class="luz"></span>' + mem.coleccion.length + " de 60";
   }
 
+  // Pistas de lo que aún no le ha salido. No dicen el nombre: dicen qué
+  // hacer o cuándo mirar. Es la diferencia entre una lista y un juego.
+  var PISTAS = {
+    zorro: "hay algo que solo se acerca si te quedas quieta un buen rato",
+    luna: "algo asoma en las noches de luna llena, arriba a la derecha",
+    constelacion: "de madrugada, siete estrellas se ponen de acuerdo",
+    pecas: "toca muchas estrellas seguidas y el cielo te contesta con tu nombre",
+    nombre: "vuelve una segunda vez el mismo día y mira el cielo",
+    avioneta: "quédate dos minutos sin cerrar y algo cruzará colgando un mensaje",
+    "fugaz-lenta": "el día que el contador cambia de decena, una estrella baja a mirarlo",
+    "carta-rapida": "si te vas tres días y vuelves, del cielo cae una hoja escrita",
+    planeta: "de madrugada, sin tocar nada, alguien se sienta a mirar contigo",
+    "eco-poema": "cuando lleves varios versos ganados, el poema se desordena solo",
+    "lluvia-estrellas": "la primera visita del día es la que tiene premio gordo",
+    infinito: "mientras falte mucho, el contador a veces se equivoca a propósito",
+    "marcha-atras": "en los últimos días el reloj se pone nervioso y va al revés",
+    besos: "entra dos días seguidos y aparece un bloque que no debería estar",
+    etiquetas: "en la última semana el reloj deja de llamar a las cosas por su nombre",
+    lluvia: "las tardes de invierno se mojan",
+    "verso-extra": "cuando el poema se ilumine, quédate: a veces aparece un verso de más",
+    correccion: "de vez en cuando me corrijo a mí mismo en la nota de arriba",
+    margen: "a veces dejo un papelito pegado en el margen con la hora exacta",
+    globo: "algo sube despacio y revienta si lo tocas",
+    rosa: "hay una flor que crece abajo y suelta un pétalo al tocarla",
+    luciernagas: "si aparecen bichos de luz, persíguelos: huyen del dedo"
+  };
+
+  function pistasPendientes(cuantas) {
+    var vistos = {};
+    (mem.registro || []).forEach(function (r) { vistos[r.id] = true; });
+    var libres = Object.keys(PISTAS).filter(function (id) { return !vistos[id]; });
+    for (var i = libres.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = libres[i]; libres[i] = libres[j]; libres[j] = t;
+    }
+    return libres.slice(0, cuantas).map(function (id) { return PISTAS[id]; });
+  }
+
+  function cuandoFue(t) {
+    var d = new Date(t), hoy = fechaLocal(), suyo = fechaLocal(d);
+    var hora = d.getHours() + ":" + ("0" + d.getMinutes()).slice(-2);
+    if (suyo === hoy) return "hoy " + hora;
+    if (suyo === fechaLocal(new Date(Date.now() - 86400000))) return "ayer " + hora;
+    return d.getDate() + "/" + (d.getMonth() + 1) + " " + hora;
+  }
+
   function abrirColeccion() {
+    var vividos = (mem.registro || []).slice().reverse().map(function (r) {
+      return '<li class="revivible"><span>' + (NOMBRES[r.id] || r.id) +
+        '<em>' + cuandoFue(r.cuando) + '</em></span>' +
+        '<button class="revivir" type="button" data-revivir="' + r.id + '">▶</button></li>';
+    }).join("") || "<li>todavía no ha pasado nada. dale tiempo.</li>";
+
     var lista = mem.coleccion.map(function (f) { return "<li>" + f + "</li>"; }).join("") ||
       "<li>todavía no has encontrado ninguna. vuelve mañana.</li>";
-    var sellos = "";
-    for (var i = 27; i >= 0; i--) {
-      var d = fechaLocal(new Date(Date.now() - i * 86400000));
-      sellos += '<span class="' + (mem.dias.indexOf(d) >= 0 ? "sellado" : "") + '">' +
-        parseInt(d.slice(-2), 10) + "</span>";
+    // Antes del cumpleaños, el calendario es la cuenta atrás: un hueco por
+    // cada día que queda, y se van sellando al pasar. Después, el mes entero.
+    var sellos = "", fecha, d;
+    if (restante() > 0) {
+      // Del día de hoy al día D, ambos incluidos: se cuenta por fechas, no
+      // por milisegundos, para que el 7 no se caiga por redondeo.
+      var diaD = fechaLocal(new Date(window.OBJETIVO));
+      fecha = new Date();
+      for (var i = 0; i < 60; i++) {
+        d = fechaLocal(fecha);
+        sellos += '<span class="' + (mem.dias.indexOf(d) >= 0 ? "sellado" : "") +
+          (d === diaD ? " diaD" : "") + '">' + fecha.getDate() + "</span>";
+        if (d === diaD) break;
+        fecha = new Date(fecha.getTime() + 86400000);
+      }
+    } else {
+      var hoyD = new Date(), ultimo = new Date(hoyD.getFullYear(), hoyD.getMonth() + 1, 0).getDate();
+      for (var j = 1; j <= ultimo; j++) {
+        fecha = new Date(hoyD.getFullYear(), hoyD.getMonth(), j);
+        d = fechaLocal(fecha);
+        sellos += '<span class="' + (mem.dias.indexOf(d) >= 0 ? "sellado" : "") + '">' + j + "</span>";
+      }
     }
     panel.innerHTML = "<h2>tu frasco</h2>" +
       '<p class="cuenta">' +
       mem.coleccion.length + (mem.coleccion.length === 1 ? " encontrada · " : " encontradas · ") +
       mem.dias.length + (mem.dias.length === 1 ? " día visitado · " : " días visitados · ") +
-      "racha de " + (mem.racha || 1) + "</p>" +
+      "racha de " + (mem.racha || 1) +
+      (mem.creado ? " · frasco abierto el " + new Date(mem.creado).getDate() + "/" +
+        (new Date(mem.creado).getMonth() + 1) : "") + "</p>" +
+      '<p class="apartado">pistas — lo que todavía no te ha salido</p>' +
+      '<ul class="pistas">' + (pistasPendientes(3).map(function (p) {
+        return "<li>" + p + "</li>";
+      }).join("") || "<li>ya te ha salido de todo. y aun así vuelve.</li>") + "</ul>" +
+      '<p class="apartado">lo que ha pasado — dale al ▶ y lo vuelves a ver</p>' +
+      '<ul class="vividos">' + vividos + "</ul>" +
+      '<p class="apartado">lo que te he dicho</p>' +
       "<ul>" + lista + "</ul>" +
       '<div class="calendario">' + sellos + "</div>" +
       '<button class="cerrar" type="button">cerrar</button>';
     panel.querySelector(".cerrar").addEventListener("click", function () {
       panel.classList.remove("viva");
+    });
+    // El play cierra el frasco y lo vuelve a poner en pantalla.
+    panel.addEventListener("click", function (e) {
+      var b = e.target.closest && e.target.closest("[data-revivir]");
+      if (!b) return;
+      panel.classList.remove("viva");
+      setTimeout(function () { revivir(b.dataset.revivir); }, 450);
     });
     panel.classList.add("viva");
   }
@@ -1210,7 +1510,7 @@
         (ahora.getHours() === CONFIG.dosSiete.hora || ahora.getHours() === CONFIG.dosSiete.hora + 12) &&
         ya207 !== marcaHora) {
       ya207 = marcaHora;
-      susurrar(CONFIG.dosSiete.texto);
+      susurrar(T("dosSiete.hora"));
     }
 
     if (ms <= 0) {
@@ -1227,7 +1527,7 @@
       var alReves = cadena.split("").reverse().join("");
       if ((cadena === alReves || (h === m && m === s)) && yaCapicua !== cadena) {
         yaCapicua = cadena;
-        susurrar("haz un deseo", false);
+        susurrar(T("capicua"), false);
       }
     }
 
@@ -1245,7 +1545,7 @@
     caja.innerHTML = '<div class="seg">60</div><div class="dice">ya está</div>';
     document.body.appendChild(caja);
     var seg = caja.querySelector(".seg"), dice = caja.querySelector(".dice");
-    var frases = ["ya está", "respira", "un poco más", "casi", "ahora sí", "feliz cumpleaños, wawa"];
+    var frases = TL("cuenta-final");
     var t = setInterval(function () {
       var quedan = Math.max(0, Math.ceil(restante() / 1000));
       seg.textContent = quedan;
@@ -1278,7 +1578,7 @@
         }, k * 95);
       })(i);
     }
-    setTimeout(function () { susurrar("siete días. siete versos. siete estrofas"); }, 8200);
+    setTimeout(function () { susurrar(T("sietes")); }, 8200);
   }
 
   function confeti(cuantos, x, y) {
@@ -1298,19 +1598,13 @@
   // ══════════════════════════════════════════════════════════════════
   //  AL ENTRAR: lo que depende del día, la hora y la historia
   // ══════════════════════════════════════════════════════════════════
-  var SALUDOS = {                                                     // E39
-    madrugada: "¿otra vez despierta? yo igual. hazme compañía un rato",
-    manana:    "buenos días, mi wawa. el día ya empezó mejor",
-    tarde:     "hola, pequita. pasé a dejarte algo y me quedé",
-    noche:     "buenas noches, pequita. el cielo también hace guardia"
-  };
 
   function saludo() {
     var h = new Date().getHours();
-    if (h < 5) return SALUDOS.madrugada;
-    if (h < 12) return SALUDOS.manana;
-    if (h < 20) return SALUDOS.tarde;
-    return SALUDOS.noche;
+    if (h < 5) return T("saludo.madrugada");
+    if (h < 12) return T("saludo.manana");
+    if (h < 20) return T("saludo.tarde");
+    return T("saludo.noche");
   }
 
   function alEntrar() {
@@ -1350,8 +1644,8 @@
       arriba.className = "nota";
       arriba.style.marginTop = "18px";
       var dias = Math.floor((Date.now() - window.OBJETIVO) / 86400000);
-      arriba.textContent = "llevamos " + dias + (dias === 1 ? " día" : " días") +
-        " desde tu cumpleaños, y el contador sigue por gusto";
+      arriba.textContent = T("segunda-vida").replace("{dias}",
+        dias + (dias === 1 ? " día" : " días"));
       var listo = document.getElementById("listo");
       if (listo) listo.appendChild(arriba);
     }
@@ -1360,16 +1654,16 @@
     var cola = [];
     cola.push(saludo());
     if (primeraDelDia) cola.push(fraseDelDia());                      // E02/E46
-    if (NOTAS_REDONDAS[faltan] && primeraDelDia) cola.push(NOTAS_REDONDAS[faltan]);  // E30
-    if (dia === 1) cola.push("faltan menos, y yo también");           // E41
+    if (T("dias." + faltan) && primeraDelDia) cola.push(T("dias." + faltan));  // E30
+    if (dia === 1) cola.push(T("lunes"));           // E41
     if (fecha === 7 && primeraDelDia) {                               // E42
-      cola.push("hoy es 7: el número que nos persigue");
+      cola.push(T("dia7"));
     }
     if (fecha === 2 && primeraDelDia) {
-      cola.push("dos de siete. todavía quedan cinco por llegar");
+      cola.push(T("dia2"));
     }
-    if ((mem.racha || 0) >= 3 && primeraDelDia) cola.push("vienes todos los días… te vi");  // E44
-    if (diasFuera > 3) cola.push("te fuiste un rato; el contador siguió, yo también");      // E45
+    if ((mem.racha || 0) >= 3 && primeraDelDia) cola.push(T("racha"));  // E44
+    if (diasFuera > 3) cola.push(T("ausencia"));      // E45
 
     cola.forEach(function (texto, i) {
       setTimeout(function () {
@@ -1383,7 +1677,7 @@
 
   // E03 — susurro tardío: si sigue ahí a los 90 segundos
   setTimeout(function () {
-    if (!document.hidden && !jugando()) susurrar("¿sigues ahí? yo también");
+    if (!document.hidden && !jugando()) susurrar(T("tardio"));
   }, 90000);
 
   // E60 — tu voz, solo si él deja un audio. Nunca suena sola.
@@ -1401,10 +1695,10 @@
 
   // ── Los que no son de ambiente, disparables uno a uno ────────────
   var FORZABLES = {
-    "carta-corta": function () { susurrar(uno(CARTAS_CORTAS)); },
+    "carta-corta": function () { susurrar(uno(TL("cartas"))); },
     "dias-juntos": loQueLlevamos,
-    "capicua": function () { susurrar("haz un deseo", false); },
-    "dos-siete": function () { susurrar(CONFIG.dosSiete.revelacion || CONFIG.dosSiete.texto); },
+    "capicua": function () { susurrar(T("capicua"), false); },
+    "dos-siete": function () { susurrar(T("dosSiete.marca")); },
     "cuenta-final": cuentaFinal,
     "medianoche": medianoche,
     "confeti": function () { confeti(80, null, null); },
@@ -1412,7 +1706,7 @@
       cuerpo.classList.add("amanece");
       setTimeout(function () { cuerpo.classList.remove("amanece"); }, 3200);
     },
-    "quieta": function () { cuerpo.classList.add("quieta"); susurrar("aquí te espero; es lo que mejor me sale"); },
+    "quieta": function () { cuerpo.classList.add("quieta"); susurrar(T("inactividad")); },
     "coleccion": abrirColeccion,
     "sobre": function () {
       var s = document.createElement("div");
@@ -1421,17 +1715,17 @@
     },
 
     // Saludos y textos de entrada, para poder verlos a cualquier hora
-    "saludo-madrugada": function () { susurrar(SALUDOS.madrugada); },
-    "saludo-manana": function () { susurrar(SALUDOS.manana); },
-    "saludo-tarde": function () { susurrar(SALUDOS.tarde); },
-    "saludo-noche": function () { susurrar(SALUDOS.noche); },
+    "saludo-madrugada": function () { susurrar(T("saludo.madrugada")); },
+    "saludo-manana": function () { susurrar(T("saludo.manana")); },
+    "saludo-tarde": function () { susurrar(T("saludo.tarde")); },
+    "saludo-noche": function () { susurrar(T("saludo.noche")); },
     "frase-dia": function () { susurrar(fraseDelDia()); },
-    "susurro-tardio": function () { susurrar("¿sigues ahí? yo también"); },
-    "lunes": function () { susurrar("faltan menos, y yo también"); },
-    "cumplemes": function () { susurrar("hoy es 7: el número que nos persigue"); },
-    "racha": function () { susurrar("vienes todos los días… te vi"); },
-    "ausencia": function () { susurrar("te fuiste un rato; el contador siguió, yo también"); },
-    "nota-7dias": function () { susurrar(NOTAS_REDONDAS[7]); },
+    "susurro-tardio": function () { susurrar(T("tardio")); },
+    "lunes": function () { susurrar(T("lunes")); },
+    "cumplemes": function () { susurrar(T("dia7")); },
+    "racha": function () { susurrar(T("racha")); },
+    "ausencia": function () { susurrar(T("ausencia")); },
+    "nota-7dias": function () { susurrar(T("dias.7")); },
 
     // Estados de fondo, que en la vida real duran horas o días
     "madrugada": function () { alternarClase("madrugada", 8000); },
@@ -1442,7 +1736,7 @@
     "palabra": function () {
       var el = document.createElement("span");
       el.className = "palabra";
-      el.textContent = uno(PALABRAS);
+      el.textContent = siguientePalabra();
       el.style.left = "50%";
       el.style.top = "42%";
       pon(el, 2400);
@@ -1456,7 +1750,7 @@
           setTimeout(function () { el.style.transform = ""; }, 2600);
         })(hijas[i]);
       }
-      susurrar("se te cayó el cielo encima", false);
+      susurrar(T("giro"), false);
     },
     "lluvia-sietes": lluviaDeSietes,
     "77bpm": function () {
@@ -1470,10 +1764,33 @@
       agendar();
     },
     "borrar-memoria": function () {
-      mem = { coleccion: [], dias: [], versos: 0, cartas: [], ultimos: {}, sesion: {} };
-      persistir(); pintarFrasco();
-      susurrar("(memoria borrada: vuelve a ser la primera visita)", false);
+      // Dos toques: el primero avisa, el segundo borra. Y siempre queda
+      // respaldo, así que "recuperar frasco" lo devuelve.
+      if (!confirmarBorrado) {
+        confirmarBorrado = true;
+        susurrar("(vuelve a pulsar BORRAR MEMORIA para confirmar)", false);
+        setTimeout(function () { confirmarBorrado = false; }, 8000);
+        return;
+      }
+      confirmarBorrado = false;
+      if (window.borrarMemoriaDeVerdad) window.borrarMemoriaDeVerdad();
+      mem = { coleccion: [], dias: [], versos: 0, cartas: [], ultimos: {}, sesion: {}, registro: [] };
+      pintarFrasco();
+      susurrar("(memoria borrada; se puede recuperar con Recuperar frasco)", false);
     },
+    "recuperar-frasco": function () {
+      if (window.recuperarMemoria && window.recuperarMemoria()) {
+        mem = leerMem();
+        mem.coleccion = mem.coleccion || [];
+        mem.dias = mem.dias || [];
+        mem.registro = mem.registro || [];
+        pintarFrasco();
+        susurrar("(frasco recuperado del respaldo)", false);
+      } else {
+        susurrar("(no hay respaldo que recuperar)", false);
+      }
+    },
+    "diagnostico": mostrarDiagnostico,
     "siete": function () {
       var b = document.getElementById("s").parentNode;
       b.classList.add("siete");
@@ -1530,7 +1847,9 @@
     coleccion: "Frasco de luciérnagas", sobre: "Sobre dormido", "versos-semana": "Semana de los versos",
     "amanecer-final": "Amanece (última hora)", "lluvia-sietes": "Llueven 7 (a 7 días)",
     "77bpm": "Reloj a 77 bpm", "vaciar-racion": "↺ Vaciar ración",
-    "borrar-memoria": "↺ Borrar memoria", "cuenta-final": "Últimos 60 segundos",
+    "borrar-memoria": "↺ Borrar memoria (2 toques)",
+    "recuperar-frasco": "↺ Recuperar frasco",
+    "diagnostico": "· Diagnóstico", "cuenta-final": "Últimos 60 segundos",
     medianoche: "Medianoche", confeti: "Confeti", voz: "Tu voz"
   };
 
@@ -1542,16 +1861,52 @@
     { titulo: "Al tocar", ids: ["palabra", "carta-corta", "amanece", "dias-juntos", "sacudida", "dos-siete", "coleccion"] },
     { titulo: "Hora, día e historia", ids: ["saludo-madrugada", "saludo-manana", "saludo-tarde", "saludo-noche", "frase-dia", "susurro-tardio", "lunes", "cumplemes", "racha", "ausencia", "madrugada", "domingo", "quieta"] },
     { titulo: "El contador", ids: ["siete", "77bpm", "lluvia-sietes", "capicua", "nota-7dias", "versos-semana", "sobre", "amanecer-final", "cuenta-final", "medianoche", "confeti"] },
-    { titulo: "Herramientas", ids: ["vaciar-racion", "borrar-memoria"] },
+    { titulo: "Herramientas", ids: ["diagnostico", "vaciar-racion", "recuperar-frasco", "borrar-memoria"] },
     { titulo: "Pendiente de un dato tuyo", ids: ["voz"] }
   ];
 
-  function disparar(id) {
-    ocupado = false;                       // en pruebas se puede encadenar
+  function revivir(id) {
     for (var i = 0; i < AMBIENTE.length; i++) {
-      if (AMBIENTE[i].id === id) { correr(AMBIENTE[i]); return; }
+      if (AMBIENTE[i].id === id) {
+        ocupado = true;
+        iniciarEscena(id, AMBIENTE[i].dura);
+        try { AMBIENTE[i].correr(); } catch (e) {}
+        escenaActual = null;
+        libreEn(AMBIENTE[i].dura);
+        return;
+      }
     }
-    if (FORZABLES[id]) FORZABLES[id]();
+    if (FORZABLES[id]) {
+      iniciarEscena(id, 12000);
+      try { FORZABLES[id](); } catch (e) {}
+      escenaActual = null;
+    }
+  }
+  window.revivir = revivir;
+
+  function disparar(id) { revivir(id); }
+
+  var confirmarBorrado = false;
+
+  // Diagnóstico de la memoria: qué hay guardado y, sobre todo, DESDE QUÉ
+  // DIRECCIÓN, que es lo que decide dónde vive el frasco.
+  function mostrarDiagnostico() {
+    var e = window.estadoMemoria ? window.estadoMemoria() : null;
+    var viejo = document.querySelector(".diagnostico");
+    if (viejo) viejo.parentNode.removeChild(viejo);
+    var caja = document.createElement("div");
+    caja.className = "diagnostico";
+    caja.innerHTML = e
+      ? "<b>" + e.origen.replace(/^https?:\/\//, "") + "</b>" +
+        "<span>guarda: " + (e.guardaBien ? "sí" : "NO") + " · frasco: " + e.frases +
+        " frases · " + e.eventos + " eventos · " + e.dias + " días</span>" +
+        "<span>desde: " + e.desde + " · respaldo: " + e.respaldo + "</span>" +
+        "<span>toca para cerrar</span>"
+      : "<b>sin diagnóstico</b>";
+    caja.addEventListener("click", function () {
+      if (caja.parentNode) caja.parentNode.removeChild(caja);
+    });
+    document.body.appendChild(caja);
   }
 
   function montarPanel() {
@@ -1651,8 +2006,24 @@
 
   if (/[?&]pruebas/.test(location.search)) montarPanel();
 
+  // ?diag — dice en pantalla qué memoria hay y desde qué dirección, para
+  // poder averiguar por qué se vacía un frasco.
+  if (/[?&]diag/.test(location.search)) _plazo(mostrarDiagnostico, 900);
+
   // ── Arranque ─────────────────────────────────────────────────────
-  var retraso = alEntrar();
-  despertar();
-  setTimeout(agendar, rapido ? 600 : Math.min(retraso, 30000));
+  function arrancar() {
+    var retraso = alEntrar();
+    despertar();
+    setTimeout(agendar, rapido ? 600 : Math.min(retraso, 30000));
+  }
+
+  if (window.fetch) {
+    fetch("textos.txt", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.text() : ""; })
+      .then(function (t) { if (t) leerTextos(t); })
+      .catch(function () {})
+      .then(arrancar);            // pase lo que pase, la página arranca
+  } else {
+    arrancar();
+  }
 })();

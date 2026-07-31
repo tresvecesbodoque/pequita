@@ -158,6 +158,25 @@
     font-style: italic; color: rgba(234,228,214,.85); max-width: 24rem;
     line-height: 1.65; margin-top: 6px;
   }
+  /* La pista: solo aparece al batir el récord. Va en dorado y con marco
+     tenue para que se lea como un secreto y no como una frase más. */
+  .juego-fin .pista {
+    display: none; max-width: 25rem; margin-top: 4px;
+    padding: 14px 18px; border-radius: 16px;
+    border: 1px solid rgba(217,168,63,.35); background: rgba(217,168,63,.07);
+    color: var(--gold); line-height: 1.6; font-size: .95rem;
+  }
+  .juego-fin .pista.viva { display: block; animation: pista-asoma 1.1s ease .35s both; }
+  .juego-fin .pista .llave {
+    display: block; font-size: .68rem; letter-spacing: .2em; text-transform: uppercase;
+    color: rgba(217,168,63,.6); margin-bottom: 7px;
+  }
+  /* Nombre propio: eventos.css ya tiene un @keyframes "asoma" y, al
+     cargarse después, ganaría el suyo. */
+  @keyframes pista-asoma {
+    from { opacity: 0; transform: translateY(10px) scale(.97); }
+    to   { opacity: 1; transform: none; }
+  }
   .juego-fin .botones { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
   .juego-fin button {
     padding: 13px 26px; border-radius: 999px; border: 1.5px solid rgba(217,168,63,.45);
@@ -273,6 +292,7 @@
       <p class="cifra" id="finCifra">0</p>
       <p class="pie" id="finRecord"></p>
       <p class="frase" id="finFrase"></p>
+      <p class="pista" id="finPista"><span class="llave">pista</span><span id="finPistaTexto"></span></p>
       <div class="botones">
         <button class="principal" id="finOtra" type="button">otra vez</button>
         <button id="finVolver" type="button">volver al conteo</button>
@@ -289,15 +309,109 @@
 
     document.querySelector(".btn").setAttribute("href", DESTINO);
 
-    // ── Memoria compartida (una sola clave para juego y eventos) ───
+    // ── Memoria compartida (juego, frasco, registro, música) ───────
+    // A prueba de balas a propósito: el frasco es lo único que ella va
+    // acumulando, y perderlo no tiene arreglo. Por eso hay DOS copias, todo
+    // guardado FUNDE con lo que ya había, y nada puede encoger: si una copia
+    // aparece vacía, se restaura desde la otra.
     var MEM = "pequita.contador";
-    function leerMem() {
-      try { return JSON.parse(localStorage.getItem(MEM) || "{}"); }
+    var COPIA = "pequita.contador.copia";
+
+    function crudo(clave) {
+      try { return JSON.parse(localStorage.getItem(clave) || "{}") || {}; }
       catch (e) { return {}; }
     }
-    function guardarMem(datos) {
-      try { localStorage.setItem(MEM, JSON.stringify(datos)); } catch (e) {}
+    // Cuánto "vale" una copia: sirve para saber cuál de las dos manda.
+    function riqueza(o) {
+      return (o.coleccion || []).length + (o.dias || []).length +
+             (o.registro || []).length + (o.cartas || []).length +
+             (o.juego ? (o.juego.partidas || 0) : 0) + (o.visitas || 0);
     }
+    function leerMem() {
+      var a = crudo(MEM), b = crudo(COPIA);
+      return riqueza(b) > riqueza(a) ? b : a;
+    }
+
+    function unir(viejo, nuevo, clave) {
+      var lista = (viejo[clave] || []).slice();
+      (nuevo[clave] || []).forEach(function (x) {
+        if (lista.indexOf(x) < 0) lista.push(x);
+      });
+      return lista;
+    }
+
+    function fundir(viejo, nuevo) {
+      var r = {}, k;
+      for (k in viejo) if (Object.prototype.hasOwnProperty.call(viejo, k)) r[k] = viejo[k];
+      for (k in nuevo) if (Object.prototype.hasOwnProperty.call(nuevo, k)) r[k] = nuevo[k];
+      ["coleccion", "dias", "cartas"].forEach(function (c) {
+        var u = unir(viejo, nuevo, c);
+        if (u.length) r[c] = u;
+      });
+      // De lo que solo crece, se queda lo más grande.
+      if ((viejo.registro || []).length > (nuevo.registro || []).length) r.registro = viejo.registro;
+      if ((viejo.visitas || 0) > (nuevo.visitas || 0)) r.visitas = viejo.visitas;
+      if ((viejo.versos || 0) > (nuevo.versos || 0)) r.versos = viejo.versos;
+      if (viejo.juego && (!nuevo.juego || (viejo.juego.total || 0) > (nuevo.juego.total || 0))) {
+        r.juego = viejo.juego;
+      }
+      return r;
+    }
+
+    function guardarMem(datos) {
+      try {
+        var fundido = fundir(leerMem(), datos || {});
+        if (!fundido.creado) fundido.creado = Date.now();
+        var texto = JSON.stringify(fundido);
+        localStorage.setItem(MEM, texto);
+        localStorage.setItem(COPIA, texto);
+      } catch (e) {}
+    }
+
+    // Borrado de verdad: solo desde la herramienta del panel de pruebas, y
+    // dejando SIEMPRE un respaldo, para que un borrado sea reversible.
+    var PREVIO = "pequita.contador.previo";
+    window.borrarMemoriaDeVerdad = function () {
+      try {
+        var antes = leerMem();
+        if (riqueza(antes) > 0) localStorage.setItem(PREVIO, JSON.stringify(antes));
+        localStorage.removeItem(MEM);
+        localStorage.removeItem(COPIA);
+      } catch (e) {}
+    };
+
+    // Deshacer el borrado: devuelve el último respaldo.
+    window.recuperarMemoria = function () {
+      var previo = crudo(PREVIO);
+      if (riqueza(previo) <= 0) return false;
+      guardarMem(previo);
+      return true;
+    };
+
+    // Para el diagnóstico: qué hay guardado y desde dónde.
+    window.estadoMemoria = function () {
+      var m = leerMem();
+      return {
+        origen: location.origin,
+        guardaBien: (function () {
+          try { localStorage.setItem("pequita.prueba", "1");
+                localStorage.removeItem("pequita.prueba"); return true; }
+          catch (e) { return false; }
+        })(),
+        riqueza: riqueza(m),
+        frases: (m.coleccion || []).length,
+        eventos: (m.registro || []).length,
+        dias: (m.dias || []).length,
+        desde: m.creado ? new Date(m.creado).toLocaleString() : "—",
+        respaldo: riqueza(crudo(PREVIO))
+      };
+    };
+
+    // Si una de las dos copias se vació sola, se rehace al entrar.
+    (function () {
+      var a = crudo(MEM), b = crudo(COPIA);
+      if (riqueza(a) !== riqueza(b)) guardarMem(riqueza(a) > riqueza(b) ? a : b);
+    })();
     function fechaLocal(d) {
       d = d || new Date();
       return d.getFullYear() + "-" + n(d.getMonth() + 1) + "-" + n(d.getDate());
@@ -334,6 +448,13 @@
       "del crudo desastre de ser barro, tú eres la parte que vale",
       "y todavía no termino de escribirte"
     ];
+
+    // textos.txt puede sustituir el banco entero.
+    window.reemplazarBanco = function (nuevas) {
+      if (!nuevas || !nuevas.length) return;
+      FRASES = nuevas;
+      bolsaFrases = [];
+    };
 
     // Bolsa barajada: no se repite ninguna hasta agotar el banco entero.
     var bolsaFrases = [];
@@ -436,6 +557,26 @@
       var DURACION = 60;   // segundos de partida
       var NIVELES = 6;     // escalones de velocidad
 
+      // Los piques y los cierres salen de textos.txt si está cargado.
+      // Las de "cada 7" salen casi siempre; el banco asoma de vez en cuando.
+      var bolsaSiete = [];
+      function fraseDeLosSiete() {
+        var propias = (window.TEXTOS && window.TEXTOS["juego.siete"]) || [];
+        if (!propias.length || Math.random() > 0.75) return fraseAlAzar();
+        if (!bolsaSiete.length) {
+          bolsaSiete = propias.slice();
+          for (var i = bolsaSiete.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = bolsaSiete[i]; bolsaSiete[i] = bolsaSiete[j]; bolsaSiete[j] = t;
+          }
+        }
+        return bolsaSiete.pop();
+      }
+
+      function textoJuego(clave, i, porDefecto) {
+        var lista = (window.TEXTOS && window.TEXTOS[clave]) || [];
+        return lista[i] !== undefined ? lista[i] : porDefecto;
+      }
       var PIQUES = [
         "más rápido, wawa",
         "eso, eso",
@@ -454,6 +595,31 @@
       var elCifra = document.getElementById("finCifra");
       var elRecord = document.getElementById("finRecord");
       var elFrase = document.getElementById("finFrase");
+      var elPista = document.getElementById("finPista");
+      var elPistaTexto = document.getElementById("finPistaTexto");
+
+      // ── La pista ──────────────────────────────────────────────────
+      // Solo se gana: hay que batir el récord propio y pasar de 21 (tres
+      // sietes). Adelanta lo que la espera el 7 sin contarlo del todo.
+      var UMBRAL_PISTA = 21;
+      var PISTAS = [
+        "esto no se lo he dicho a nadie: el 7 vas a leer lo que llevan meses pensando quienes más te quieren",
+        "te lo has ganado, así que va: el 7 se abre lo que quienes más te aman llevan guardando en silencio",
+        "un secreto por el récord: el 7 vas a ver lo que han estado pensando de ti quienes más te aman"
+      ];
+      var bolsaPistas = [];
+      function fraseDePista() {
+        var lista = (window.TEXTOS && window.TEXTOS["juego.pista"]) || PISTAS;
+        if (!lista.length) lista = PISTAS;
+        if (!bolsaPistas.length) {
+          bolsaPistas = lista.slice();
+          for (var i = bolsaPistas.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = bolsaPistas[i]; bolsaPistas[i] = bolsaPistas[j]; bolsaPistas[j] = t;
+          }
+        }
+        return bolsaPistas.pop();
+      }
 
       var suave = window.matchMedia &&
         window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -532,7 +698,7 @@
             puntos += b.tipo === "corazon" ? 3 : 1;
             elMarcador.textContent = "✦ " + puntos;
             chispear(b.x, b.y, b.tipo === "corazon" ? "#c96b74" : "#d9a83f");
-            if (puntos % 7 === 0) susurrar(fraseAlAzar());   // guiño al 7 de agosto
+            if (puntos % 7 === 0) susurrar(fraseDeLosSiete());   // guiño al 7 de agosto
             return;
           }
         }
@@ -577,9 +743,30 @@
             corazon(b.x, b.y, b.r);
           } else if (b.tipo === "luciernaga") {
             var brillo = 0.55 + 0.45 * Math.sin(b.fase);
-            ctx.fillStyle = "rgba(246,227,200," + brillo.toFixed(2) + ")";
+            var bat = suave ? 1 : 0.3 + 0.7 * Math.abs(Math.sin(b.fase * 5));
+            ctx.save();
+            ctx.translate(b.x, b.y);
             ctx.shadowColor = "rgba(246,227,200,.9)";
-            ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.55, 0, Math.PI * 2); ctx.fill();
+            // las dos alas
+            ctx.fillStyle = "rgba(246,227,200,.18)";
+            ctx.strokeStyle = "rgba(246,227,200,.55)";
+            ctx.lineWidth = 0.9;
+            for (var a = -1; a <= 1; a += 2) {
+              ctx.save();
+              ctx.translate(a * b.r * 0.4, -b.r * 0.45);
+              ctx.scale(1, bat);
+              ctx.beginPath();
+              ctx.ellipse(0, 0, b.r * 0.75, b.r * 0.4, 0, 0, Math.PI * 2);
+              ctx.fill(); ctx.stroke();
+              ctx.restore();
+            }
+            // el cuerpo y la panza encendida
+            ctx.strokeStyle = "rgba(246,227,200,.7)";
+            ctx.lineWidth = 1.3;
+            ctx.beginPath(); ctx.moveTo(0, -b.r * 0.3); ctx.lineTo(0, b.r * 0.35); ctx.stroke();
+            ctx.fillStyle = "rgba(246,227,200," + brillo.toFixed(2) + ")";
+            ctx.beginPath(); ctx.arc(0, b.r * 0.45, b.r * 0.5, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
           } else {
             ctx.fillStyle = "#d9a83f"; ctx.shadowColor = "rgba(217,168,63,.85)";
             estrella(b.x, b.y, b.r, b.giro);
@@ -610,7 +797,8 @@
         nivel = Math.min(Math.floor((DURACION - restante) / 9), NIVELES);
         if (nivel > nivelVisto) {
           nivelVisto = nivel;
-          susurrar(PIQUES[Math.min(nivel - 1, PIQUES.length - 1)]);
+          var iPique = Math.min(nivel - 1, PIQUES.length - 1);
+          susurrar(textoJuego("juego.piques", iPique, PIQUES[iPique]));
         }
 
         proximo -= dt * 1000;
@@ -670,10 +858,22 @@
           ? "récord nuevo · llevas " + j.total + " en total"
           : "tu récord: " + j.record + " · llevas " + j.total + " en total";
         elFrase.textContent = puntos === 0
-          ? "no atrapaste ninguna, y da igual: viniste, que es lo que quería"
-          : (puntos < 12 ? "las estrellas son difíciles; yo tampoco te atrapé a la primera"
-            : (puntos < 30 ? fraseAlAzar() : "eso ha sido rapidísimo. te amo un montonazo"));
+          ? textoJuego("juego.cierres", 0, "no atrapaste ninguna, y da igual: viniste, que es lo que quería")
+          : (puntos < 12 ? textoJuego("juego.cierres", 1, "las estrellas son difíciles; yo tampoco te atrapé a la primera")
+            : (puntos < 30 ? fraseAlAzar()
+              : textoJuego("juego.cierres", 2, "eso ha sido rapidísimo. te amo un montonazo")));
+
+        // Récord nuevo y de los grandes: se suelta la pista del día 7.
+        // Después del 7 ya no tiene gracia adelantar nada.
+        elPista.classList.remove("viva");
+        var hayPista = esRecord && puntos >= UMBRAL_PISTA && Date.now() < OBJETIVO;
+        if (hayPista) elPistaTexto.textContent = fraseDePista();
         elFin.classList.add("viva");
+        // La pista se enciende un cuadro después: si se marca mientras el
+        // panel sigue oculto, la animación se pierde y queda invisible.
+        if (hayPista) requestAnimationFrame(function () {
+          elPista.classList.add("viva");
+        });
       }
 
       function abrir() {
