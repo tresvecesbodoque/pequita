@@ -300,9 +300,9 @@ WOOOOOOOW WAPETONA SIGUE ASÍ
 
 
 # ── LA PISTA DEL RÉCORD ───────────────────────────────────────────
-# Solo sale cuando bate su propio récord Y atrapa 21 o más (tres
-# sietes). Adelanta lo del día 7 sin destriparlo. Después del 7 ya
-# no aparece nunca. Sale una al azar, sin repetir hasta agotarlas.
+# Solo sale cuando bate su propio récord Y pasa de 200 puntos.
+# Adelanta lo del día 7 sin destriparlo. Después del 7 ya no aparece
+# nunca. Sale una al azar, sin repetir hasta agotarlas.
 [juego.pista]
 esto no se lo he dicho a nadie: el 7 vas a leer lo que llevan meses pensando quienes más te quieren
 te lo has ganado, así que va: el 7 se abre lo que quienes más te aman llevan guardando en silencio
