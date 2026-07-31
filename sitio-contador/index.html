@@ -435,6 +435,14 @@
       var apartado = crudo(RESCATE);
       if (riqueza(apartado) > 0 || apartado.puentes) {
         try { localStorage.removeItem(RESCATE); } catch (e) {}
+        // Las marcas de los puentes se suman: si no, al aplicar lo apartado se
+        // perderían las de los dominios que contestaron sin nada, y se les
+        // preguntaría en cada visita.
+        var marcas = leerMem().puentes || {}, p;
+        apartado.puentes = apartado.puentes || {};
+        for (p in marcas) if (Object.prototype.hasOwnProperty.call(marcas, p)) {
+          apartado.puentes[p] = true;
+        }
         guardarMem(apartado);
       }
 
