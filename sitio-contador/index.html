@@ -515,6 +515,18 @@
         if ((otro.ultimaVisita || "") > (mio.ultimaVisita || "")) {
           r.ultimaVisita = otro.ultimaVisita; crece = true;
         }
+
+        // Cuando la racha buena es la de la otra dirección, se devuelve TAL
+        // CUAL, con su última visita: al recargar, el sitio decide solo si la
+        // racha sigue (ayer) o se rompió (hace días). Si aquí ya se hubiera
+        // sellado hoy, la racha rescatada se quedaría clavada, sin sumar el
+        // día de hoy y sin romperse cuando tocaba.
+        if (otro.ultimaVisita && (otro.racha || 0) > (mio.racha || 0) &&
+            otro.ultimaVisita < (mio.ultimaVisita || "")) {
+          r.ultimaVisita = otro.ultimaVisita;
+          r.racha = otro.racha;
+          crece = true;
+        }
         if (otro.creado && (!mio.creado || otro.creado < mio.creado)) {
           r.creado = otro.creado; crece = true;
         }
