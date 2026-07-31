@@ -4,12 +4,15 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>dos sietes hasta el siete</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap"
+  rel="stylesheet"
+/>
+<!-- Colores: generado desde design-system/tokens.css (scripts/sync-tokens.py). -->
+<link rel="stylesheet" href="tokens.css" />
 <style>
-  :root {
-    --gold: #d9a83f;
-    --ink: #eae4d6;
-    --rose: #c96b74;
-  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   /* Evita el auto-inflado de texto de iOS Safari (letras "gigantes" en móvil). */
@@ -22,22 +25,40 @@
     text-align: center;
     padding: 40px 26px;
     color: var(--ink);
-    font-family: ui-serif, Georgia, "Times New Roman", serif;
-    background:
-      radial-gradient(1600px 900px at 50% -10%, #1b2748 0%, transparent 62%),
-      linear-gradient(180deg, #0e1730 0%, #0a1020 100%);
+    font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    background: var(--telon-noche);
     overflow-x: hidden;
+    /* El viraje de la noche al día (ver "La revelación"). El degradado no se
+       puede animar, así que el papel entra como telón aparte; aquí solo la
+       tinta. */
+    transition: color 1.2s ease;
     /* Arrastrar el dedo deja rastro dorado; no debe seleccionar el poema
        ni sacar la lupa de iOS. */
     -webkit-user-select: none; user-select: none;
     -webkit-touch-callout: none;
   }
-  .cielo { position: fixed; inset: 0; pointer-events: none; }
+  /* Telón del día: papel que se funde encima del cielo el día D. */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: var(--telon-dia);
+    opacity: 0; transition: opacity 1.6s ease;
+  }
+  html.dia body::before { opacity: 1; }
+
+  .cielo { position: fixed; inset: 0; pointer-events: none;
+    transition: opacity 1.4s ease; }
   .cielo span {
     position: absolute; width: 2px; height: 2px; border-radius: 50%;
     background: #fff; opacity: .5; animation: titila 3s infinite ease-in-out;
   }
   @keyframes titila { 0%,100% { opacity: .2 } 50% { opacity: .9 } }
+  .capa-eventos { transition: opacity 1.4s ease; }
+  /* El día ya llegó: se apagan las estrellas y la capa de eventos. */
+  html.dia .cielo,
+  html.dia .capa-eventos { opacity: 0; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) {
+    body, body::before, .cielo, .capa-eventos { transition: none; }
+  }
 
   .wrap { position: relative; max-width: 600px; width: 100%; }
 
@@ -57,9 +78,10 @@
     font-weight: 400;
     font-size: clamp(0.68rem, 3.55vw, 1.28rem);
     line-height: 1.95;
-    color: rgba(234, 228, 214, .55);
+    color: var(--ink-suave);
     letter-spacing: 0;
     white-space: nowrap;
+    transition: color 1.2s ease;
   }
 
   .nota {
@@ -72,10 +94,10 @@
   }
   .poema-abrir {
     margin-top: 26px; padding: 8px 14px; border: 0; background: none;
-    color: rgba(234,228,214,.45); font-family: inherit; font-size: .76rem;
+    color: var(--ink-tenue); font-family: inherit; font-size: .76rem;
     letter-spacing: .18em; cursor: pointer; transition: color .3s ease;
   }
-  .poema-abrir:hover { color: rgba(217,168,63,.85); }
+  .poema-abrir:hover { color: var(--gold); }
   .poema-caja {
     max-height: 0; opacity: 0; overflow: hidden;
     transition: max-height .8s cubic-bezier(.22,1,.36,1), opacity .6s ease;
@@ -84,12 +106,13 @@
   .poema { margin-top: 14px; }
 
   .reloj { margin-top: 34px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  /* Bloque de cristal: el molde único de v3 (ver DESIGN.md). */
   .bloque {
-    min-width: 72px; padding: 12px 6px; border: 1.5px solid rgba(217,168,63,.4);
-    border-radius: 14px; background: rgba(255,255,255,.04); backdrop-filter: blur(4px);
+    min-width: 72px; padding: 12px 6px; border: 1.5px solid var(--borde);
+    border-radius: 14px; background: var(--cristal); backdrop-filter: blur(4px);
   }
   .num { font-size: 2.1rem; color: var(--gold); font-variant-numeric: tabular-nums; }
-  .lab { font-size: .6rem; text-transform: uppercase; letter-spacing: .2em; color: rgba(234,228,214,.55); margin-top: 4px; }
+  .lab { font-size: .6rem; text-transform: uppercase; letter-spacing: .2em; color: var(--ink-suave); margin-top: 4px; }
 
   /* ── Minijuego: atrapar estrellas ──────────────────────────────── */
   .juego-abrir {
@@ -184,16 +207,22 @@
   }
   .juego-fin button.principal { background: var(--gold); color: #2a1e08; border-color: var(--gold); font-weight: 700; }
 
+  /* El día D. Solo se ve en modo día, así que sus colores salen de los tokens
+     ya virados: --gold es bermellón y --ink es la tinta granate. */
   .listo { display: none; }
+  .listo.viva { display: block; animation: entra 1.2s ease both; }
+  /* La cuenta atrás se retira mientras entra el papel, no de golpe. */
+  #espera { transition: opacity .9s ease; }
+  #espera.se-va { opacity: 0; }
   .saludo {
     margin-top: 30px; font-size: clamp(2rem, 7vw, 3rem); color: var(--gold);
-    font-family: "Brush Script MT", "Segoe Script", cursive; line-height: 1.1;
+    font-family: inherit; font-style: italic; font-weight: 600; line-height: 1.15;
   }
   .btn {
     display: inline-block; margin-top: 24px; padding: 15px 30px; border-radius: 999px;
-    background: var(--gold); color: #2a1e08; font-weight: 700; text-decoration: none;
-    font-family: ui-sans-serif, system-ui, sans-serif;
-    box-shadow: 0 10px 30px -10px rgba(217,168,63,.6); transition: transform .2s ease;
+    background: var(--gold); color: var(--papel); font-weight: 600; text-decoration: none;
+    font-family: inherit; font-size: 1.05rem; letter-spacing: .04em;
+    box-shadow: 0 10px 30px -10px var(--halo-oro); transition: transform .2s ease;
   }
   .btn:hover { transform: translateY(-2px); }
   @media (prefers-reduced-motion: reduce) { .cielo span { animation: none; } }
@@ -669,15 +698,39 @@
     var listo = document.getElementById("listo");
     function n(x) { return String(x).padStart(2, "0"); }
 
+    // ── La revelación ─────────────────────────────────────────────
+    // El día D el mundo pasa de la noche al papel (ver DESIGN.md). La clase
+    // `dia` vira todos los tokens de golpe; el CSS se encarga del fundido.
+    var yaEsDia = false;
+    function amanece(conFundido) {
+      if (yaEsDia) return;
+      yaEsDia = true;
+      document.documentElement.classList.add("dia");
+      if (!conFundido) {
+        // Se llegó con el día ya empezado: nada que ver desvanecerse.
+        espera.style.display = "none";
+        listo.classList.add("viva");
+        return;
+      }
+      // La cuenta atrás se va mientras el papel entra; el saludo llega después.
+      espera.classList.add("se-va");
+      setTimeout(function () {
+        espera.style.display = "none";
+        listo.classList.add("viva");
+      }, 900);
+    }
+
+    var primerTick = true;
     function tick() {
       if (window.relojTomado) return;   // un evento lo tiene prestado
       var ms = OBJETIVO - Date.now();
       if (ms <= 0) {
-        espera.style.display = "none";
-        listo.style.display = "block";
+        amanece(!primerTick);
+        primerTick = false;
         clearInterval(timer);
         return;
       }
+      primerTick = false;
       var s = Math.floor(ms / 1000);
       document.getElementById("d").textContent = Math.floor(s / 86400);
       document.getElementById("h").textContent = n(Math.floor((s % 86400) / 3600));

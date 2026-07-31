@@ -156,9 +156,16 @@
   function az(a, b) { return a + Math.random() * (b - a); }
   function uno(lista) { return lista[Math.floor(Math.random() * lista.length)]; }
 
-  // Todo lo que aparece se queda 15 segundos más de lo que pedía cada
-  // evento: si algo se le pasa, es porque no miró, no porque no diera tiempo.
-  var MAS = 15000;
+  // Todo lo que aparece se queda un poco más de lo que pedía cada evento, por
+  // si mira tarde. Poco: a los 15 segundos la pantalla vuelve a ser solo el
+  // contador (ver TOPE), y es preferible que cada cosa se apague sola antes de
+  // que la barra el reloj.
+  var MAS = 4000;
+
+  // Nada dura más de esto en pantalla. Antes cada evento se quedaba lo suyo
+  // más quince segundos, así que se solapaba con el siguiente y el cielo
+  // acababa lleno de cosas a la vez.
+  var TOPE = 15000;
 
   // ══════════════════════════════════════════════════════════════════
   //  LA ESCENA
@@ -302,6 +309,7 @@
           el.style.left = (x0 + (i * 4 + c) * paso) + "px";
           el.style.top = (arriba + f * paso) + "px";
           capa.appendChild(el);
+          apuntarNodo(el);   // si no, al detener la escena PEQUITA se queda pegada
           puntos.push(el);
         }
       }
@@ -316,6 +324,35 @@
       }, 900);
     }, 4200 + MAS);
     return puntos;
+  }
+
+  // Coloca un texto flotante junto al poema sin taparlo ni tapar los botones.
+  // Primero prueba debajo; si ahí no cabe —en un iPhone con el poema abierto,
+  // "debajo" se sale de la pantalla—, lo pone encima; y si tampoco, lo mete a
+  // la fuerza dentro del borde. Nunca se queda pisando un botón.
+  function colocarJuntoAlPoema(el) {
+    var caja = (document.getElementById("poemaCaja") || poema);
+    if (!caja) return;
+    var r = caja.getBoundingClientRect();
+    var alto = el.offsetHeight || 26;
+    var aire = 10, borde = 12;
+    var estorbos = [];
+    ["poemaAbrir", "juegoAbrir"].forEach(function (id) {
+      var n = document.getElementById(id);
+      if (n && n.offsetParent !== null) estorbos.push(n.getBoundingClientRect());
+    });
+    function cabe(y) {
+      if (y < borde || y + alto > window.innerHeight - borde) return false;
+      for (var i = 0; i < estorbos.length; i++) {
+        if (!(y + alto < estorbos[i].top - 4 || y > estorbos[i].bottom + 4)) return false;
+      }
+      return true;
+    }
+    var debajo = r.bottom + aire, encima = r.top - alto - aire, y;
+    if (cabe(debajo)) y = debajo;
+    else if (cabe(encima)) y = encima;
+    else y = Math.max(borde, Math.min(debajo, window.innerHeight - alto - borde));
+    el.style.top = y + "px";
   }
 
   // ── Dibujos ──────────────────────────────────────────────────────
@@ -417,11 +454,11 @@
         var el = document.createElement("p");
         el.className = "verso-extra";
         el.textContent = T("verso8");
-        setTimeout(function () {
-          var caja = poema.getBoundingClientRect();
-          el.style.top = (caja.bottom + 6) + "px";
-        }, 900);
         ponFijo(el, 7200);
+        // Se coloca cuando el poema ya terminó de desplegarse; si no, se mide
+        // una caja a medio abrir y el verso acaba encima de los otros siete.
+        setTimeout(function () { colocarJuntoAlPoema(el); }, 900);
+        setTimeout(function () { colocarJuntoAlPoema(el); }, 1800);
         void el.offsetWidth;
         el.classList.add("viva");
         guardarEnFrasco(T("verso8"));
@@ -586,18 +623,50 @@
       } },
 
     { id: "constelacion", peso: 2, dura: 24000, correr: function () {      // E17
-        var forma = [[0,20],[14,6],[30,2],[44,10],[38,26],[22,38],[6,30]];  // corazón torcido
-        var x0 = window.innerWidth / 2 - 60, y0 = window.innerHeight * 0.16, k = 2.6;
+        // Siete estrellas que dibujan un SIETE: tres en el palo de arriba y
+        // cuatro bajando en diagonal. La línea no cierra —un 7 no se cierra— y
+        // se traza sola de la primera a la última, como si alguien lo apuntara.
+        var forma = [[0,0],[15,0],[30,0],[25,12],[20,24],[15,36],[10,48]];
+        // Se dibuja en el trozo de cielo que queda LIBRE encima del texto, y
+        // se encoge si hace falta: antes bajaba hasta el título y se lo comía.
+        var arriba = 34;
+        var cabecera = document.getElementById("marca") || document.querySelector(".wrap");
+        var abajo = cabecera ? cabecera.getBoundingClientRect().top - 14
+                             : window.innerHeight * 0.45;
+        var libre = Math.max(70, abajo - arriba);
+        var k = Math.min(2.6, libre / 48);
+        var ancho = 30 * k;
+        var x0 = window.innerWidth / 2 - ancho / 2;
+        var y0 = arriba + (libre - 48 * k) / 2;
+        var punto = function (p) {
+          return { x: x0 + p[0] * k, y: y0 + p[1] * k };
+        };
+        var d = forma.map(function (p, i) {
+          var q = punto(p);
+          return (i ? "L" : "M") + q.x + " " + q.y;
+        }).join(" ");
+
+        // Largo aproximado del trazo, para animarlo con el guion del trazo.
+        var largo = 0;
+        for (var i = 1; i < forma.length; i++) {
+          var a = punto(forma[i - 1]), b = punto(forma[i]);
+          largo += Math.sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+        }
+
         var svgEl = document.createElement("div");
         svgEl.style.cssText = "position:absolute;left:0;top:0;right:0;bottom:0";
-        var d = forma.map(function (p, i) {
-          return (i ? "L" : "M") + (x0 + p[0] * k) + " " + (y0 + p[1] * k);
-        }).join(" ") + " Z";
         svgEl.innerHTML = '<svg width="100%" height="100%" style="position:absolute;inset:0">' +
-          '<path d="' + d + '" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1"/>' +
-          forma.map(function (p) {
-            return '<circle cx="' + (x0 + p[0] * k) + '" cy="' + (y0 + p[1] * k) +
-                   '" r="2.4" fill="#fff"/>';
+          '<path d="' + d + '" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1"' +
+          ' stroke-linecap="round" stroke-linejoin="round"' +
+          ' stroke-dasharray="' + largo + '" stroke-dashoffset="' + largo + '">' +
+          '<animate attributeName="stroke-dashoffset" from="' + largo + '" to="0"' +
+          ' dur="2.2s" begin="0.4s" fill="freeze" calcMode="spline"' +
+          ' keySplines="0.4 0 0.2 1" keyTimes="0;1"/></path>' +
+          forma.map(function (p, j) {
+            var q = punto(p);
+            return '<circle cx="' + q.x + '" cy="' + q.y + '" r="2.4" fill="#fff" opacity="0">' +
+              '<animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="' +
+              (0.4 + j * 0.3).toFixed(2) + 's" fill="freeze"/></circle>';
           }).join("") + '</svg>';
         svgEl.style.opacity = "0";
         svgEl.style.transition = "opacity 1.2s ease";
@@ -892,12 +961,30 @@
     escenaViva = esc;
     escenaActual = esc;
     mostrarDetener(true);
-    _plazo(function () { if (escenaViva === esc) detenerEscena(); }, (ms || 12000) + 1500);
+    // A los 15 segundos la pantalla queda como estaba: el contador y el
+    // frasco, nada más. Antes se iba con lo que pidiera cada evento (hasta
+    // media hora entre unos y otros) y se amontonaban. Se apaga con un
+    // fundido para que no desaparezca de golpe lo que se estaba mirando.
+    _plazo(function () { if (escenaViva === esc) apagarEscena(esc); }, TOPE - 700);
+    _plazo(function () { if (escenaViva === esc) detenerEscena(true); }, TOPE);
     return esc;
   }
 
+  // El fundido previo al barrido: se apaga lo que el evento haya puesto.
+  function apagarEscena(esc) {
+    esc.nodos.forEach(function (n) {
+      if (!n || !n.style) return;
+      n.style.transition = "opacity .7s ease";
+      n.style.opacity = "0";
+    });
+    if (elSusurro) elSusurro.classList.remove("viva");
+  }
+
   // Retira todo lo del evento en curso y deja la página como estaba.
-  function detenerEscena() {
+  // Con `automatico` (el barrido de los 15 segundos) NO se levanta el candado:
+  // el siguiente evento sigue esperando su turno como estaba previsto. Solo
+  // cuando ella pulsa detener se da paso libre a lo siguiente.
+  function detenerEscena(automatico) {
     var esc = escenaViva;
     escenaViva = null;
     escenaActual = null;
@@ -928,7 +1015,7 @@
     cuerpo.classList.remove("amanece");
     window.relojTomado = false;
     mostrarDetener(false);
-    ocupado = false;
+    if (!automatico) ocupado = false;
   }
   window.detenerEscena = detenerEscena;
 

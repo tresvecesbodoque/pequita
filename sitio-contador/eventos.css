@@ -3,17 +3,22 @@
    Todo lo que aparece vive en capas fijas: nunca empuja el contador.
    ══════════════════════════════════════════════════════════════════ */
 
-:root { --extra: 15s; }
+/* Segundos de regalo que se suman a cada animación. Cortos a propósito: a los
+   15 segundos la pantalla vuelve a ser el contador y el frasco, así que todo
+   tiene que haberse apagado solo antes. */
+:root { --extra: 4s; }
 
 .capa-eventos { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
 .capa-eventos .tocable { pointer-events: auto; cursor: pointer; }
 
 /* ── Susurros y textos ─────────────────────────────────────────── */
 .susurro-portada {
-  position: fixed; left: 50%; bottom: 5vh; transform: translateX(-50%);
+  /* Nunca por debajo de 72px: ahí abajo está el frasco, y en un móvil el
+     susurro es tan ancho que se le echaba encima. */
+  position: fixed; left: 50%; bottom: max(5vh, 72px); transform: translateX(-50%);
   width: min(24rem, 88vw); text-align: center; pointer-events: none; z-index: 6;
   font-style: italic; font-size: .95rem; line-height: 1.6;
-  color: rgba(217,168,63,.85); opacity: 0;
+  color: var(--gold-suave); opacity: 0;
 }
 .susurro-portada.viva { animation: asoma calc(8s + var(--extra)) ease forwards; }
 @keyframes asoma {
@@ -214,7 +219,7 @@
 .num { transition: color .5s ease, transform .5s ease; }
 .num.enamorado { color: var(--rose); transform: rotate(-8deg); }
 .bloque { transition: box-shadow .5s ease, border-color .5s ease; }
-.bloque.siete { border-color: rgba(217,168,63,.85); box-shadow: 0 0 20px -4px rgba(217,168,63,.6); }
+.bloque.siete { border-color: var(--borde-vivo); box-shadow: 0 0 20px -4px var(--halo-oro); }
 .bloque.late { animation: late .55s ease 14; }
 @keyframes late { 0%,100% { transform: scale(1) } 45% { transform: scale(1.07) } }
 .bloque.extra { animation: entra-bloque .6s ease both; }
@@ -327,17 +332,24 @@ body.domingo { background: radial-gradient(1600px 900px at 50% -10%, #24274a 0%,
 }
 .diagnostico b { color: var(--gold); font-weight: 400; font-size: .74rem; }
 
-/* Botón de detener: aparece solo mientras hay un evento en pantalla */
+/* Botón de detener: aparece solo mientras hay un evento en pantalla.
+   Vive en la esquina de arriba a la izquierda, que es el único rincón que no
+   usa nadie: en el centro se cruzaba con el poema, con el verso ocho, con el
+   botón de plegar el poema y con el de "tu voz", y en un iPhone tapaba justo
+   lo que había que mirar. */
 .detener {
-  position: fixed; left: 50%; bottom: 15vh; transform: translateX(-50%) translateY(8px);
-  z-index: 9; padding: 8px 16px; border-radius: 999px;
+  position: fixed; z-index: 9;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  left: calc(10px + env(safe-area-inset-left, 0px));
+  transform: translateY(-6px);
+  padding: 7px 13px; border-radius: 999px;
   border: 1px solid rgba(201,107,116,.5); background: rgba(10,16,32,.9);
-  color: rgba(201,107,116,.95); font-family: inherit; font-size: .72rem;
-  letter-spacing: .14em; cursor: pointer; opacity: 0; pointer-events: none;
+  color: rgba(201,107,116,.95); font-family: inherit; font-size: .68rem;
+  letter-spacing: .12em; cursor: pointer; opacity: 0; pointer-events: none;
   transition: opacity .35s ease, transform .35s ease;
 }
-.detener.viva { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
-body.con-pruebas .detener { bottom: 66vh; }
+.detener.viva { opacity: .85; transform: translateY(0); pointer-events: auto; }
+.detener:hover { opacity: 1; }
 
 /* Pistas dentro del frasco */
 .coleccion .pistas li {
