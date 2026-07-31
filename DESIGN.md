@@ -120,9 +120,19 @@ nocturno o dejarlos solo dentro de las cartas, que siguen siendo de papel.
 
 ## Estado de la migración
 
-- **`sitio-contador/` → v3 aplicada** (2026-07-31), revelación incluida.
-- **App Next → todavía en v2.** 47 archivos de `app/` y `components/` usan
-  clases y tokens de la estética roja. El repintado está pendiente y va por
-  etapas: `globals.css` y `layout.tsx` primero, luego `Button` y `LetterCard`,
-  luego las pantallas. Hasta que termine, la app y el contador se ven distintos:
-  es deuda conocida, no un descuido.
+Los dos sitios están en v3 (2026-07-31), revelación incluida en ambos: el día D
+el contador amanece y la app también, así que quien pulse «Entrar» no cambia de
+mundo.
+
+El repintado de la app se hizo con **puentes en `globals.css`**, no renombrando
+47 archivos: los tokens viejos (`--background`, `--foreground`, `--accent`…) y
+las clases viejas (`.sketch-card`, `.paper-texture`, `.maximal-tile`,
+`.starfield`) siguen existiendo, pero apuntan al cristal y a la noche. Eso deja
+nombres que mienten sobre lo que dibujan.
+
+Pendiente, sin prisa:
+
+- Renombrar esos puentes a los nombres de v3 (`.bloque-cristal`, `--cielo`,
+  `--ink`, `--gold`) y borrar los alias. Al escribir código nuevo usar ya los
+  nombres nuevos.
+- Los stickers: ver la sección de arriba.

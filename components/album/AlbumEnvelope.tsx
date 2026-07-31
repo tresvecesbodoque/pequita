@@ -68,8 +68,8 @@ export function AlbumEnvelope({
       <div
         className={`relative aspect-[3/2] overflow-hidden rounded-lg border-2 transition-all duration-300 ease-out group-hover:-translate-y-1.5 ${
           featured && !locked
-            ? "border-[var(--gold)] shadow-[0_0_0_3px_rgba(217,168,63,0.35),4px_5px_0_rgba(124,27,34,0.3)] group-hover:shadow-[0_0_0_4px_rgba(217,168,63,0.45),6px_8px_0_rgba(124,27,34,0.35)]"
-            : "border-[var(--foreground)]/70 shadow-[4px_5px_0_rgba(124,27,34,0.3)] group-hover:shadow-[6px_8px_0_rgba(124,27,34,0.35)]"
+            ? "border-[var(--gold)] shadow-[0_0_0_3px_rgba(217,168,63,0.35),0_0_20px_-6px_var(--halo-oro)] group-hover:shadow-[0_0_0_4px_rgba(217,168,63,0.45),0_0_20px_-6px_var(--halo-oro)]"
+            : "border-[var(--foreground)]/70 shadow-[0_0_20px_-6px_var(--halo-oro)] group-hover:shadow-[0_0_20px_-6px_var(--halo-oro)]"
         }`}
         style={{ backgroundColor: color }}
       >

@@ -10,13 +10,16 @@ type Props = HTMLMotionProps<"button"> & {
   variant?: Variant;
 };
 
-// Botones cartoon 40s: contorno de tinta y sombra dura desplazada.
+// Botones v3: oro sobre la noche. El primario es oro macizo con halo, el
+// contorno es el mismo cristal que los bloques del reloj, y el fantasma solo
+// habla en espaciado. Nada de sombras duras (ver DESIGN.md).
 const styles: Record<Variant, string> = {
   primary:
-    "border-2 border-[var(--accent-deep)] bg-[var(--accent)] text-[var(--night-ink,#f6e3c8)] shadow-[3px_4px_0_var(--accent-deep)] hover:brightness-110 disabled:opacity-50",
+    "border-[1.5px] border-[var(--gold)] bg-[var(--gold)] text-[var(--fondo)] shadow-[0_0_20px_-6px_var(--halo-oro)] hover:brightness-110 disabled:opacity-45 disabled:shadow-none",
   outline:
-    "border-2 border-[var(--foreground)] bg-[var(--surface)] text-[var(--foreground)] shadow-[3px_4px_0_rgba(124,27,34,0.3)] hover:border-[var(--accent)]",
-  ghost: "text-[var(--foreground)] hover:bg-[var(--accent)]/10",
+    "border-[1.5px] border-[var(--borde)] bg-[var(--cristal)] text-[var(--ink)] backdrop-blur-[4px] hover:border-[var(--borde-vivo)] hover:shadow-[0_0_20px_-6px_var(--halo-oro)] disabled:opacity-45",
+  ghost:
+    "border-[1.5px] border-transparent tracking-[0.14em] text-[var(--ink-tenue)] hover:text-[var(--gold)]",
 };
 
 export const Button = forwardRef<HTMLButtonElement, Props>(function Button(

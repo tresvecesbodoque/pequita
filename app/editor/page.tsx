@@ -43,7 +43,7 @@ export default async function EditorHome() {
         {stats.map(([label, n, emoji]) => (
           <div
             key={label}
-            className="flex items-center gap-3 rounded-2xl border-2 border-[var(--foreground)]/60 bg-[var(--surface)] px-4 py-3 shadow-[3px_4px_0_rgba(124,27,34,0.2)]"
+            className="flex items-center gap-3 rounded-2xl border-[1.5px] border-[var(--borde)] bg-[var(--surface)] px-4 py-3 shadow-[0_0_20px_-6px_var(--halo-oro)]"
           >
             <span className="text-2xl" aria-hidden>
               {emoji}

@@ -72,7 +72,7 @@ export function HomeCountdown({ isoDate, nick }: { isoDate: string; nick: string
         {bloques.map(([n, etiqueta]) => (
           <div
             key={etiqueta}
-            className="flex min-w-[60px] flex-col items-center rounded-xl border-2 border-[var(--foreground)]/60 bg-[var(--surface)] px-3 py-2 shadow-[3px_4px_0_rgba(124,27,34,0.2)]"
+            className="flex min-w-[60px] flex-col items-center rounded-xl border-[1.5px] border-[var(--borde)] bg-[var(--surface)] px-3 py-2 shadow-[0_0_20px_-6px_var(--halo-oro)]"
           >
             <span
               className="text-3xl text-[var(--accent)]"

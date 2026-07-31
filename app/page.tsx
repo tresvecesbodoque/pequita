@@ -107,7 +107,7 @@ function HubCard({
   return (
     <Link
       href={href}
-      className="sketch-mini group border-2 border-[var(--foreground)]/60 bg-[var(--surface)] px-4 py-3.5 text-center shadow-[3px_4px_0_rgba(124,27,34,0.25)] transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]"
+      className="sketch-mini group border-[1.5px] border-[var(--borde)] bg-[var(--surface)] px-4 py-3.5 text-center shadow-[0_0_20px_-6px_var(--halo-oro)] transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]"
     >
       <span className="mx-auto block h-6 w-8" aria-hidden>
         {icon}

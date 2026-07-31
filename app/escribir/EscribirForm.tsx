@@ -22,9 +22,10 @@ const FONTS = [
   { label: "Manuscrita", value: "var(--font-hand)" },
   { label: "De pluma", value: "var(--font-hand2)" },
   { label: "A mano", value: "var(--font-hand3)" },
-  { label: "Letrero", value: "var(--font-display)" },
   { label: "Clásica", value: "var(--font-serif)" },
-  { label: "Redonda", value: "var(--font-sans)" },
+  // "Letrero" (Amatic) y "Redonda" (Nunito) se retiran del selector en v3, pero
+  // siguen en ALLOWED_FONTS y cargándose en layout.tsx: hay cartas ya escritas
+  // que las eligieron y sin la variable se romperían (ver DESIGN.md).
 ] as const;
 
 const MAX_MESSAGE = 1000;
@@ -221,7 +222,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   }
 
   const chipActivo =
-    "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)] shadow-[2px_3px_0_rgba(124,27,34,0.25)]";
+    "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)] shadow-[0_0_20px_-6px_var(--halo-oro)]";
   const chipInactivo =
     "border-[var(--border)] text-[var(--foreground)] hover:border-[var(--accent-soft)]";
 

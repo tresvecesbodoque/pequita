@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageTransition } from "@/components/layout/PageTransition";
+import { ModoDia } from "@/components/layout/ModoDia";
 import {
   Cormorant_Garamond,
   Nunito,
@@ -7,8 +8,6 @@ import {
   Dancing_Script,
   Patrick_Hand,
   Amatic_SC,
-  Fredericka_the_Great,
-  Limelight,
 } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/lib/site";
@@ -52,19 +51,9 @@ const amatic = Amatic_SC({
   weight: ["400", "700"],
 });
 
-// Rotulado a lápiz (bosquejo) para títulos grandes
-const fredericka = Fredericka_the_Great({
-  variable: "--font-sketch",
-  subsets: ["latin"],
-  weight: "400",
-});
-
-// Cartel de feria años 40 para rótulos cortos
-const limelight = Limelight({
-  variable: "--font-deco",
-  subsets: ["latin"],
-  weight: "400",
-});
+// Fredericka the Great y Limelight (rotulado v2) se retiraron con la estética
+// roja: --font-sketch y --font-deco apuntan ahora al serif en globals.css, así
+// que los sitios que aún las nombran siguen funcionando sin descargar nada.
 
 // URL base para que las imágenes OG y los enlaces se resuelvan absolutos al
 // compartir (WhatsApp, etc.). En Vercel se usa el dominio de producción.
@@ -105,9 +94,10 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${cormorant.variable} ${nunito.variable} ${caveat.variable} ${dancing.variable} ${patrick.variable} ${amatic.variable} ${fredericka.variable} ${limelight.variable} h-full antialiased`}
+      className={`${cormorant.variable} ${nunito.variable} ${caveat.variable} ${dancing.variable} ${patrick.variable} ${amatic.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <ModoDia isoDate={SITE.revealDate} />
         <PageTransition>{children}</PageTransition>
       </body>
     </html>

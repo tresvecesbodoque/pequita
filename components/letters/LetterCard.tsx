@@ -50,22 +50,25 @@ export function LetterCard({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -3 }}
-      className="paper-texture flex flex-col rounded-2xl border border-[var(--border)] p-5 shadow-[0_12px_40px_-24px_rgba(58,46,38,0.5)]"
+      className="bloque-cristal flex flex-col p-5"
     >
       <div className="flex items-start justify-between gap-3">
-        <h3 className="text-xl leading-tight">{title}</h3>
+        {/* El título de una carta no va en versalitas: es un nombre, no un rótulo. */}
+        <h3 className="text-xl leading-tight [font-variant:normal] tracking-normal text-[var(--ink-calida)]">
+          {title}
+        </h3>
         {isPublished ? (
-          <span className="shrink-0 rounded-full bg-[var(--accent)]/10 px-2.5 py-0.5 text-xs font-semibold text-[var(--accent)]">
+          <span className="shrink-0 rounded-full border border-[var(--borde)] bg-[var(--gold)]/15 px-3 py-0.5 text-xs tracking-[0.1em] text-[var(--gold)]">
             en el álbum
           </span>
         ) : (
-          <span className="shrink-0 rounded-full bg-black/5 px-2.5 py-0.5 text-xs font-semibold text-[var(--muted)]">
+          <span className="shrink-0 rounded-full border border-[var(--ink)]/20 px-3 py-0.5 text-xs tracking-[0.1em] text-[var(--ink-tenue)]">
             borrador
           </span>
         )}
       </div>
 
-      <p className="mt-1 text-xs text-[var(--muted)]">
+      <p className="mt-1 text-xs italic text-[var(--ink-tenue)]">
         {authorName ? "✍ Carta de un familiar · " : ""}
         Editada {new Date(updatedAt).toLocaleDateString("es", { day: "numeric", month: "long" })}
       </p>
@@ -96,7 +99,7 @@ export function LetterCard({
         <button
           onClick={handleDelete}
           disabled={pending}
-          className="ml-auto text-xs text-[var(--muted)] underline-offset-2 hover:text-[var(--accent)] hover:underline disabled:opacity-50"
+          className="ml-auto text-xs italic text-[var(--ink-tenue)] underline-offset-2 hover:text-[var(--gold)] hover:underline disabled:opacity-50"
         >
           Eliminar
         </button>

@@ -35,7 +35,7 @@ export function PendingCard({ id, authorName, message, createdAt }: Props) {
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col rounded-2xl border-2 border-[var(--accent-soft)]/50 bg-[var(--surface)] p-5 shadow-[0_12px_40px_-24px_rgba(58,46,38,0.5)]"
+      className="flex flex-col rounded-2xl border-2 border-[var(--accent-soft)]/50 bg-[var(--surface)] p-5 shadow-[0_0_20px_-6px_var(--halo-oro)]"
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-xl leading-tight">De {authorName}</h3>

@@ -87,7 +87,7 @@ export function SurpriseIntro() {
             {/* El emoji que hace silencio */}
             <motion.div
               className="select-none text-8xl sm:text-9xl"
-              style={{ filter: "drop-shadow(3px 5px 0 rgba(124,27,34,0.25))" }}
+              style={{ filter: "drop-shadow(0 0 14px rgba(217,168,63,0.45))" }}
               initial={reduce ? { scale: 1 } : { scale: 0.3, rotate: -12 }}
               animate={
                 reduce

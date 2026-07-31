@@ -12,7 +12,7 @@ export function NavBar({ claro = false }: { claro?: boolean }) {
     "flex items-center gap-1.5 rounded-full border-2 px-3.5 py-1.5 text-xs font-medium backdrop-blur transition-all hover:-translate-y-0.5";
   const estilo = claro
     ? `${base} border-[var(--night-ink)]/30 bg-white/10 text-[var(--night-ink)] hover:border-[var(--gold)]/70`
-    : `${base} border-[var(--foreground)]/50 bg-[var(--surface)]/80 text-[var(--foreground)] shadow-[2px_3px_0_rgba(124,27,34,0.2)] hover:border-[var(--accent)]`;
+    : `${base} border-[var(--foreground)]/50 bg-[var(--surface)]/80 text-[var(--foreground)] shadow-[0_0_20px_-6px_var(--halo-oro)] hover:border-[var(--accent)]`;
 
   return (
     <nav className="pointer-events-none fixed left-3 top-3 z-50 flex gap-2 sm:left-5 sm:top-5">

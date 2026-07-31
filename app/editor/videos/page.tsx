@@ -44,7 +44,7 @@ export default async function EditorVideosPage() {
           {rows.map((r) => (
             <div
               key={r.id}
-              className="flex flex-col gap-3 rounded-2xl border-2 border-[var(--foreground)]/50 bg-[var(--surface)] p-3 shadow-[3px_4px_0_rgba(124,27,34,0.2)]"
+              className="flex flex-col gap-3 rounded-2xl border-[1.5px] border-[var(--borde)] bg-[var(--surface)] p-3 shadow-[0_0_20px_-6px_var(--halo-oro)]"
             >
               <video
                 src={r.videoUrl!}

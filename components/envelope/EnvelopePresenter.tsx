@@ -359,7 +359,7 @@ export function EnvelopePresenter({
           onClick={toggleMute}
           aria-label={muted ? "Activar sonido" : "Silenciar sonido"}
           title={muted ? "Activar sonido" : "Silenciar sonido"}
-          className="fixed right-4 top-4 z-40 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--foreground)]/40 bg-[var(--surface)]/80 text-sm backdrop-blur transition-colors hover:border-[var(--accent)]"
+          className="fixed right-4 top-4 z-40 flex h-9 w-9 items-center justify-center rounded-full border-[1.5px] border-[var(--borde)] bg-[var(--surface)]/80 text-sm backdrop-blur transition-colors hover:border-[var(--accent)]"
         >
           {muted ? "🔇" : "🔊"}
         </button>
@@ -391,7 +391,7 @@ export function EnvelopePresenter({
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.35, duration: 0.6, ease: PAPER_EASE }}
-                className="flex items-center gap-3 rounded-2xl border-2 border-[var(--foreground)]/30 bg-[var(--surface)]/90 px-4 py-2.5 shadow-sm backdrop-blur"
+                className="flex items-center gap-3 rounded-2xl border-[1.5px] border-[var(--borde)] bg-[var(--surface)]/90 px-4 py-2.5 shadow-sm backdrop-blur"
               >
                 <img src={qrInterior} alt="QR" className="h-12 w-12" />
                 <span className="max-w-[9rem] text-xs leading-snug text-[var(--muted)]">

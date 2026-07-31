@@ -59,13 +59,13 @@ export function AudioCard({ src, label = "Escucha su voz" }: { src: string; labe
   const pct = dur > 0 ? (time / dur) * 100 : 0;
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl border-2 border-[var(--foreground)]/60 bg-[var(--surface)]/95 px-4 py-3 shadow-[3px_4px_0_rgba(124,27,34,0.25)] backdrop-blur">
+    <div className="flex items-center gap-3 rounded-2xl border-[1.5px] border-[var(--borde)] bg-[var(--surface)]/95 px-4 py-3 shadow-[0_0_20px_-6px_var(--halo-oro)] backdrop-blur">
       <audio ref={ref} src={src} preload="metadata" />
       <button
         type="button"
         onClick={toggle}
         aria-label={playing ? "Pausar" : "Reproducir"}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--night-ink)] shadow-[2px_3px_0_rgba(124,27,34,0.4)] transition-transform hover:scale-105 active:scale-95"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--night-ink)] shadow-[0_0_20px_-6px_var(--halo-oro)] transition-transform hover:scale-105 active:scale-95"
       >
         {playing ? (
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>

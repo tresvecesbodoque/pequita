@@ -51,7 +51,7 @@ export function GuestStudio({
             onClick={() => setTab(t)}
             className={`rounded-full border-2 px-4 py-1.5 text-sm transition-all ${
               tab === t
-                ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)] shadow-[2px_3px_0_rgba(124,27,34,0.25)]"
+                ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)] shadow-[0_0_20px_-6px_var(--halo-oro)]"
                 : "border-[var(--border)] text-[var(--muted)] hover:border-[var(--accent-soft)]"
             }`}
           >

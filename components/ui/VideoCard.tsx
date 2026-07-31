@@ -7,7 +7,7 @@
 
 export function VideoCard({ src, label = "Mira su vídeo" }: { src: string; label?: string }) {
   return (
-    <div className="flex flex-col gap-2 rounded-2xl border-2 border-[var(--foreground)]/60 bg-[var(--surface)]/95 p-3 shadow-[3px_4px_0_rgba(124,27,34,0.25)] backdrop-blur">
+    <div className="flex flex-col gap-2 rounded-2xl border-[1.5px] border-[var(--borde)] bg-[var(--surface)]/95 p-3 shadow-[0_0_20px_-6px_var(--halo-oro)] backdrop-blur">
       <span className="flex items-center gap-1.5 text-xs font-semibold text-[var(--foreground)]">
         <span aria-hidden>🎬</span> {label}
       </span>
