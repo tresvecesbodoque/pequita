@@ -8,6 +8,23 @@
    tiene que haberse apagado solo antes. */
 :root { --extra: 4s; }
 
+/* Los quince primeros segundos son para leer el texto; pasados, el texto se
+   retira y quedan el contador, el frasco y lo que traiga el cielo. Se va con
+   opacidad y no se quita del sitio: quitándolo, el contador daba un salto.
+   Un evento que necesite la nota (la corrección) la devuelve mientras dure. */
+.marca, .nota { transition: opacity 1.4s ease; }
+body.despejado .marca, body.despejado .nota { opacity: 0; }
+/* Los dos botones no se esconden —son la puerta al juego y al poema—, pero se
+   apagan para que no compitan con lo que pase en el cielo. Al tocarlos o
+   pasar por encima vuelven enteros. */
+.poema-abrir, .juego-abrir { transition: opacity .9s ease, transform .2s ease, background .2s ease, color .3s ease; }
+body.despejado .poema-abrir, body.despejado .juego-abrir { opacity: .35; }
+body.despejado .poema-abrir:hover, body.despejado .juego-abrir:hover,
+body.despejado .poema-abrir:focus-visible, body.despejado .juego-abrir:focus-visible { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .marca, .nota { transition: none; }
+}
+
 .capa-eventos { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
 .capa-eventos .tocable { pointer-events: auto; cursor: pointer; }
 
@@ -383,6 +400,27 @@ body.amaneciendo { background: linear-gradient(180deg, #2b2340 0%, #14162c 55%, 
   background: linear-gradient(180deg, #241030 0%, #14162c 100%);
   border-top: 1.5px solid rgba(217,168,63,.4); opacity: 0;
   animation: respira calc(11s + var(--extra)) ease forwards;
+}
+/* La parejita que mira el planeta: se inclinan la una hacia la otra hasta
+   juntarse, y en el beso sale un corazón. Se acercan de verdad —cuatro
+   píxeles cada una— en vez de aparecer ya besándose. */
+/* Al tamaño del dibujo original se les juntaban las cabezas en un borrón:
+   se ven a 1,7 veces, y de lado, para no quedar debajo del botón del juego. */
+.pareja svg { overflow: visible; width: 126px; height: 75px; }
+.pareja .izq { animation: se-acerca-izq 1.5s cubic-bezier(.3,.7,.4,1) .9s both; }
+.pareja .der { animation: se-acerca-der 1.5s cubic-bezier(.3,.7,.4,1) .9s both; }
+@keyframes se-acerca-izq { from { transform: translateX(-3px) } to { transform: translateX(4px) } }
+@keyframes se-acerca-der { from { transform: translateX(3px) } to { transform: translateX(-4px) } }
+.pareja .beso {
+  fill: var(--rose, #c96b74); stroke: none; opacity: 0;
+  transform-origin: 37px 6px;
+  animation: brota-beso 4.6s ease 2.2s both;
+}
+@keyframes brota-beso {
+  0%   { opacity: 0; transform: translateY(4px) scale(.4); }
+  18%  { opacity: .95; transform: translateY(0) scale(1); }
+  70%  { opacity: .95; transform: translateY(-2px) scale(1); }
+  100% { opacity: 0; transform: translateY(-9px) scale(.9); }
 }
 /* E59 — carta relámpago */
 .carta-rapida {

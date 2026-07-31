@@ -53,6 +53,7 @@
     zorro: ["me domesticaste, y ahora el resto del cielo me parece igual"],
     rosa: ["no me riegues, quédate"],
     globo: ["eso también era para ti"],
+    planeta: ["este mundo es nuestro"],
     luna: ["también te ves de noche"],
     fugaz: ["pide algo"],
     "luciernagas.fin": [],
@@ -166,6 +167,19 @@
   // más quince segundos, así que se solapaba con el siguiente y el cielo
   // acababa lleno de cosas a la vez.
   var TOPE = 15000;
+
+  // Los primeros quince segundos son para leer: está el texto y está el
+  // contador, y no sale ni un evento. Cumplidos, el texto se retira —sin
+  // moverse de sitio, para que el contador no dé un salto— y a partir de ahí
+  // la pantalla es el contador, el frasco y lo que traiga el cielo.
+  var CALMA = 15000;
+  var ARRANQUE = Date.now();
+  function enCalma() { return Date.now() - ARRANQUE < CALMA; }
+  function despejar() { if (!enCalma()) cuerpo.classList.add("despejado"); }
+  function volverElTexto() { cuerpo.classList.remove("despejado"); }
+  // Con el del navegador a propósito: aquí arriba el setTimeout de la casa
+  // todavía no tiene a quién llamar (_plazo se asigna más abajo).
+  window.setTimeout(despejar, CALMA);
 
   // ══════════════════════════════════════════════════════════════════
   //  LA ESCENA
@@ -479,6 +493,7 @@
     { id: "correccion", peso: 3, dura: 21500, correr: function () {        // E07
         var span = document.getElementById("notaCarino");
         if (!span) return;
+        volverElTexto();   // este evento se escribe encima de la nota
         var original = span.textContent;
         var mejor = uno(TL("correcciones"));
         span.innerHTML = '<span class="tachado">' + original + '</span>';
@@ -786,11 +801,28 @@
         var el = document.createElement("div");
         el.className = "planeta";
         pon(el, 11500);
+        // Antes se sentaba una sola figura a mirar el planeta. Ahora son dos:
+        // se inclinan la una hacia la otra, se dan un beso y lo dicen.
         var quien = document.createElement("div");
-        quien.style.cssText = "position:absolute;left:50%;bottom:26vh;transform:translateX(-50%);opacity:0;transition:opacity 1.4s";
-        quien.innerHTML = svg(40, 26, '<circle cx="13" cy="9" r="5"/><path d="M13 14v14"/><path d="M6 34l7-6 7 6"/><path d="M6 22l7 3 7-3"/>');
+        quien.className = "pareja";
+        quien.style.cssText = "position:absolute;left:34%;bottom:19vh;transform:translateX(-50%);opacity:0;transition:opacity 1.4s";
+        quien.innerHTML = svg(44, 74,
+          '<g class="izq">' +
+            '<circle cx="27" cy="13" r="5"/>' +
+            '<path d="M27 18v12"/>' +
+            '<path d="M27 30l-5 9M27 30l4 9"/>' +
+            '<path d="M27 22l8 3"/>' +
+          '</g>' +
+          '<g class="der">' +
+            '<circle cx="47" cy="13" r="5"/>' +
+            '<path d="M47 18v12"/>' +
+            '<path d="M47 30l5 9M47 30l-4 9"/>' +
+            '<path d="M47 22l-8 3"/>' +
+          '</g>' +
+          '<path class="beso" d="M37 3c-1.5-1.9-4.3-.7-4.3 1.4 0 2.1 2.8 3.5 4.3 4.8 1.5-1.3 4.3-2.7 4.3-4.8C41.3 2.3 38.5 1.1 37 3z"/>');
         pon(quien, 11500);
-        setTimeout(function () { quien.style.opacity = ".85"; }, 900);
+        setTimeout(function () { quien.style.opacity = ".9"; }, 900);
+        setTimeout(function () { susurrar(T("planeta")); }, 3400);
         setTimeout(function () { quien.style.opacity = "0"; }, 9000 + MAS);
       } },
 
@@ -1015,6 +1047,7 @@
     cuerpo.classList.remove("amanece");
     window.relojTomado = false;
     mostrarDetener(false);
+    despejar();
     if (!automatico) ocupado = false;
   }
   window.detenerEscena = detenerEscena;
@@ -1050,7 +1083,7 @@
 
   function lanzar() {
     // El modo forzado es una herramienta de prueba: se salta el candado.
-    if (!forzado && (ocupado || jugando() || document.hidden)) return;
+    if (!forzado && (ocupado || jugando() || document.hidden || enCalma())) return;
     if (forzado) {
       revivir(forzado);
       return;
@@ -1092,10 +1125,13 @@
 
   function agendar() {
     clearTimeout(temporizador);
+    var espera = rapido ? 2500 : 10000 + Math.random() * 10000;   // entre 10 s y 20 s
+    var falta = CALMA - (Date.now() - ARRANQUE);
+    if (falta > 0) espera = Math.max(espera, falta + 600);        // primero, la calma
     temporizador = setTimeout(function () {
       lanzar();
       agendar();
-    }, rapido ? 2500 : 10000 + Math.random() * 10000);   // entre 10 s y 20 s
+    }, espera);
   }
 
   document.addEventListener("visibilitychange", function () {

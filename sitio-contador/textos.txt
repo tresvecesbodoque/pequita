@@ -91,6 +91,10 @@ mi rosita única
 # al reventarlo
 eso también era para ti
 
+# E57 — la parejita que mira el planeta, cuando se besan
+[planeta]
+este mundo es nuestro
+
 [luna]
 # al tocarla. Solo sale de noche y con luna llena.
 también te ves de noche
