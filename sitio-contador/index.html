@@ -412,6 +412,138 @@
       var a = crudo(MEM), b = crudo(COPIA);
       if (riqueza(a) !== riqueza(b)) guardarMem(riqueza(a) > riqueza(b) ? a : b);
     })();
+
+    // ── Rescate desde las direcciones viejas ───────────────────────
+    // El navegador guarda el frasco y la racha POR DOMINIO, y el sitio ha
+    // cambiado de dirección varias veces. Cada dirección vieja sirve un
+    // puente.html: se carga en un iframe invisible, se le pide lo que tenga
+    // guardado y se funde con lo de aquí. La fusión solo suma —de cada cosa
+    // se queda la mayor—, así que la racha y el frasco nunca encogen.
+    var VIEJOS = [
+      "https://dossieteshastaelsiete.vercel.app",
+      "https://sietedelocho.vercel.app",
+      "https://sitio-contador.vercel.app"
+    ];
+
+    var RESCATE = "pequita.contador.rescate";
+
+    (function () {
+      // Lo rescatado no se aplica en caliente: se deja apartado y se aplica
+      // AQUÍ, al arrancar, antes de que eventos.js lea nada. Si se aplicara en
+      // caliente, eventos.js —que ya tiene su copia en memoria— la escribiría
+      // encima al primer guardado y se llevaría por delante la racha.
+      var apartado = crudo(RESCATE);
+      if (riqueza(apartado) > 0 || apartado.puentes) {
+        try { localStorage.removeItem(RESCATE); } catch (e) {}
+        guardarMem(apartado);
+      }
+
+      var pendientes = VIEJOS.filter(function (o) {
+        return o !== location.origin && !(leerMem().puentes || {})[o];
+      });
+      if (!pendientes.length) return;
+
+      function mayor(a, b) { return (b || 0) > (a || 0) ? (b || 0) : (a || 0); }
+
+      // Funde lo del otro dominio SIN quitar nada de lo de aquí.
+      // Devuelve null si no traía nada nuevo.
+      function fundirRescate(otro) {
+        // La base es lo de aquí más lo ya apartado, por si contesta más de un
+        // puente antes de la recarga.
+        var mio = fundir(leerMem(), crudo(RESCATE)), r = {}, crece = false, k;
+        for (k in mio) if (Object.prototype.hasOwnProperty.call(mio, k)) r[k] = mio[k];
+
+        ["coleccion", "dias", "cartas"].forEach(function (c) {
+          var u = unir(mio, otro, c);
+          if (u.length > (mio[c] || []).length) { r[c] = u; crece = true; }
+        });
+
+        // El registro son objetos: se juntan sin repetir y se ordenan por fecha.
+        var vistos = {}, juntos = [];
+        (mio.registro || []).concat(otro.registro || []).forEach(function (x) {
+          if (!x || !x.id) return;
+          var llave = x.id + "|" + x.cuando;
+          if (vistos[llave]) return;
+          vistos[llave] = true; juntos.push(x);
+        });
+        juntos.sort(function (a, b) { return (a.cuando || 0) - (b.cuando || 0); });
+        if (juntos.length > (mio.registro || []).length) {
+          r.registro = juntos.slice(-80); crece = true;
+        }
+
+        ["visitas", "versos", "racha"].forEach(function (n) {
+          var m = mayor(mio[n], otro[n]);
+          if (m !== (mio[n] || 0)) { r[n] = m; crece = true; }
+        });
+
+        // La visita más reciente manda; el frasco más antiguo también.
+        if ((otro.ultimaVisita || "") > (mio.ultimaVisita || "")) {
+          r.ultimaVisita = otro.ultimaVisita; crece = true;
+        }
+        if (otro.creado && (!mio.creado || otro.creado < mio.creado)) {
+          r.creado = otro.creado; crece = true;
+        }
+        if (otro.poemaAbierto && !mio.poemaAbierto) { r.poemaAbierto = true; crece = true; }
+        if (mio.volumen === undefined && otro.volumen !== undefined) r.volumen = otro.volumen;
+
+        var mj = mio.juego || {}, oj = otro.juego || {};
+        var j = {
+          record: mayor(mj.record, oj.record),
+          total: mayor(mj.total, oj.total),
+          partidas: mayor(mj.partidas, oj.partidas)
+        };
+        if (j.record !== (mj.record || 0) || j.total !== (mj.total || 0) ||
+            j.partidas !== (mj.partidas || 0)) { r.juego = j; crece = true; }
+
+        return crece ? r : null;
+      }
+
+      var respondieron = {}, tRecarga = 0;
+
+      function recibir(e) {
+        if (!e.data || e.data.tipo !== "pequita:toma") return;
+        if (VIEJOS.indexOf(e.origin) < 0 || respondieron[e.origin]) return;
+        respondieron[e.origin] = true;
+
+        // Se funde contra lo que ya haya apartado, por si contestan dos.
+        var fundido = fundirRescate(e.data.mem || {});
+        var base = fundido || crudo(RESCATE);
+        base.puentes = base.puentes || {};
+        base.puentes[e.origin] = true;
+
+        if (!fundido) {
+          // No traía nada nuevo: basta con no volver a preguntarle.
+          var m = leerMem();
+          m.puentes = m.puentes || {}; m.puentes[e.origin] = true;
+          guardarMem(m);
+          return;
+        }
+
+        try { localStorage.setItem(RESCATE, JSON.stringify(base)); } catch (e2) { return; }
+
+        // Se recarga para aplicarlo en limpio. Medio segundo de margen por si
+        // otro puente viene en camino; a quien no conteste se le vuelve a
+        // preguntar en la próxima visita, porque no queda marcado.
+        clearTimeout(tRecarga);
+        tRecarga = setTimeout(function () { location.reload(); }, 500);
+      }
+      window.addEventListener("message", recibir);
+
+      pendientes.forEach(function (origen) {
+        var marco = document.createElement("iframe");
+        marco.setAttribute("aria-hidden", "true");
+        marco.setAttribute("tabindex", "-1");
+        marco.style.cssText = "position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none";
+        marco.src = origen + "/puente.html";
+        marco.onload = function () {
+          try { marco.contentWindow.postMessage({ tipo: "pequita:dame" }, origen); } catch (e) {}
+        };
+        document.documentElement.appendChild(marco);
+      });
+
+      // Si alguno no contesta (dirección caída o borrada), se deja de escuchar.
+      setTimeout(function () { window.removeEventListener("message", recibir); }, 10000);
+    })();
     function fechaLocal(d) {
       d = d || new Date();
       return d.getFullYear() + "-" + n(d.getMonth() + 1) + "-" + n(d.getDate());

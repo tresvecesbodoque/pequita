@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="robots" content="noindex" />
+<title>puente</title>
+</head>
+<body>
+<!--
+  PUENTE DE MEMORIA ENTRE DOMINIOS
+
+  El navegador guarda el frasco y la racha por DOMINIO: lo que se guardó en
+  un dominio no se ve desde otro. Como el sitio ha cambiado de dirección
+  varias veces, esta página se deja en cada dirección vieja: el sitio nuevo
+  la carga en un iframe invisible, le pide por postMessage lo que haya
+  guardado ahí y lo funde con lo suyo.
+
+  Esta página SOLO lee y responde. Nunca escribe ni borra nada.
+-->
+<script>
+(function () {
+  var MEM = "pequita.contador";
+  var COPIA = "pequita.contador.copia";
+
+  // Solo se responde a un sitio de la propia familia (*.vercel.app) o al
+  // servidor de pruebas local. A nadie más.
+  function permitido(origen) {
+    return /^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(origen) ||
+           /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origen);
+  }
+
+  function crudo(clave) {
+    try { return JSON.parse(localStorage.getItem(clave) || "{}") || {}; }
+    catch (e) { return {}; }
+  }
+  // La misma medida que usa el sitio para saber cuál de las dos copias manda.
+  function riqueza(o) {
+    return (o.coleccion || []).length + (o.dias || []).length +
+           (o.registro || []).length + (o.cartas || []).length +
+           (o.juego ? (o.juego.partidas || 0) : 0) + (o.visitas || 0);
+  }
+  function loGuardado() {
+    var a = crudo(MEM), b = crudo(COPIA);
+    return riqueza(b) > riqueza(a) ? b : a;
+  }
+
+  function responder(destino) {
+    if (!permitido(destino)) return;
+    var carga;
+    try { carga = loGuardado(); } catch (e) { carga = {}; }
+    parent.postMessage({ tipo: "pequita:toma", origen: location.origin, mem: carga }, destino);
+  }
+
+  window.addEventListener("message", function (e) {
+    if (!e.data || e.data.tipo !== "pequita:dame") return;
+    responder(e.origin);
+  });
+
+  // Aviso de que ya está en pie, por si el mensaje del sitio llegó antes.
+  if (parent !== window) {
+    try { parent.postMessage({ tipo: "pequita:puente-listo", origen: location.origin }, "*"); }
+    catch (e) {}
+  }
+})();
+</script>
+</body>
+</html>

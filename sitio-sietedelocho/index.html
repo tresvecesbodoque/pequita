@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>siete de locho</title>
+<style>
+  :root {
+    --gold: #d9a83f;
+    --ink: #eae4d6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 26px;
+    color: var(--ink);
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+    background:
+      radial-gradient(1600px 900px at 50% -10%, #1b2748 0%, transparent 62%),
+      linear-gradient(180deg, #0e1730 0%, #0a1020 100%);
+    overflow-x: hidden;
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+  }
+  .cielo { position: fixed; inset: 0; pointer-events: none; }
+  .cielo span {
+    position: absolute; width: 2px; height: 2px; border-radius: 50%;
+    background: #fff; opacity: .5; animation: titila 3s infinite ease-in-out;
+  }
+  @keyframes titila { 0%,100% { opacity: .2 } 50% { opacity: .9 } }
+
+  .wrap { position: relative; max-width: 720px; width: 100%; }
+
+  .lema {
+    font-size: clamp(2.2rem, 11vw, 5.4rem);
+    line-height: 1.12;
+    letter-spacing: .02em;
+    color: var(--gold);
+    text-transform: uppercase;
+    text-wrap: balance;
+    text-shadow: 0 0 42px rgba(217,168,63,.28);
+    animation: aparece 1.2s ease both;
+  }
+  .lema .firma {
+    display: block;
+    margin-top: .38em;
+    font-size: .34em;
+    letter-spacing: .2em;
+    color: rgba(234,228,214,.6);
+    text-shadow: none;
+  }
+  @keyframes aparece {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cielo span { animation: none; }
+    .lema { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="cielo" id="cielo" aria-hidden="true"></div>
+
+  <main class="wrap">
+    <h1 class="lema">
+      SAP@ ES SOLO PA´ MI
+      <span class="firma">@ISIROBLESS</span>
+    </h1>
+  </main>
+
+  <script>
+    (function () {
+      var c = document.getElementById("cielo"), html = "";
+      for (var i = 0; i < 60; i++) {
+        html += '<span style="left:' + Math.random() * 100 + '%;top:' + Math.random() * 100 +
+          '%;animation-delay:' + (Math.random() * 3).toFixed(2) + 's"></span>';
+      }
+      c.innerHTML = html;
+    })();
+  </script>
+</body>
+</html>
