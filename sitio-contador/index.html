@@ -426,8 +426,18 @@
     ];
 
     var RESCATE = "pequita.contador.rescate";
+    var CASA = "https://misiete.vercel.app";   // la dirección buena de hoy
 
     (function () {
+      // Si esta misma página se está sirviendo en una dirección vieja, no se
+      // deja que abra un contador paralelo con su propio frasco: se la lleva a
+      // casa y de paso se trae lo que hubiera guardado aquí.
+      if (VIEJOS.indexOf(location.origin) >= 0) {
+        var equipaje = { origen: location.origin, mem: leerMem() };
+        location.replace(CASA + "/#rescate=" + encodeURIComponent(JSON.stringify(equipaje)));
+        return;
+      }
+
       // Lo rescatado no se aplica en caliente: se deja apartado y se aplica
       // AQUÍ, al arrancar, antes de que eventos.js lea nada. Si se aplicara en
       // caliente, eventos.js —que ya tiene su copia en memoria— la escribiría

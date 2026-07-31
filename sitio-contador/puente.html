@@ -78,7 +78,7 @@
   // así que ahí el puente de arriba vuelve vacío. Entrando por este enlace se
   // lee como dueña de la casa y se lleva todo al sitio nuevo en la parte de
   // la dirección que va tras la almohadilla, que no viaja a ningún servidor.
-  var CASA = "https://misiete.vercel.app";
+  var CASA = "https://misiete.vercel.app";   // la dirección buena de hoy
   if (location.origin === CASA) { location.replace(CASA + "/"); return; }
   var carga = { origen: location.origin, mem: loGuardado() };
   location.replace(CASA + "/#rescate=" + encodeURIComponent(JSON.stringify(carga)));
