@@ -19,6 +19,12 @@ Una línea por aprendizaje, más reciente arriba:
 `- [YYYY-MM-DD] <preferencia en imperativo> — por qué / alcance`
 
 ## Aprendizajes
+- [2026-07-31] DESPLIEGUE, LOS DOS SITIOS NO VAN IGUAL: la app (proyecto Vercel
+  `cartas`, dominio ishibonita) SÍ despliega sola al hacer push a `main`. El
+  contador (proyecto `dossieteshastaelsiete`, dominio misiete) NO está conectado
+  a GitHub: se sube a mano con `npx vercel --prod --yes` desde `sitio-contador/`.
+  Hacer push y darlo por desplegado deja el contador viejo en producción.
+  Comprobar siempre con `curl -o /dev/null -w '%{http_code}' <url>/tokens.css`.
 - [2026-07-31] DESIGN SYSTEM: el usuario edita las fichas directamente en
   claude.ai/design, así que el REMOTO suele ir por delante del bundle local
   (`design-system/`). Antes de cualquier `write_files` con DesignSync, bajar las
