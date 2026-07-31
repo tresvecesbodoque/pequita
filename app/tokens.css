@@ -1,0 +1,82 @@
+/* GENERADO por scripts/sync-tokens.py — NO editar a mano.
+   Editar design-system/tokens.css y volver a correr el script. */
+/*
+ * tokens.css — CANÓNICO. Ver DESIGN.md (v3).
+ *
+ * Este archivo es la única fuente de los colores de Pequita. NO editar las
+ * copias: se generan con `python3 scripts/sync-tokens.py`, que lo copia a
+ * `sitio-contador/tokens.css` y a `app/tokens.css`.
+ *
+ * Solo colores. Las tipografías se declaran en cada sitio (la app las inyecta
+ * con next/font, el contador con un <link> a Google Fonts): definir aquí
+ * --font-serif chocaría con la variable que genera Next.
+ */
+
+:root {
+  /* ── La noche ──────────────────────────────────────────────────── */
+  --halo: #1b2748;   /* resplandor superior del cielo */
+  --cielo: #0e1730;  /* azul nocturno principal */
+  --fondo: #0a1020;  /* base del degradado */
+
+  /* Telón completo: una sola línea para el fondo de cualquier sitio.
+     Los dos mundos se declaran con valores literales, no con los tokens de
+     arriba, porque el viraje al día es un FUNDIDO entre ambos: hacen falta a la
+     vez. Un degradado no se puede animar, así que el sitio pinta --telon-noche
+     de fondo y funde --telon-dia encima con opacidad. */
+  --telon-noche:
+    radial-gradient(1600px 900px at 50% -10%, #1b2748 0%, transparent 62%),
+    linear-gradient(180deg, #0e1730 0%, #0a1020 100%);
+  --telon-dia:
+    radial-gradient(1600px 900px at 50% -10%, #fffaf0 0%, transparent 62%),
+    linear-gradient(180deg, #f6e8d6 0%, #ead6b8 100%);
+  /* El telón vigente, para quien no necesite el fundido. */
+  --telon: var(--telon-noche);
+
+  /* ── Tinta ─────────────────────────────────────────────────────── */
+  --ink: #eae4d6;         /* texto principal */
+  --ink-calida: #f6e3c8;  /* versos, notas al margen, títulos de carta */
+  --ink-suave: rgba(234, 228, 214, .55);  /* etiquetas, secundarios */
+  --ink-tenue: rgba(234, 228, 214, .45);  /* apagado, botones fantasma */
+
+  /* ── Acento ────────────────────────────────────────────────────── */
+  /* --gold es la ranura del acento: en modo día pasa a bermellón. */
+  --gold: #d9a83f;
+  --gold-suave: rgba(217, 168, 63, .85);  /* oro que habla: susurros, versos */
+  --rose: #c96b74;  /* el número enamorado, guiños */
+
+  /* ── Cristal ───────────────────────────────────────────────────── */
+  --cristal: rgba(255, 255, 255, .04);      /* relleno de bloques y tarjetas */
+  --borde: rgba(217, 168, 63, .4);          /* borde en reposo */
+  --borde-vivo: rgba(217, 168, 63, .85);    /* borde encendido */
+  --halo-oro: rgba(217, 168, 63, .6);       /* resplandor del encendido */
+
+  /* ── Revelación (solo el día D; ver html.dia) ──────────────────── */
+  --papel: #f6e8d6;
+  --tinta-dia: #4d2126;
+  --bermellon: #b3282d;
+}
+
+/*
+ * El mundo diurno. Se activa con la clase `dia` en <html> el día del
+ * cumpleaños: no cambia ni una regla de los componentes, solo el valor de los
+ * tokens, y el sitio entero vira de la noche al papel.
+ */
+html.dia {
+  --halo: #fffaf0;
+  --cielo: var(--papel);
+  --fondo: #ead6b8;
+  --telon: var(--telon-dia);
+
+  --ink: var(--tinta-dia);
+  --ink-calida: #7c1b22;
+  --ink-suave: rgba(77, 33, 38, .7);
+  --ink-tenue: rgba(77, 33, 38, .5);
+
+  --gold: var(--bermellon);
+  --gold-suave: rgba(179, 40, 45, .85);
+
+  --cristal: rgba(255, 255, 255, .5);
+  --borde: rgba(179, 40, 45, .35);
+  --borde-vivo: rgba(179, 40, 45, .8);
+  --halo-oro: rgba(179, 40, 45, .35);
+}

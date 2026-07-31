@@ -1,0 +1,51 @@
+<!-- @dsCard group="Contador" -->
+<meta charset="utf-8">
+<title>Contador — portada</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --gold: #d9a83f; --ink: #eae4d6; --rose: #c96b74; }
+  body { margin: 0; padding: 40px 26px; min-height: 420px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    color: var(--ink); font-family: "Cormorant Garamond", Georgia, serif;
+    background:
+      radial-gradient(1600px 900px at 50% -10%, #1b2748 0%, transparent 62%),
+      linear-gradient(180deg, #0e1730 0%, #0a1020 100%);
+    overflow-x: hidden; }
+  .wrap { position: relative; max-width: 600px; width: 100%; }
+  .marca { font-size: 1.25rem; letter-spacing: .22em; font-variant: small-caps;
+    color: var(--gold); margin-bottom: 26px; }
+  .nota { font-size: 1.02rem; line-height: 1.75; color: var(--gold);
+    max-width: 30rem; margin: 0 auto; }
+  .poema-abrir { margin-top: 26px; padding: 8px 14px; border: 0; background: none;
+    color: rgba(234,228,214,.45); font-family: inherit; font-size: .76rem;
+    letter-spacing: .18em; cursor: pointer; transition: color .3s ease; }
+  .poema-abrir:hover { color: rgba(217,168,63,.85); }
+  .poema { font-style: italic; font-weight: 400; font-size: clamp(.68rem, 3.55vw, 1.28rem);
+    line-height: 1.95; color: rgba(234,228,214,.55); letter-spacing: 0;
+    white-space: nowrap; margin-top: 14px; }
+  .reloj { margin-top: 34px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .bloque { min-width: 72px; padding: 12px 6px; border: 1.5px solid rgba(217,168,63,.4);
+    border-radius: 14px; background: rgba(255,255,255,.04); backdrop-filter: blur(4px); }
+  .bloque.siete { border-color: rgba(217,168,63,.85); box-shadow: 0 0 20px -4px rgba(217,168,63,.6); }
+  .num { font-size: 2.1rem; color: var(--gold); font-variant-numeric: tabular-nums; }
+  .num.enamorado { color: var(--rose); transform: rotate(-8deg); display: inline-block; }
+  .lab { font-size: .6rem; text-transform: uppercase; letter-spacing: .2em;
+    color: rgba(234,228,214,.55); margin-top: 4px; }
+  .anot { position: absolute; right: -4px; bottom: -34px; font-size: .62rem;
+    font-family: ui-monospace, monospace; color: rgba(234,228,214,.35); }
+</style>
+
+<div class="wrap">
+  <div class="marca">Pequita</div>
+  <p class="nota">Faltan siete días y cada uno trae su palabra.</p>
+  <button class="poema-abrir">LEER EL POEMA</button>
+  <div class="poema">y si el tiempo se midiera en cartas,</div>
+  <div class="poema">ya te habría escrito el año entero.</div>
+  <div class="reloj">
+    <div class="bloque"><div class="num">06</div><div class="lab">Días</div></div>
+    <div class="bloque siete"><div class="num enamorado">07</div><div class="lab">Horas</div></div>
+    <div class="bloque"><div class="num">42</div><div class="lab">Min</div></div>
+    <div class="bloque"><div class="num">18</div><div class="lab">Seg</div></div>
+  </div>
+  <div class="anot">marca · nota · poema · reloj — index.html tal cual está hoy</div>
+</div>

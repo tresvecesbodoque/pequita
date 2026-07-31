@@ -1,0 +1,59 @@
+<!-- @dsCard group="Fundamentos" name="Utilidades" subtitle="Cielo, cristal y notas al margen" -->
+<meta charset="utf-8">
+<title>Utilidades de la noche</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#d9a83f;--ink:#eae4d6;--ink-calida:#f6e3c8;--rose:#c96b74}
+body{margin:0;padding:32px 26px;color:var(--ink);font-family:"Cormorant Garamond",Georgia,serif;background:radial-gradient(1600px 900px at 50% -10%,#1b2748 0%,transparent 62%),linear-gradient(180deg,#0e1730 0%,#0a1020 100%)}
+h1{font-size:1.15rem;letter-spacing:.2em;font-variant:small-caps;color:var(--gold);margin:0 0 4px;font-weight:400}
+.sub{font-size:.8rem;color:rgba(234,228,214,.45);margin-bottom:24px;line-height:1.55;max-width:44rem}
+.rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px}
+.celda > .cap{font-family:ui-monospace,monospace;font-size:.7rem;font-weight:700;color:rgba(217,168,63,.75);margin-bottom:6px}
+.celda > .pie{font-size:.74rem;color:rgba(234,228,214,.45);margin-top:6px;line-height:1.45}
+.caja{height:130px;display:flex;align-items:center;justify-content:center;text-align:center;padding:14px;font-size:.95rem;position:relative;overflow:hidden;border-radius:14px}
+
+.cielo-noche{background:radial-gradient(700px 380px at 50% -10%,#1b2748 0%,transparent 62%),linear-gradient(180deg,#0e1730 0%,#0a1020 100%)}
+.estrellas::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(1.5px 1.5px at 18% 30%,rgba(255,255,255,.6) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 52% 18%,rgba(255,255,255,.5) 50%,transparent 51%),radial-gradient(1.8px 1.8px at 76% 44%,rgba(217,168,63,.7) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 34% 74%,rgba(255,255,255,.4) 50%,transparent 51%),radial-gradient(1.2px 1.2px at 88% 72%,rgba(255,255,255,.45) 50%,transparent 51%)}
+.bloque-cristal{border:1.5px solid rgba(217,168,63,.4);border-radius:14px;background:rgba(255,255,255,.04);backdrop-filter:blur(4px)}
+.bloque-cristal--brilla{border-color:rgba(217,168,63,.85);box-shadow:0 0 20px -4px rgba(217,168,63,.6)}
+.margen{max-width:11rem;padding:10px 12px;font-size:.85rem;line-height:1.5;color:var(--ink-calida);background:rgba(255,255,255,.05);border:1px dashed rgba(217,168,63,.45);border-radius:4px;transform:rotate(-3deg)}
+.tachado{text-decoration:line-through;opacity:.55}
+.reescrito{color:var(--ink-calida)}
+.hairline{height:0;border-top:1px dashed rgba(217,168,63,.5);width:100%}
+.doodle-underline{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='10' viewBox='0 0 120 10'%3E%3Cpath d='M2 7 C20 3 40 8 60 5 S100 3 118 6' fill='none' stroke='%23d9a83f' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:bottom center;background-size:100% .5em;padding-bottom:.35em}
+.susurro{font-style:italic;color:rgba(217,168,63,.85);text-shadow:0 0 14px rgba(217,168,63,.35)}
+</style>
+<h1>Utilidades de la noche</h1>
+<div class="sub">Las clases que sostienen el cielo unificado. El bosquejo diurno (sketch-card, papel, losetas) queda archivado hasta el día de la revelación.</div>
+<div class="rejilla">
+<div class="celda">
+<div class="cap">.cielo-noche + .estrellas</div>
+<div class="caja cielo-noche estrellas">Fondo de todos los sitios</div>
+<div class="pie">Halo #1b2748 arriba, degradado a #0a1020. Estrellas blancas con alguna de oro.</div>
+</div>
+<div class="celda">
+<div class="cap">.bloque-cristal</div>
+<div class="caja bloque-cristal">Panel de cristal sobre el cielo</div>
+<div class="pie">Borde oro al 40%, lavado blanco al 4%, blur. Molde de tarjetas y bloques del reloj.</div>
+</div>
+<div class="celda">
+<div class="cap">.bloque-cristal--brilla</div>
+<div class="caja bloque-cristal bloque-cristal--brilla">El siete encendido</div>
+<div class="pie">Borde oro al 85% + halo. Un solo elemento brillante por vista.</div>
+</div>
+<div class="celda">
+<div class="cap">.margen</div>
+<div class="caja cielo-noche"><div class="margen">Acordarme de contarle lo del zorro.</div></div>
+<div class="pie">Papelito pegado con cinta: borde discontinuo, rotado −3°, tinta cálida.</div>
+</div>
+<div class="celda">
+<div class="cap">.tachado + .reescrito</div>
+<div class="caja cielo-noche"><div class="margen">Faltan <span class="tachado">pocos</span> <span class="reescrito">siete</span> días.</div></div>
+<div class="pie">Corrección en vivo sobre la nota, como quien se arrepiente.</div>
+</div>
+<div class="celda">
+<div class="cap">.susurro + .doodle-underline</div>
+<div class="caja cielo-noche" style="flex-direction:column;gap:14px"><div class="hairline"></div><div class="susurro" style="font-size:1.15rem">lo <span class="doodle-underline">esencial</span> es invisible</div><div class="hairline"></div></div>
+<div class="pie">Cursiva oro con halo, separador de trazo fino y subrayado garabateado en oro.</div>
+</div>
+</div>

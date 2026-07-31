@@ -1,0 +1,52 @@
+<!-- @dsCard group="Fundamentos" name="Paleta" subtitle="Noche azul unificada + oro" -->
+<meta charset="utf-8">
+<title>Paleta Pequita v3 — noche unificada</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--halo:#1b2748;--cielo:#0e1730;--fondo:#0a1020;--ink:#eae4d6;--ink-calida:#f6e3c8;--gold:#d9a83f;--rose:#c96b74}
+body{margin:0;padding:32px 26px;color:var(--ink);font-family:"Cormorant Garamond",Georgia,serif;background:radial-gradient(1600px 900px at 50% -10%,#1b2748 0%,transparent 62%),linear-gradient(180deg,#0e1730 0%,#0a1020 100%)}
+h1{font-size:1.15rem;letter-spacing:.2em;font-variant:small-caps;color:var(--gold);margin:0 0 4px;font-weight:400}
+.sub{font-size:.8rem;color:rgba(234,228,214,.45);margin-bottom:26px;line-height:1.55;max-width:44rem}
+.grupo{margin-bottom:26px}
+.grupo h2{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(217,168,63,.75);margin:0 0 10px;font-weight:600}
+.rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.ficha{border:1.5px solid rgba(217,168,63,.35);border-radius:14px;background:rgba(255,255,255,.04);backdrop-filter:blur(4px);overflow:hidden}
+.muestra{height:60px;border-bottom:1.5px solid rgba(217,168,63,.25)}
+.datos{padding:8px 10px}
+.token{font-family:ui-monospace,monospace;font-size:.72rem;font-weight:700;color:var(--ink)}
+.hex{font-family:ui-monospace,monospace;font-size:.68rem;color:rgba(234,228,214,.5)}
+.uso{font-size:.74rem;color:rgba(234,228,214,.55);margin-top:3px;line-height:1.35}
+</style>
+<h1>Paleta — Pequita v3</h1>
+<div class="sub">Una sola noche para todos los sitios: la azul del contador. El papel cálido granate queda reservado para el día del cumpleaños, cuando el contador se revele y conecte con la app.</div>
+<div class="grupo">
+<h2>Noche</h2>
+<div class="rejilla">
+<div class="ficha"><div class="muestra" style="background:#1b2748"></div><div class="datos"><div class="token">--halo</div><div class="hex">#1b2748</div><div class="uso">resplandor superior del cielo</div></div></div>
+<div class="ficha"><div class="muestra" style="background:#0e1730"></div><div class="datos"><div class="token">--cielo</div><div class="hex">#0e1730</div><div class="uso">azul nocturno principal</div></div></div>
+<div class="ficha"><div class="muestra" style="background:#0a1020"></div><div class="datos"><div class="token">--fondo</div><div class="hex">#0a1020</div><div class="uso">base del degradado</div></div></div>
+</div>
+</div>
+<div class="grupo">
+<h2>Tinta</h2>
+<div class="rejilla">
+<div class="ficha"><div class="muestra" style="background:#eae4d6"></div><div class="datos"><div class="token">--ink</div><div class="hex">#eae4d6</div><div class="uso">texto principal sobre la noche</div></div></div>
+<div class="ficha"><div class="muestra" style="background:#f6e3c8"></div><div class="datos"><div class="token">--ink-calida</div><div class="hex">#f6e3c8</div><div class="uso">versos y notas al margen</div></div></div>
+<div class="ficha"><div class="muestra" style="background:#71737b"></div><div class="datos"><div class="token">ink al 45%</div><div class="hex">rgba(234,228,214,.45)</div><div class="uso">secundarios; siempre como alfa, no hex</div></div></div>
+</div>
+</div>
+<div class="grupo">
+<h2>Acentos</h2>
+<div class="rejilla">
+<div class="ficha"><div class="muestra" style="background:#d9a83f"></div><div class="datos"><div class="token">--gold</div><div class="hex">#d9a83f</div><div class="uso">oro: títulos, bordes, estrellas, CTA</div></div></div>
+<div class="ficha"><div class="muestra" style="background:#c96b74"></div><div class="datos"><div class="token">--rose</div><div class="hex">#c96b74</div><div class="uso">rosa: el número enamorado, guiños</div></div></div>
+</div>
+</div>
+<div class="grupo">
+<h2>Revelación — solo el día del cumpleaños</h2>
+<div class="rejilla">
+<div class="ficha"><div class="muestra" style="background:#f6e8d6"></div><div class="datos"><div class="token">--papel</div><div class="hex">#f6e8d6</div><div class="uso">papel antiguo de la app revelada</div></div></div>
+<div class="ficha"><div class="muestra" style="background:#4d2126"></div><div class="datos"><div class="token">--tinta-dia</div><div class="hex">#4d2126</div><div class="uso">tinta granate sobre papel</div></div></div>
+<div class="ficha"><div class="muestra" style="background:#b3282d"></div><div class="datos"><div class="token">--bermellon</div><div class="hex">#b3282d</div><div class="uso">énfasis del mundo diurno</div></div></div>
+</div>
+</div>

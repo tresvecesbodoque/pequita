@@ -19,6 +19,15 @@ Una línea por aprendizaje, más reciente arriba:
 `- [YYYY-MM-DD] <preferencia en imperativo> — por qué / alcance`
 
 ## Aprendizajes
+- [2026-07-31] DESIGN SYSTEM: el usuario edita las fichas directamente en
+  claude.ai/design, así que el REMOTO suele ir por delante del bundle local
+  (`design-system/`). Antes de cualquier `write_files` con DesignSync, bajar las
+  fichas con `get_file` y comparar: subir sin mirar le pisa el trabajo. El
+  proyecto es "Pequita", `projectId a5a0c49d-083b-4da5-9892-8fe15aab0a33`.
+- [2026-07-31] COLORES: nunca escribir un hex en un componente. El canónico es
+  `design-system/tokens.css` y las copias se generan con
+  `python3 scripts/sync-tokens.py` (los sitios se despliegan por separado y no
+  pueden compartir archivo servido). Editar una copia se pierde al resincronizar.
 - [2026-07-31] CONTADOR, MUDANZAS DE DOMINIO: el almacenamiento del navegador es
   POR DOMINIO, así que cada cambio de dirección deja atrás el frasco y la racha.
   Si se vuelve a mudar: actualizar `CASA` en `sitio-contador/index.html` y en

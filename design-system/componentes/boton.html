@@ -1,0 +1,45 @@
+<!-- @dsCard group="Componentes" name="Botones" subtitle="Oro sobre la noche" -->
+<meta charset="utf-8">
+<title>Botones</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#d9a83f;--ink:#eae4d6;--fondo:#0a1020}
+body{margin:0;padding:32px 26px;color:var(--ink);font-family:"Cormorant Garamond",Georgia,serif;background:radial-gradient(1600px 900px at 50% -10%,#1b2748 0%,transparent 62%),linear-gradient(180deg,#0e1730 0%,#0a1020 100%)}
+h1{font-size:1.15rem;letter-spacing:.2em;font-variant:small-caps;color:var(--gold);margin:0 0 4px;font-weight:400}
+.sub{font-size:.8rem;color:rgba(234,228,214,.45);margin-bottom:22px;line-height:1.55;max-width:44rem}
+.fila{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 0;border-bottom:1px dashed rgba(217,168,63,.3)}
+.fila:last-child{border-bottom:0}
+.cap{font-family:ui-monospace,monospace;font-size:.7rem;font-weight:700;color:rgba(217,168,63,.75);width:130px;flex:none}
+.nota{font-size:.74rem;color:rgba(234,228,214,.45);width:100%;margin-top:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:9999px;padding:10px 22px;font-size:.95rem;font-weight:600;font-family:inherit;cursor:pointer;transition:box-shadow .25s,border-color .25s,color .25s,filter .25s}
+.btn--primary{border:1.5px solid rgba(217,168,63,.9);background:var(--gold);color:var(--fondo);box-shadow:0 0 20px -6px rgba(217,168,63,.6)}
+.btn--primary:hover{box-shadow:0 0 24px -4px rgba(217,168,63,.8);filter:brightness(1.06)}
+.btn--outline{border:1.5px solid rgba(217,168,63,.4);background:rgba(255,255,255,.04);color:var(--ink);backdrop-filter:blur(4px)}
+.btn--outline:hover{border-color:rgba(217,168,63,.85);box-shadow:0 0 20px -6px rgba(217,168,63,.5)}
+.btn--ghost{border:1.5px solid transparent;background:none;color:rgba(234,228,214,.45);letter-spacing:.14em;font-size:.8rem}
+.btn--ghost:hover{color:rgba(217,168,63,.85)}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.btn--xs{padding:8px 16px;font-size:.8rem}
+</style>
+<h1>Botones</h1>
+<div class="sub">Píldora completa sobre el cielo. El primario es oro macizo con halo; el contorno es un bloque de cristal como los del reloj; el fantasma habla en espaciado, como <code>LEER EL POEMA</code>.</div>
+<div class="fila">
+<div class="cap">primary</div>
+<button class="btn btn--primary">Escribir una carta</button>
+<button class="btn btn--primary btn--xs">Abrir</button>
+<button class="btn btn--primary" disabled>Enviando…</button>
+<div class="nota">Oro macizo, tinta de noche encima, halo suave. Una sola por vista.</div>
+</div>
+<div class="fila">
+<div class="cap">outline</div>
+<button class="btn btn--outline">Guardar borrador</button>
+<button class="btn btn--outline btn--xs">Ver álbum</button>
+<button class="btn btn--outline" disabled>Bloqueado</button>
+<div class="nota">Cristal con borde oro al 40%; al pasar el cursor se enciende al 85% con halo, como el bloque del siete.</div>
+</div>
+<div class="fila">
+<div class="cap">ghost</div>
+<button class="btn btn--ghost">CANCELAR</button>
+<button class="btn btn--ghost btn--xs">VOLVER</button>
+<div class="nota">Sin peso: tinta al 45% con tracking; en hover vira a oro, igual que <code>.poema-abrir</code>.</div>
+</div>

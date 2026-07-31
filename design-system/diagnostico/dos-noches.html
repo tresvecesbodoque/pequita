@@ -1,0 +1,71 @@
+<!-- @dsCard group="Diagnóstico" name="Las dos noches" subtitle="Antes: dos cielos. Ahora: uno, y un amanecer" -->
+<meta charset="utf-8">
+<title>Las dos noches — resuelto</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#d9a83f;--ink:#eae4d6;--rose:#c96b74}
+body{margin:0;padding:32px 26px;color:var(--ink);font-family:"Cormorant Garamond",Georgia,serif;background:radial-gradient(1600px 900px at 50% -10%,#1b2748 0%,transparent 62%),linear-gradient(180deg,#0e1730 0%,#0a1020 100%)}
+h1{font-size:1.15rem;letter-spacing:.2em;font-variant:small-caps;color:var(--gold);margin:0 0 4px;font-weight:400}
+.sub{font-size:.8rem;color:rgba(234,228,214,.45);margin-bottom:26px;line-height:1.55;max-width:46rem}
+h2{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(217,168,63,.75);margin:26px 0 10px;font-weight:600}
+.par{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.cap{font-family:ui-monospace,monospace;font-size:.7rem;font-weight:700;margin-bottom:8px;color:rgba(217,168,63,.75)}
+.cap.viejo{color:rgba(234,228,214,.4)}
+.cielo{height:170px;border-radius:14px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;font-size:1.05rem}
+.estrellas::before{content:"";position:absolute;inset:0;background-image:radial-gradient(1.5px 1.5px at 18% 30%,rgba(255,255,255,.6) 50%,transparent 51%),radial-gradient(1.8px 1.8px at 52% 18%,rgba(217,168,63,.7) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 76% 44%,rgba(255,255,255,.55) 50%,transparent 51%),radial-gradient(1.5px 1.5px at 34% 74%,rgba(255,255,255,.4) 50%,transparent 51%)}
+.et{position:relative;z-index:1}
+
+.granate{color:#f6e3c8;background:radial-gradient(ellipse at 50% -20%,#5a2030 0%,#3a1420 45%,#260d15 100%)}
+.azul{background:radial-gradient(700px 380px at 50% -10%,#1b2748 0%,transparent 62%),linear-gradient(180deg,#0e1730 0%,#0a1020 100%)}
+.papel{color:#4d2126;background:radial-gradient(700px 380px at 50% -10%,#fffaf0 0%,transparent 62%),linear-gradient(180deg,#f6e8d6 0%,#ead6b8 100%)}
+.tachado{opacity:.45}
+.tachado .cielo{filter:grayscale(.35)}
+
+.barras{display:flex;margin-top:10px;border-radius:6px;overflow:hidden;height:22px}
+.barras i{flex:1}
+.datos{font-family:ui-monospace,monospace;font-size:.66rem;color:rgba(234,228,214,.45);margin-top:8px;line-height:1.6}
+.veredicto{margin-top:26px;padding:16px 18px;border:1.5px solid rgba(217,168,63,.4);border-radius:14px;background:rgba(255,255,255,.04);backdrop-filter:blur(4px);font-size:.92rem;line-height:1.65}
+.veredicto strong{color:var(--gold)}
+.flecha{text-align:center;color:rgba(217,168,63,.75);font-size:1.4rem;margin:18px 0 4px}
+</style>
+
+<h1>Las dos noches — resuelto</h1>
+<div class="sub">Esta ficha planteaba el problema: el mismo regalo tenía dos cielos, y el contador usaba un azul que no estaba en ningún token. Ya está decidido y aplicado, así que ahora deja constancia de qué se descartó y con qué se quedó.</div>
+
+<h2>Antes — dos cielos que no se hablaban</h2>
+<div class="par">
+  <div class="tachado">
+    <div class="cap viejo">app — .starfield granate (descartado)</div>
+    <div class="cielo granate estrellas"><span class="et">Lo esencial es invisible a los ojos</span></div>
+    <div class="barras"><i style="background:#5a2030"></i><i style="background:#3a1420"></i><i style="background:#260d15"></i><i style="background:#d9a83f"></i><i style="background:#f6e3c8"></i></div>
+    <div class="datos">#5a2030 → #3a1420 → #260d15</div>
+  </div>
+  <div>
+    <div class="cap">contador — azul (el que ganó)</div>
+    <div class="cielo azul estrellas"><span class="et">Faltan siete días</span></div>
+    <div class="barras"><i style="background:#1b2748"></i><i style="background:#0e1730"></i><i style="background:#0a1020"></i><i style="background:#d9a83f"></i><i style="background:#eae4d6"></i></div>
+    <div class="datos">#1b2748 → #0e1730 → #0a1020</div>
+  </div>
+</div>
+
+<div class="flecha">↓</div>
+
+<h2>Ahora — una noche, y un amanecer</h2>
+<div class="par">
+  <div>
+    <div class="cap">todos los días — html sin clase</div>
+    <div class="cielo azul estrellas"><span class="et">Faltan siete días</span></div>
+    <div class="datos">--telon-noche · tinta #eae4d6 · oro #d9a83f</div>
+  </div>
+  <div>
+    <div class="cap">el día del cumpleaños — html.dia</div>
+    <div class="cielo papel"><span class="et" style="font-style:italic;font-weight:600;color:#b3282d;font-size:1.3rem">¡Feliz cumpleaños,<br>mi wawa!</span></div>
+    <div class="datos">--telon-dia · tinta #4d2126 · bermellón #b3282d</div>
+  </div>
+</div>
+
+<div class="veredicto">
+  El granate no se perdió: <strong>se ascendió a mundo diurno</strong>. Los mismos tokens que antes peleaban con el azul son ahora los de la revelación, y el 7 de agosto el contador vira de uno a otro con un fundido. Lo que era una incoherencia pasó a ser el gesto del regalo.
+  <br><br>
+  Una sola ranura de acento (<code>--gold</code>) sirve a los dos mundos: de noche es oro, de día es bermellón. Por eso ni un componente tuvo que enterarse del cambio — solo cambian los valores, nunca las reglas.
+</div>

@@ -1,0 +1,81 @@
+<!-- @dsCard group="Contador" -->
+<meta charset="utf-8">
+<title>Contador — eventos</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root { --gold: #d9a83f; --ink: #eae4d6; --rose: #c96b74; }
+  body { margin: 0; padding: 32px 26px; min-height: 460px;
+    color: var(--ink); font-family: "Cormorant Garamond", Georgia, serif;
+    background:
+      radial-gradient(1600px 900px at 50% -10%, #1b2748 0%, transparent 62%),
+      linear-gradient(180deg, #0e1730 0%, #0a1020 100%); }
+  h1 { font-size: 1.1rem; letter-spacing: .2em; font-variant: small-caps;
+    color: var(--gold); margin: 0 0 4px; font-weight: 400; }
+  .sub { font-size: .74rem; color: rgba(234,228,214,.45); margin-bottom: 26px;
+    font-family: ui-sans-serif, system-ui, sans-serif; line-height: 1.5; max-width: 40rem; }
+  .rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 22px; }
+  .celda { }
+  .cap { font-family: ui-monospace, monospace; font-size: .68rem; font-weight: 700;
+    color: rgba(217,168,63,.75); margin-bottom: 8px; }
+  .escena { height: 120px; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 12px; border: 1px solid rgba(255,255,255,.06);
+    border-radius: 10px; background: rgba(255,255,255,.02); position: relative; overflow: hidden; }
+  .pie { font-size: .66rem; color: rgba(234,228,214,.4); margin-top: 8px; line-height: 1.5;
+    font-family: ui-sans-serif, system-ui, sans-serif; }
+
+  /* Estilos reales de eventos.css, congelados en su fotograma visible */
+  .susurro-portada { width: min(24rem,88vw); text-align: center; font-style: italic;
+    font-size: .95rem; line-height: 1.6; color: rgba(217,168,63,.85); }
+  .palabra { font-style: italic; font-size: .95rem; color: rgba(217,168,63,.95);
+    text-shadow: 0 0 14px rgba(217,168,63,.5); white-space: nowrap; }
+  .verso-extra { text-align: center; font-style: italic;
+    font-size: clamp(.68rem, 3.4vw, 1.2rem); color: rgba(246,227,200,.75); }
+  .margen { max-width: 11rem; padding: 10px 12px; font-size: .78rem; line-height: 1.5;
+    color: rgba(246,227,200,.9); background: rgba(255,255,255,.05);
+    border: 1px dashed rgba(217,168,63,.45); border-radius: 4px; transform: rotate(-3deg); }
+  .tachado { text-decoration: line-through; opacity: .55; }
+  .reescrito { color: #f6e3c8; }
+  .fugaz { width: 90px; height: 1.5px; background: linear-gradient(90deg, transparent, #fff);
+    border-radius: 2px; transform: rotate(18deg); box-shadow: 0 0 8px rgba(255,255,255,.6); }
+  .cielo span { position: absolute; width: 2px; height: 2px; border-radius: 50%;
+    background: #fff; opacity: .5; }
+</style>
+
+<h1>Eventos aleatorios</h1>
+<div class="sub">Las capas de <code>eventos.css</code> detenidas en su fotograma visible (en la página real entran y salen con <code>asoma</code>, <code>sube</code>, <code>pega</code>, <code>cruza</code>). Todas viven en <code>.capa-eventos</code>, <code>z-index: 6</code>, sin capturar el puntero salvo las <code>.tocable</code>.</div>
+
+<div class="rejilla">
+  <div class="celda">
+    <div class="cap">.susurro-portada</div>
+    <div class="escena"><div class="susurro-portada">Hoy amaneció despejado en el planeta de la rosa.</div></div>
+    <div class="pie">Fijo abajo al centro, aparece 8s y se va hacia arriba.</div>
+  </div>
+  <div class="celda">
+    <div class="cap">.palabra</div>
+    <div class="escena"><div class="palabra">ternura</div></div>
+    <div class="pie">Sube y se desvanece desde el punto tocado. Oro con halo.</div>
+  </div>
+  <div class="celda">
+    <div class="cap">.verso-extra <span style="opacity:.6">E05</span></div>
+    <div class="escena"><div class="verso-extra">y un octavo verso que nadie escribió.</div></div>
+    <div class="pie">El verso que no existe: se cuela entre los siete del poema.</div>
+  </div>
+  <div class="celda">
+    <div class="cap">.margen <span style="opacity:.6">E06</span></div>
+    <div class="escena"><div class="margen">Acordarme de contarle lo del zorro.</div></div>
+    <div class="pie">Papelito pegado con cinta, borde discontinuo, rotado −3°.</div>
+  </div>
+  <div class="celda">
+    <div class="cap">.tachado + .reescrito <span style="opacity:.6">E07</span></div>
+    <div class="escena"><div class="margen">Faltan <span class="tachado">pocos</span> <span class="reescrito">siete</span> días.</div></div>
+    <div class="pie">Corrección en vivo sobre la nota, como quien se arrepiente.</div>
+  </div>
+  <div class="celda">
+    <div class="cap">.fugaz / .cielo span</div>
+    <div class="escena">
+      <span class="cielo"><span style="left:22%;top:30%"></span><span style="left:64%;top:22%;opacity:.8"></span><span style="left:44%;top:70%;opacity:.3"></span><span style="left:80%;top:60%"></span></span>
+      <div class="fugaz"></div>
+    </div>
+    <div class="pie">Estrella fugaz sobre el campo de estrellas que titila.</div>
+  </div>
+</div>

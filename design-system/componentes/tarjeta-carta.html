@@ -1,0 +1,63 @@
+<!-- @dsCard group="Componentes" name="Tarjeta de carta" subtitle="Cristal nocturno con cuerpo manuscrito" -->
+<meta charset="utf-8">
+<title>Tarjeta de carta</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#d9a83f;--ink:#eae4d6;--ink-calida:#f6e3c8;--rose:#c96b74;--fondo:#0a1020}
+body{margin:0;padding:32px 26px;color:var(--ink);font-family:"Cormorant Garamond",Georgia,serif;background:radial-gradient(1600px 900px at 50% -10%,#1b2748 0%,transparent 62%),linear-gradient(180deg,#0e1730 0%,#0a1020 100%)}
+h1{font-size:1.15rem;letter-spacing:.2em;font-variant:small-caps;color:var(--gold);margin:0 0 4px;font-weight:400}
+.sub{font-size:.8rem;color:rgba(234,228,214,.45);margin-bottom:24px;max-width:46rem;line-height:1.55}
+.par{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:26px;align-items:start}
+.col > .cap{font-family:ui-monospace,monospace;font-size:.7rem;font-weight:700;color:rgba(217,168,63,.75);margin-bottom:10px}
+.col > .pie{font-size:.74rem;color:rgba(234,228,214,.45);margin-top:10px;line-height:1.5}
+.tarjeta{display:flex;flex-direction:column;padding:20px;border:1.5px solid rgba(217,168,63,.4);border-radius:14px;background:rgba(255,255,255,.04);backdrop-filter:blur(4px)}
+.tarjeta--brilla{border-color:rgba(217,168,63,.85);box-shadow:0 0 20px -4px rgba(217,168,63,.6)}
+.cabecera{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.titulo{font-size:1.35rem;line-height:1.2;margin:0;font-weight:600;color:var(--ink-calida)}
+.pastilla{flex:none;border-radius:9999px;padding:3px 12px;font-size:.72rem;letter-spacing:.1em;background:rgba(217,168,63,.14);color:var(--gold);border:1px solid rgba(217,168,63,.35)}
+.pastilla--leida{background:none;color:rgba(234,228,214,.4);border-color:rgba(234,228,214,.2)}
+.meta{margin-top:4px;font-size:.8rem;font-style:italic;color:rgba(234,228,214,.5)}
+.cuerpo{font-family:"Caveat",cursive;font-size:1.35rem;line-height:1.45;margin:14px 0 0;color:var(--ink-calida)}
+.acciones{margin-top:20px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;border-radius:9999px;padding:8px 18px;font-size:.85rem;font-weight:600;font-family:inherit;cursor:pointer}
+.btn--primary{border:1.5px solid rgba(217,168,63,.9);background:var(--gold);color:var(--fondo);box-shadow:0 0 20px -6px rgba(217,168,63,.6)}
+.btn--outline{border:1.5px solid rgba(217,168,63,.4);background:rgba(255,255,255,.04);color:var(--ink)}
+.enlace{margin-left:auto;font-size:.8rem;font-style:italic;color:rgba(234,228,214,.45);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+</style>
+<h1>Tarjeta de carta</h1>
+<div class="sub">La carta vive en un bloque de cristal como los del reloj. Título en tinta cálida, meta en cursiva, cuerpo en la manuscrita que eligió el familiar. La carta sin leer se enciende; la leída descansa.</div>
+<div class="par">
+<div class="col">
+<div class="cap">sin leer — .tarjeta--brilla</div>
+<div class="tarjeta tarjeta--brilla">
+<div class="cabecera">
+<h3 class="titulo">Para cuando cumplas veinte</h3>
+<span class="pastilla">Sin leer</span>
+</div>
+<div class="meta">de la tía Marta · 3 de julio</div>
+<p class="cuerpo">Te escribo esto sabiendo que lo vas a leer mucho después…</p>
+<div class="acciones">
+<button class="btn btn--primary">Abrir</button>
+<button class="btn btn--outline">Compartir</button>
+<span class="enlace">Eliminar</span>
+</div>
+</div>
+<div class="pie">Borde encendido al 85% con halo: la única cosa brillante de la lista.</div>
+</div>
+<div class="col">
+<div class="cap">leída — .tarjeta</div>
+<div class="tarjeta">
+<div class="cabecera">
+<h3 class="titulo">La noche que naciste</h3>
+<span class="pastilla pastilla--leida">Leída</span>
+</div>
+<div class="meta">del abuelo · 28 de junio</div>
+<p class="cuerpo">Llovía tanto que el taxi parecía un barco…</p>
+<div class="acciones">
+<button class="btn btn--outline">Releer</button>
+<span class="enlace">Eliminar</span>
+</div>
+</div>
+<div class="pie">Cristal en reposo, borde oro al 40%. Sin botón primario: releer no compite.</div>
+</div>
+</div>
