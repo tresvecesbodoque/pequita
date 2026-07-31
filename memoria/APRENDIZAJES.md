@@ -19,6 +19,14 @@ Una línea por aprendizaje, más reciente arriba:
 `- [YYYY-MM-DD] <preferencia en imperativo> — por qué / alcance`
 
 ## Aprendizajes
+- [2026-07-31] CONTADOR, MUDANZAS DE DOMINIO: el almacenamiento del navegador es
+  POR DOMINIO, así que cada cambio de dirección deja atrás el frasco y la racha.
+  Si se vuelve a mudar: actualizar `CASA` en `sitio-contador/index.html` y en
+  `puente.html`, añadir la dirección vieja a `VIEJOS`, y desplegar `puente.html`
+  en TODOS los proyectos que sirvan direcciones viejas (hoy: dossieteshastaelsiete
+  —que sirve misiete—, sietedelocho y sitio-contador). Safari y Firefox no dejan
+  leer el almacenamiento ajeno desde un iframe: por eso existe además el rescate
+  por enlace (abrir a mano `/puente.html` del dominio viejo).
 - [2026-07-29] AUDIO EN LOCAL: para probar reproducción con salto de posición
   (`currentTime`) hace falta un servidor que soporte cabeceras Range;
   `python3 -m http.server` NO las soporta y el audio se queda pegado en el
