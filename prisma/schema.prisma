@@ -34,6 +34,15 @@ model Sticker {
   lettersUsingAsEsquela Letter[] @relation("EsquelaSticker")
 }
 
+// Presencia: una fila por persona ("zorro" y "rosa") con la hora de su último
+// latido. El contador es un sitio estático en otro dominio, así que dos
+// navegadores no pueden verse entre ellos: esta tabla es el único lugar común.
+// No guarda historial, ni IP, ni nada más que una hora que se pisa a sí misma.
+model Presencia {
+  quien   String   @id
+  vistoEn DateTime @default(now())
+}
+
 model Letter {
   id                  String         @id @default(cuid())
   slug                String         @unique @default(cuid())

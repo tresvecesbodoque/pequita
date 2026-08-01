@@ -74,6 +74,34 @@
     margin-bottom: 26px;
   }
 
+  /* ── La luz de encontrarse ───────────────────────────────────────
+     Apagada es un dato al margen (cuándo pasó el otro por aquí) y se retira
+     con la marca a los quince segundos de calma. Encendida es lo único que
+     importa en la pantalla, así que esa se queda. */
+  .presencia {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    margin: -16px 0 22px;
+    font-size: .78rem; letter-spacing: .1em; font-style: italic;
+    color: var(--ink-tenue);
+    transition: opacity 1.4s ease, color 1.2s ease;
+  }
+  .presencia[hidden] { display: none; }
+  .presencia .luz {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ink-tenue); flex: none;
+    transition: background .9s ease, box-shadow .9s ease;
+  }
+  .presencia.juntos { color: var(--gold); font-style: normal; }
+  .presencia.juntos .luz {
+    background: var(--gold); box-shadow: 0 0 10px var(--halo-oro);
+    animation: late-luz 2.8s ease-in-out infinite;
+  }
+  @keyframes late-luz { 0%, 100% { opacity: .5 } 50% { opacity: 1 } }
+  @media (prefers-reduced-motion: reduce) {
+    .presencia { transition: none; }
+    .presencia.juntos .luz { animation: none; }
+  }
+
   /* El poema, en cursiva, grisáceo y sin negrita. CADA verso en UNA sola línea
      en cualquier pantalla: nowrap + tamaño escalado al ancho (vw), calibrado para
      que el verso más largo siempre quepa sin partirse ni salirse. */
@@ -258,6 +286,12 @@
     <!-- ANTES del día -->
     <section class="espera" id="espera">
       <p class="marca" id="marca">Nosotros II</p>
+
+      <!-- La luz de encontrarse: dice si el otro está mirando esto ahora
+           mismo. Nace escondida y solo aparece si hay algo que contar. -->
+      <p class="presencia" id="presencia" aria-live="polite" hidden>
+        <span class="luz" aria-hidden="true"></span><span id="presenciaTexto"></span>
+      </p>
 
       <p class="nota" id="nota">
         Pequita mía,,, mi wawa. Te he estado preparando algo con <span id="notaCarino">mucho cariño</span> y lo
@@ -1155,5 +1189,6 @@
     })();
   </script>
   <script src="eventos.js" defer></script>
+  <script src="presencia.js" defer></script>
 </body>
 </html>

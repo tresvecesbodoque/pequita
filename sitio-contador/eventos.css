@@ -14,6 +14,11 @@
    Un evento que necesite la nota (la corrección) la devuelve mientras dure. */
 .marca, .nota { transition: opacity 1.4s ease; }
 body.despejado .marca, body.despejado .nota { opacity: 0; }
+/* La luz de encontrarse se retira con el texto cuando solo cuenta cuándo pasó
+   el otro por aquí. Encendida —los dos a la vez— se queda: es justo lo que hay
+   que ver aunque la pantalla se despeje. */
+body.despejado .presencia { opacity: 0; }
+body.despejado .presencia.juntos { opacity: 1; }
 /* Los dos botones no se esconden —son la puerta al juego y al poema—, pero se
    apagan para que no compitan con lo que pase en el cielo. Al tocarlos o
    pasar por encima vuelven enteros. */

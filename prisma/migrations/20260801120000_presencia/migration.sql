@@ -1,0 +1,5 @@
+-- CreateTable
+CREATE TABLE "Presencia" (
+    "quien" TEXT NOT NULL PRIMARY KEY,
+    "vistoEn" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
