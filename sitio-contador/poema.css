@@ -1,0 +1,91 @@
+/* El poema y su carrusel. Lo comparten la portada (index.html) y la página
+   de las explicaciones (entender.html): si esto viviera dos veces, las dos
+   páginas se irían separando a la primera corrección. */
+
+/* ── El poema ────────────────────────────────────────────────────
+     Tres estrofas, cada una en su pantalla, y se pasan con el dedo. */
+  .poema {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink-suave);
+    letter-spacing: 0;
+    transition: color 1.2s ease;
+  }
+
+  /* La tira que se desliza. Sin JavaScript sigue arrastrándose: el guion
+     solo añade los puntos y el ajuste al girar la pantalla. */
+  .estrofas {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    /* Que arrastrar el poema no dispare el "atrás" del navegador ni mueva
+       la página entera. */
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .estrofas::-webkit-scrollbar { display: none; }
+  .estrofas:focus-visible { outline: 1px dashed var(--borde); outline-offset: 6px; }
+  .estrofa {
+    flex: 0 0 100%;
+    min-width: 0;
+    scroll-snap-align: center;
+    /* Un dedo rápido pasa DE UNA en una: si no, se salta la estrofa del medio. */
+    scroll-snap-stop: always;
+  }
+
+  /* El día D no hay nada que descubrir: las tres, una debajo de otra. */
+  .estrofas--pila {
+    display: block;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+  .estrofas--pila .estrofa + .estrofa { margin-top: 30px; }
+
+  .estrofa-titulo {
+    font-style: normal;
+    font-variant: small-caps;
+    letter-spacing: .18em;
+    font-size: clamp(.74rem, 3vw, .92rem);
+    color: var(--gold);
+  }
+  .estrofa-via {
+    font-size: clamp(.6rem, 2.4vw, .72rem);
+    letter-spacing: .1em;
+    color: var(--ink-tenue);
+    margin: 3px 0 14px;
+  }
+
+  /* CADA verso en UNA sola línea en cualquier pantalla: nowrap + tamaño
+     escalado al ancho (vw). El calibrado lo manda el verso más largo del
+     poema —"cada taza queda quieta, encuentra su sitio,"—; si algún día
+     entra uno más largo, hay que rebajar el vw y volver a comprobarlo
+     desde 320 px. */
+  .verso {
+    display: block;
+    white-space: nowrap;
+    font-size: clamp(0.66rem, 3.28vw, 1.24rem);
+    line-height: 1.95;
+  }
+
+  /* Los puntos: dónde va una de tres. El botón es grande para el dedo
+     (24 px), aunque lo que se vea sea un punto de siete. */
+  .puntos { display: flex; justify-content: center; gap: 4px; margin-top: 10px; }
+  .punto {
+    position: relative; width: 24px; height: 24px; padding: 0;
+    border: 0; background: none; cursor: pointer; -webkit-appearance: none;
+  }
+  .punto::before {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%;
+    border: 1px solid var(--ink-tenue); background: none;
+    transition: background .4s ease, border-color .4s ease, transform .3s ease;
+  }
+  .punto[aria-current="true"]::before {
+    background: var(--gold); border-color: var(--gold); transform: scale(1.15);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .estrofas { scroll-behavior: auto; }
+    .punto::before { transition: none; }
+  }

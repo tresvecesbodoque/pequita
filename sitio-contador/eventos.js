@@ -157,6 +157,10 @@
   var ETIQUETAS = relojEl ? Array.prototype.map.call(relojEl.querySelectorAll(".lab"),
     function (l) { return l.textContent; }) : [];
   var NOTA_CARINO = (document.getElementById("notaCarino") || {}).textContent || "";
+  // La nota se guarda entera al arrancar (sin ids, que se van a repetir en la
+  // copia del frasco) y desde aquí se lee: si un evento la reescribe, la del
+  // frasco sigue diciendo lo que él escribió.
+  var NOTA_HTML = notaEl ? notaEl.innerHTML.replace(/\s+id="[^"]*"/g, "") : "";
 
   var suave = window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -249,8 +253,26 @@
       contenido + '</svg>';
   }
 
+  // El susurro vive pegado abajo, y abajo está el botón del juego. Con el
+  // poema abierto la página crece, el botón baja y se le montaba encima. Así
+  // que el susurro no se pone a una altura fija: se pone SIEMPRE justo encima
+  // del botón, y nunca más abajo de donde está el frasco.
+  function colocarSusurro() {
+    // Con el panel de pruebas abierto manda su CSS, que ya lo sube del todo.
+    if (cuerpo.classList.contains("con-pruebas")) { elSusurro.style.bottom = ""; return; }
+    var boton = document.getElementById("juegoAbrir");
+    var suelo = 72;
+    if (boton && boton.offsetParent) {
+      var r = boton.getBoundingClientRect();
+      if (r.height) suelo = Math.max(suelo, window.innerHeight - r.top + 14);
+    }
+    // Que no se vaya tan arriba que tape el contador en una pantalla baja.
+    elSusurro.style.bottom = Math.min(suelo, window.innerHeight * 0.55) + "px";
+  }
+
   // Un susurro también alimenta la colección del frasco (E48).
   function susurrar(texto, coleccionable) {
+    colocarSusurro();
     elSusurro.textContent = texto;
     elSusurro.classList.remove("viva");
     void elSusurro.offsetWidth;
@@ -516,8 +538,11 @@
 
     { id: "correccion", peso: 3, dura: 21500, correr: function () {        // E07
         var span = document.getElementById("notaCarino");
-        if (!span) return;
+        if (!span || !notaEl) return;
         volverElTexto();   // este evento se escribe encima de la nota
+        // La nota ya no vive a la vista: sale ella sola para corregirse y se
+        // vuelve a guardar. Aparecer para desdecirse es la mitad de la gracia.
+        notaEl.classList.remove("nota-guardada");
         var original = span.textContent;
         var mejor = uno(TL("correcciones"));
         span.innerHTML = '<span class="tachado">' + original + '</span>';
@@ -525,7 +550,10 @@
           span.innerHTML = '<span class="tachado">' + original + '</span> ' +
             '<span class="reescrito">' + mejor + '</span>';
         }, 1100);
-        setTimeout(function () { span.textContent = original; }, 6000 + MAS);
+        setTimeout(function () {
+          span.textContent = original;
+          notaEl.classList.add("nota-guardada");
+        }, 6000 + MAS);
       } },
 
     { id: "nombre", peso: 2, dura: 21500, correr: function () {            // E08
@@ -1438,10 +1466,14 @@
     marcaEl.addEventListener("pointerleave", function () { clearTimeout(pulsaMarca); });
   }
 
-  // E37 — tres toques en la nota: una carta corta que no se repite
-  if (notaEl) {
+  // E37 — tres toques en la nota: una carta corta que no se repite. La nota
+  // ya no está en la portada, así que esto se engancha donde ella la lea de
+  // verdad: en su copia dentro del frasco (y en la original, para cuando un
+  // evento la saca a corregirse).
+  function engancharCarta(el) {
+    if (!el) return;
     var toques = 0, ventana = 0;
-    notaEl.addEventListener("pointerdown", function () {
+    el.addEventListener("pointerdown", function () {
       toques++;
       clearTimeout(ventana);
       ventana = setTimeout(function () { toques = 0; }, 900);
@@ -1456,6 +1488,7 @@
       susurrar(carta);
     });
   }
+  engancharCarta(notaEl);
 
   // E38 — dos minutos quieta: el cielo baja la voz
   var reposo = 0;
@@ -1683,7 +1716,7 @@
     ["luciernagas", "si aparecen bichos de luz, persíguelos con el dedo: huyen"],
     ["nombre", "vuelve una segunda vez el mismo día y mira el cielo"],
     ["margen", "a veces dejo un papelito pegado en el margen con la hora exacta"],
-    ["correccion", "de vez en cuando me corrijo a mí mismo en la nota de arriba"],
+    ["correccion", "de vez en cuando asoma una nota mía y me corrijo a mí mismo delante de ti"],
     ["verso-extra", "cuando el poema se ilumine, quédate: a veces hay un verso de más"],
     ["besos", "entra dos días seguidos y en el reloj aparece un bloque que no debería estar"],
     ["eco-poema", "con tres versos ya ganados, el poema se desordena solo"],
@@ -1764,13 +1797,15 @@
         sellos += '<span class="' + (mem.dias.indexOf(d) >= 0 ? "sellado" : "") + '">' + j + "</span>";
       }
     }
-    panel.innerHTML = "<h2>tu frasco</h2>" +
+    panel.innerHTML = '<button class="cerrar" type="button">← volver</button>' +
+      "<h2>tu frasco</h2>" +
       '<p class="cuenta">' +
       mem.coleccion.length + (mem.coleccion.length === 1 ? " encontrada · " : " encontradas · ") +
       mem.dias.length + (mem.dias.length === 1 ? " día visitado · " : " días visitados · ") +
       "racha de " + (mem.racha || 1) +
       (mem.creado ? " · frasco abierto el " + new Date(mem.creado).getDate() + "/" +
         (new Date(mem.creado).getMonth() + 1) : "") + "</p>" +
+      (NOTA_HTML ? '<p class="nota-frasco">' + NOTA_HTML + "</p>" : "") +
       '<p class="apartado">pistas — lo que todavía no te ha salido' +
       (rectaFinal() ? " · estos días se dejan ver más" : "") + "</p>" +
       '<ul class="pistas">' + (pistasPendientes(3).map(function (p) {
@@ -1785,6 +1820,7 @@
     panel.querySelector(".cerrar").addEventListener("click", function () {
       panel.classList.remove("viva");
     });
+    engancharCarta(panel.querySelector(".nota-frasco"));
     // El play cierra el frasco y lo vuelve a poner en pantalla.
     panel.addEventListener("click", function (e) {
       var b = e.target.closest && e.target.closest("[data-revivir]");

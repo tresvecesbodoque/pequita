@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Lo que quise decir</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap"
+/>
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="poema.css" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    min-height: 100%;
+    padding: 34px 22px calc(80px + env(safe-area-inset-bottom, 0px));
+    color: var(--ink);
+    font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    background: var(--telon-noche);
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+  .cielo { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .cielo span {
+    position: absolute; width: 2px; height: 2px; border-radius: 50%;
+    background: #fff; opacity: .5; animation: titila 3s infinite ease-in-out;
+  }
+  @keyframes titila { 0%,100% { opacity: .2 } 50% { opacity: .9 } }
+  @media (prefers-reduced-motion: reduce) { .cielo span { animation: none; } }
+
+  .hoja { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; }
+
+  /* ── La entrada ──────────────────────────────────────────────── */
+  .cabecera { text-align: center; max-width: 44rem; margin: 0 auto 30px; }
+  .titulo {
+    font-size: clamp(1.5rem, 6vw, 2.3rem); color: var(--gold);
+    font-style: italic; font-weight: 600; line-height: 1.15;
+  }
+  .rotulo {
+    margin-top: 8px; font-size: .74rem; letter-spacing: .22em;
+    font-variant: small-caps; color: var(--ink-suave);
+  }
+  .entrada {
+    margin-top: 20px; padding: 20px 22px; border-radius: 16px;
+    border: 1.5px solid var(--borde); background: var(--cristal);
+    backdrop-filter: blur(4px); text-align: left;
+  }
+  .entrada p { font-size: .95rem; line-height: 1.75; color: var(--ink-suave); }
+  .entrada p + p { margin-top: 12px; }
+  .entrada em { color: var(--ink-calida); font-style: italic; }
+
+  /* ── El taller: el poema y lo que dice cada verso ─────────────── */
+  .taller { display: grid; gap: 26px; align-items: start; }
+  /* Sin esto, la tira del carrusel (tres pantallas de ancho) estira su
+     columna y la página entera se desplaza a lo ancho en el teléfono. */
+  .taller > * { min-width: 0; }
+  @media (min-width: 900px) {
+    .taller { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 40px; }
+    /* En pantalla ancha el poema se queda quieto y solo cambia la explicación. */
+    .columna-poema { position: sticky; top: 24px; }
+  }
+
+  .aviso {
+    text-align: center; font-style: italic; font-size: .84rem;
+    color: var(--ink-tenue); margin-top: 14px;
+  }
+
+  /* Aquí los versos se tocan, así que se nota que se pueden tocar. */
+  .verso {
+    cursor: pointer; border-radius: 6px;
+    transition: color .35s ease, opacity .35s ease;
+  }
+  .verso:hover, .verso:focus-visible { color: var(--ink-calida); outline: none; }
+  .verso.elegido { color: var(--gold); }
+  .estrofa.hay-elegido .verso:not(.elegido) { opacity: .45; }
+
+  /* ── La explicación ──────────────────────────────────────────── */
+  .explica {
+    padding: 24px 24px 26px; border-radius: 18px;
+    border: 1.5px solid var(--borde); background: var(--cristal);
+    backdrop-filter: blur(4px); min-height: 12rem;
+  }
+  .explica-verso {
+    font-style: italic; font-size: clamp(1rem, 3.4vw, 1.2rem);
+    color: var(--gold); line-height: 1.5;
+    padding-bottom: 12px; margin-bottom: 14px;
+    border-bottom: 1px dashed rgba(217, 168, 63, .3);
+  }
+  /* En estos textos hay alguna palabra suya larguísima y sin espacios: que
+     se parta antes que sacar la caja de la pantalla. */
+  .explica-cuerpo p {
+    font-size: .96rem; line-height: 1.8; color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  .explica-cuerpo p + p { margin-top: 14px; }
+  .explica-cuerpo em { color: var(--ink-calida); font-style: italic; }
+  .explica-cuerpo strong { color: var(--gold); font-weight: 600; }
+  .explica-vacio {
+    font-style: italic; color: var(--ink-tenue); line-height: 1.7;
+    font-size: .95rem;
+  }
+  /* El fundido: entra el texto, no la caja. */
+  .explica-dentro { animation: asoma-explica .5s ease both; }
+  @keyframes asoma-explica {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .explica-dentro { animation: none; }
+    .verso { transition: none; }
+  }
+
+  /* ── Volver ──────────────────────────────────────────────────── */
+  .volver {
+    position: fixed; z-index: 6;
+    left: max(16px, env(safe-area-inset-left, 0px));
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 18px; border-radius: 999px;
+    border: 1.5px solid var(--borde); background: rgba(10, 16, 32, .78);
+    backdrop-filter: blur(6px);
+    color: var(--gold); text-decoration: none;
+    font-family: inherit; font-size: .9rem; letter-spacing: .04em;
+    transition: transform .2s ease, border-color .3s ease;
+  }
+  .volver:hover { transform: translateY(-2px); border-color: var(--borde-vivo); }
+
+  @media (max-width: 560px) {
+    body { padding: 26px 14px calc(78px + env(safe-area-inset-bottom, 0px)); }
+    .entrada { padding: 16px 16px; }
+    .entrada p { font-size: .88rem; }
+    .explica { padding: 18px 18px 20px; }
+    .explica-cuerpo p { font-size: .92rem; }
+  }
+</style>
+</head>
+<body>
+  <div class="cielo" id="cielo" aria-hidden="true"></div>
+
+  <div class="hoja">
+    <header class="cabecera">
+      <h1 class="titulo">Lo que quise decir</h1>
+      <p class="rotulo">Siete noches de sed</p>
+      <div class="entrada" id="entrada"></div>
+    </header>
+
+    <div class="taller">
+      <div class="columna-poema">
+        <div class="poema">
+          <div class="estrofas" id="estrofas" tabindex="0"
+               aria-roledescription="carrusel" aria-label="El poema, estrofa por estrofa"></div>
+        </div>
+        <p class="aviso" id="aviso"></p>
+      </div>
+
+      <div class="explica" id="explica" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <a class="volver" href="./">← volver al conteo</a>
+
+  <script src="poema-datos.js"></script>
+  <script>
+    // ── El cielo ──────────────────────────────────────────────────
+    (function () {
+      var cielo = document.getElementById("cielo"), trozos = "";
+      for (var i = 0; i < 70; i++) {
+        trozos += '<span style="left:' + (Math.random() * 100).toFixed(2) + "%;top:" +
+          (Math.random() * 100).toFixed(2) + "%;animation-delay:" +
+          (Math.random() * 3).toFixed(2) + 's"></span>';
+      }
+      cielo.innerHTML = trozos;
+    })();
+
+    (function () {
+      var datos = window.POEMA || { intro: [], estrofas: [] };
+
+      // ── Solo hasta la estrofa de esta semana ────────────────────
+      // Cada estrofa se entrega un jueves a las 00:00 de Santiago. Hasta que
+      // llega su hora, aquí no existe: ni el poema ni su explicación.
+      var ahora = Date.now();
+      var estrofas = datos.estrofas.filter(function (e) {
+        return !e.desde || new Date(e.desde).getTime() <= ahora;
+      });
+
+      var entrada = document.getElementById("entrada");
+      entrada.innerHTML = datos.intro.map(function (p) { return "<p>" + p + "</p>"; }).join("");
+
+      var pista = document.getElementById("estrofas");
+      var explica = document.getElementById("explica");
+      var aviso = document.getElementById("aviso");
+
+      if (!estrofas.length) {
+        pista.innerHTML = '<section class="estrofa"><p class="versos">' +
+          '<span class="verso">todavía no hay nada que explicar</span></p></section>';
+        return;
+      }
+
+      pista.innerHTML = estrofas.map(function (e) {
+        return '<section class="estrofa" aria-label="Estrofa ' + e.num + ', ' + e.titulo + '">' +
+          '<p class="estrofa-titulo">' + e.num + ". " + e.titulo + "</p>" +
+          '<p class="estrofa-via">' + e.via + "</p>" +
+          '<p class="versos">' + e.versos.map(function (v, i) {
+            return '<span class="verso" tabindex="0" role="button" data-e="' +
+              e.num + '" data-v="' + i + '">' + v.texto + "</span>";
+          }).join("") + "</p></section>";
+      }).join("");
+
+      // Se dice cuántas hay y cuándo llega la siguiente, para que no parezca
+      // que falta algo por error.
+      var siguiente = datos.estrofas[estrofas.length];
+      aviso.textContent = siguiente
+        ? "van " + estrofas.length + " de " + datos.estrofas.length +
+          "; la siguiente, el jueves"
+        : "";
+
+      // ── Los puntos ──────────────────────────────────────────────
+      var caja = document.createElement("div");
+      caja.className = "puntos";
+      var botones = estrofas.map(function (e, i) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "punto";
+        b.setAttribute("aria-label", "estrofa " + (i + 1) + " de " + estrofas.length);
+        b.addEventListener("click", function () { ir(i); });
+        caja.appendChild(b);
+        return b;
+      });
+      pista.parentNode.appendChild(caja);
+
+      var actual = 0;
+      function ir(n) {
+        actual = n;
+        pista.scrollTo({ left: n * pista.clientWidth, behavior: "smooth" });
+        marcar();
+      }
+      function marcar() {
+        botones.forEach(function (b, k) {
+          b.setAttribute("aria-current", k === actual ? "true" : "false");
+        });
+      }
+      var pendiente = false;
+      pista.addEventListener("scroll", function () {
+        if (pendiente || !pista.clientWidth) return;
+        pendiente = true;
+        requestAnimationFrame(function () {
+          pendiente = false;
+          actual = Math.max(0, Math.min(estrofas.length - 1,
+            Math.round(pista.scrollLeft / pista.clientWidth)));
+          marcar();
+        });
+      }, { passive: true });
+      // Al girar la pantalla, la estrofa se vuelve a encuadrar.
+      function reencuadrar() {
+        if (pista.clientWidth) pista.scrollTo({ left: actual * pista.clientWidth, behavior: "auto" });
+      }
+      window.addEventListener("resize", reencuadrar);
+      window.addEventListener("orientationchange", function () { setTimeout(reencuadrar, 250); });
+      pista.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight" && actual < estrofas.length - 1) { e.preventDefault(); ir(actual + 1); }
+        if (e.key === "ArrowLeft" && actual > 0) { e.preventDefault(); ir(actual - 1); }
+      });
+      marcar();
+
+      // ── La explicación ──────────────────────────────────────────
+      var VACIO = '<p class="explica-vacio">Pasa el dedo o el cursor por un verso ' +
+        "y te cuento por qué está escrito así.</p>";
+      explica.innerHTML = VACIO;
+
+      var puestoEn = null;
+      function mostrar(el) {
+        var e = el.getAttribute("data-e"), i = +el.getAttribute("data-v");
+        if (puestoEn === e + ":" + i) return;      // ya está: no se repite el fundido
+        puestoEn = e + ":" + i;
+
+        var estrofa = null;
+        for (var k = 0; k < estrofas.length; k++) if (estrofas[k].num === e) estrofa = estrofas[k];
+        if (!estrofa) return;
+        var verso = estrofa.versos[i];
+
+        [].forEach.call(pista.querySelectorAll(".verso"), function (v) {
+          v.classList.toggle("elegido", v === el);
+        });
+        [].forEach.call(pista.querySelectorAll(".estrofa"), function (s) {
+          s.classList.toggle("hay-elegido", s.contains(el));
+        });
+
+        explica.innerHTML = '<div class="explica-dentro">' +
+          '<p class="explica-verso">' + verso.texto + "</p>" +
+          '<div class="explica-cuerpo">' +
+          verso.parrafos.map(function (p) { return "<p>" + p + "</p>"; }).join("") +
+          "</div></div>";
+      }
+
+      // El ratón basta con pasarlo por encima; el dedo, tocarlo. Con el teclado,
+      // al llegar el foco. Lo mostrado se queda: no se apaga al salir, para que
+      // se pueda leer con calma.
+      pista.addEventListener("mouseover", function (e) {
+        var v = e.target.closest && e.target.closest(".verso");
+        if (v) mostrar(v);
+      });
+      pista.addEventListener("focusin", function (e) {
+        var v = e.target.closest && e.target.closest(".verso");
+        if (v) mostrar(v);
+      });
+      pista.addEventListener("click", function (e) {
+        var v = e.target.closest && e.target.closest(".verso");
+        if (!v) return;
+        mostrar(v);
+        // En pantalla chica la explicación va debajo: se la lleva a la vista.
+        if (window.matchMedia("(max-width: 899px)").matches) {
+          explica.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      });
+      pista.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        var v = e.target.closest && e.target.closest(".verso");
+        if (v) { e.preventDefault(); mostrar(v); }
+      });
+    })();
+  </script>
+</body>
+</html>

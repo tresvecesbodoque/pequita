@@ -337,10 +337,26 @@ body.domingo { background: radial-gradient(1600px 900px at 50% -10%, #24274a 0%,
 }
 .coleccion .revivir:hover { background: rgba(217,168,63,.2); transform: scale(1.08); }
 
+/* Volver: fijo arriba a la izquierda. Antes era un "cerrar" al final de todo,
+   y con el frasco lleno había que bajar la lista entera para salir. */
 .coleccion .cerrar {
-  display: block; margin: 0 auto; padding: 12px 26px; border-radius: 999px;
-  border: 1.5px solid rgba(217,168,63,.45); background: none;
-  color: var(--gold); font-family: inherit; font-size: .95rem; cursor: pointer;
+  position: fixed; z-index: 2;
+  top: max(14px, env(safe-area-inset-top, 0px));
+  left: max(14px, env(safe-area-inset-left, 0px));
+  padding: 10px 18px; border-radius: 999px;
+  border: 1.5px solid rgba(217,168,63,.45); background: rgba(7,12,25,.85);
+  backdrop-filter: blur(6px);
+  color: var(--gold); font-family: inherit; font-size: .9rem; cursor: pointer;
+  transition: transform .2s ease, border-color .3s ease;
+}
+.coleccion .cerrar:hover { transform: translateY(-1px); border-color: rgba(217,168,63,.9); }
+
+/* La nota de la portada, que ahora solo se lee aquí. */
+.coleccion .nota-frasco {
+  max-width: 30rem; margin: 0 auto 24px; padding: 16px 18px;
+  border-radius: 14px; border: 1px dashed rgba(217,168,63,.35);
+  background: rgba(217,168,63,.06);
+  font-size: .95rem; line-height: 1.7; color: var(--gold); text-align: center;
 }
 
 /* Nota de diagnóstico (?diag o botón del panel). No es para ella. */
