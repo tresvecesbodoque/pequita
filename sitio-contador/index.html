@@ -12,6 +12,20 @@
 />
 <!-- Colores: generado desde design-system/tokens.css (scripts/sync-tokens.py). -->
 <link rel="stylesheet" href="tokens.css" />
+<script>
+  // La puerta, lo antes posible: si este aparato no ha dicho quién es, el
+  // contador no puede llegar a verse ni un instante. Aquí solo se mira; el
+  // formulario lo monta el guion de abajo, ya con la memoria cargada.
+  (function () {
+    try {
+      if (/[?&]soy=(zorro|rosa)/i.test(location.search)) return;
+      var m = JSON.parse(localStorage.getItem("pequita.contador") || "{}") || {};
+      var c = JSON.parse(localStorage.getItem("pequita.contador.copia") || "{}") || {};
+      if (m.quien || c.quien) return;
+    } catch (e) { return; }   // sin almacenamiento no se cierra: nadie se queda fuera por un fallo
+    document.documentElement.className += " sin-entrar";
+  })();
+</script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -101,6 +115,60 @@
     .presencia { transition: none; }
     .presencia.juntos .luz { animation: none; }
   }
+
+  /* ── La puerta ───────────────────────────────────────────────────
+     Tapa la pantalla entera hasta que el aparato dice quién es. Va por
+     encima de todo, incluido el minijuego. */
+  .puerta {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    /* El telón vigente, no el de la noche: si llega el día D y aún hay que
+       preguntar quién es, la puerta amanece con el resto. */
+    padding: 30px 22px; background: var(--telon);
+  }
+  .puerta[hidden] { display: none; }
+  /* Mientras no diga quién es, no se ve nada más que la puerta. Se oculta
+     todo lo que cuelga del cuerpo, incluido lo que añaden los guiones (el
+     frasco, el panel), y queda solo el cielo de fondo. */
+  html.sin-entrar body > *:not(.puerta) { visibility: hidden; }
+  .puerta-caja {
+    width: min(22rem, 100%); text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+  }
+  .puerta-alto {
+    font-size: clamp(1.5rem, 7vw, 2.1rem); color: var(--gold);
+    font-style: italic; line-height: 1.2;
+  }
+  .puerta-pide {
+    font-size: .8rem; letter-spacing: .2em; font-variant: small-caps;
+    color: var(--ink-suave);
+  }
+  .puerta-campo {
+    width: 100%; padding: 13px 16px; text-align: center;
+    border: 1.5px solid var(--borde); border-radius: 999px;
+    background: var(--cristal); color: var(--ink);
+    font-family: inherit; font-size: 1.05rem; letter-spacing: .06em;
+    -webkit-appearance: none; appearance: none;
+  }
+  .puerta-campo:focus { outline: none; border-color: var(--borde-vivo); }
+  .puerta-no {
+    min-height: 1.2em; font-size: .82rem; font-style: italic;
+    color: var(--rose); opacity: 0; transition: opacity .3s ease;
+  }
+  .puerta-no.viva { opacity: 1; }
+  .puerta-boton {
+    padding: 12px 30px; border-radius: 999px; border: 1.5px solid var(--gold);
+    background: var(--gold); color: #2a1e08;
+    font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer;
+  }
+  /* Un "no" que se nota sin regañar. */
+  .puerta-caja.niega { animation: niega .4s ease; }
+  @keyframes niega {
+    0%, 100% { transform: translateX(0) }
+    25% { transform: translateX(-7px) }
+    75% { transform: translateX(7px) }
+  }
+  @media (prefers-reduced-motion: reduce) { .puerta-caja.niega { animation: none; } }
 
   /* ── El poema ────────────────────────────────────────────────────
      Tres estrofas, cada una en su pantalla, y se pasan con el dedo. */
@@ -358,6 +426,20 @@
   <div class="cielo" id="cielo" aria-hidden="true"></div>
   <div class="capa-eventos" id="capaEventos" aria-hidden="true"></div>
   <p class="susurro-portada" id="susurroPortada" aria-live="polite"></p>
+
+  <!-- La puerta: quien no se haya identificado no pasa. Nace escondida y la
+       abre el guion de abajo antes de que se vea nada del contador. -->
+  <div class="puerta" id="puerta" hidden>
+    <form class="puerta-caja" id="puertaForm" autocomplete="off">
+      <p class="puerta-alto">¡Alto intrus@!</p>
+      <label class="puerta-pide" for="puertaQuien">¿quién eres?</label>
+      <input class="puerta-campo" id="puertaQuien" name="quien" type="text"
+             autocapitalize="none" autocorrect="off" spellcheck="false"
+             aria-describedby="puertaNo" />
+      <p class="puerta-no" id="puertaNo" role="status"></p>
+      <button class="puerta-boton" type="submit">pasar</button>
+    </form>
+  </div>
 
   <main class="wrap">
     <!-- ANTES del día -->
@@ -883,6 +965,69 @@
           '%;animation-delay:' + (Math.random() * 3).toFixed(2) + 's"></span>';
       }
       c.innerHTML = html;
+    })();
+
+    // ── La puerta ─────────────────────────────────────────────────
+    // Va DESPUÉS del rescate: un aparato que llega por el puente ya trae su
+    // nombre en el equipaje y no hay que preguntarle nada.
+    //
+    // Solo valen "rosa" y "zorro", en mayúsculas o minúsculas, con acento o
+    // sin él y con o sin artículo delante. No se dice cuáles son: quien tiene
+    // que estar aquí ya lo sabe.
+    (function () {
+      var raiz = document.documentElement;
+      var puerta = document.getElementById("puerta");
+      var forma = document.getElementById("puertaForm");
+      var campo = document.getElementById("puertaQuien");
+      var no = document.getElementById("puertaNo");
+      if (!puerta || !forma) { raiz.classList.remove("sin-entrar"); return; }
+
+      function abrir() {
+        raiz.classList.remove("sin-entrar");
+        puerta.hidden = true;
+      }
+
+      var deLaUrl = (location.search.match(/[?&]soy=(zorro|rosa)/i) || [])[1];
+      var yaEs = "";
+      // Si la memoria fallara, se abre: mejor un desconocido dentro que ella
+      // fuera, aporreando una puerta que no puede acordarse de nadie.
+      try { yaEs = (deLaUrl || leerMem().quien || "").toLowerCase(); }
+      catch (e) { abrir(); return; }
+      if (yaEs === "zorro" || yaEs === "rosa") { abrir(); return; }
+
+      puerta.hidden = false;
+      setTimeout(function () { try { campo.focus(); } catch (e) {} }, 60);
+
+      function limpia(t) {
+        t = String(t || "").toLowerCase();
+        if (t.normalize) t = t.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return t.replace(/[^a-z ]/g, "").replace(/\s+/g, " ").trim();
+      }
+
+      forma.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var dicho = limpia(campo.value);
+        var acierto = /^(la |el )?(rosa|zorro)$/.test(dicho)
+          ? (dicho.indexOf("rosa") >= 0 ? "rosa" : "zorro") : "";
+
+        if (!acierto) {
+          no.textContent = "esa no es.";
+          no.classList.add("viva");
+          forma.classList.remove("niega");
+          void forma.offsetWidth;
+          forma.classList.add("niega");
+          campo.select();
+          return;
+        }
+
+        var datos = leerMem();
+        datos.quien = acierto;
+        datos.recienEntrado = true;   // para que la línea de presencia salude
+        guardarMem(datos);
+        // Se entra de nuevo y limpio: así los guiones que ya se cargaron
+        // (presencia, frasco) arrancan sabiendo quién es.
+        location.replace(location.pathname);
+      });
     })();
 
     var espera = document.getElementById("espera");

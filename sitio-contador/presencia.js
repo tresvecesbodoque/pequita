@@ -6,21 +6,16 @@
    (que sí tiene base de datos), donde cada uno deja su latido y pregunta
    por el del otro. Ni chat ni historial: dos filas con una hora.
 
-   QUIÉN ES QUIÉN. Ni contraseñas ni preguntas al entrar. Lo que hay guardado
-   es POR APARATO, así que pedirle a ella que marque cada teléfono y cada
-   navegador que usa era condenar la luz a no encenderse casi nunca, y encima
-   en silencio. Se le da la vuelta: SOLO ÉL marca los suyos, una vez cada uno,
-   abriendo ?soy=zorro. Todo lo demás que llegue a esta dirección se cuenta
-   como ella, así que ella no tiene que hacer nada en ninguna parte.
+   QUIÉN ES QUIÉN. Lo pregunta la puerta (ver index.html): ningún aparato ve
+   el contador sin decir antes si es zorro o rosa, así que aquí siempre se
+   sabe con quién se habla. No se supone nada de nadie: sin nombre guardado,
+   este guion no hace nada.
 
-   El precio del trato: esta dirección es de los dos y de nadie más. Si un
-   tercero entra, a ella no le enciende nada (nadie es "él" sin marca), pero a
-   él le parecerá que es ella.
-
-   La marca se guarda en la memoria del sitio —la misma del frasco, con sus
-   dos copias y su rescate por enlace— y la dirección se limpia después, para
-   que un enlace compartido no convierta a nadie en otra persona. Un aparato
-   marcado por error se devuelve con ?soy=rosa.
+   El nombre también se puede dejar puesto de una vez con ?soy=zorro /
+   ?soy=rosa, que además se salta la puerta. Se guarda en la memoria del
+   sitio —la misma del frasco, con sus dos copias y su rescate por enlace— y
+   la dirección se limpia después, para que un enlace compartido no convierta
+   a nadie en otra persona.
    ══════════════════════════════════════════════════════════════════ */
 (function () {
   "use strict";
@@ -75,10 +70,21 @@
       try { history.replaceState(null, "", location.pathname + location.hash); } catch (e2) {}
     }
   } else {
-    try { quien = enMemoria().quien || ""; } catch (e3) { quien = ""; }
+    try {
+      var guardado = enMemoria();
+      quien = guardado.quien || "";
+      // Acaba de pasar por la puerta: se la saluda igual que a un enlace marcado.
+      if (guardado.recienEntrado) {
+        marcadoAhora = true;
+        delete guardado.recienEntrado;
+        guardado.recienEntrado = false;
+        aMemoria(guardado);
+      }
+    } catch (e3) { quien = ""; }
   }
-  // Aparato sin marcar: es ella. Él marca los suyos; ella no marca nada.
-  if (!QUIENES[quien]) quien = "rosa";
+  // Sin nombre no se late ni se pregunta. Ya no hay "por defecto es ella":
+  // desde que existe la puerta, todo aparato dice quién es antes de entrar.
+  if (!QUIENES[quien]) return;
 
   var caja = document.getElementById("presencia");
   var texto = document.getElementById("presenciaTexto");

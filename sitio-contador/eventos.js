@@ -919,6 +919,45 @@
   });
 
   // ══════════════════════════════════════════════════════════════════
+  //  LA RECTA FINAL
+  //  A cinco días ya no hay tiempo de esperar a la luna llena ni a que el
+  //  contador vuelva a marcar 19 días: lo que ella NO haya visto todavía
+  //  deja de hacerse de rogar —ni descanso, ni esperar el momento—, para
+  //  que le dé tiempo a verlo todo antes de su cumpleaños.
+  //
+  //  Solo se relaja lo que ella no puede provocar. Lo que depende de ella
+  //  —quedarse quieta, volver dos veces el mismo día, tocar estrellas— se
+  //  queda igual: ahí está el juego, y las pistas hablan de eso.
+  // ══════════════════════════════════════════════════════════════════
+  var RELAJADO = {
+    luna:               function (c) { return c.hora >= 19 || c.hora < 7; },   // de noche, sea cual sea la fase
+    constelacion:       function (c) { return c.hora >= 21 || c.hora < 7; },   // ya no hace falta trasnochar
+    planeta:            function (c) { return c.segundosSinTocar > 60; },      // sin la madrugada
+    lluvia:             function (c) { return c.hora >= 12; },
+    // Pedía dos minutos enteros sin cerrar, y muchas visitas no llegan: en la
+    // recta final basta con uno. La pista sigue diciendo "un par de minutos",
+    // que sigue siendo verdad y de sobra.
+    avioneta:           function (c) { return c.segundosEnPagina > 60; },
+    // Pedía ser la primera visita del día: una sola oportunidad diaria, y si
+    // no le tocaba en ese rato, el día estaba perdido. Quedan pocos días.
+    "lluvia-estrellas": null,
+    "carta-rapida":     null,   // pedía tres días fuera, justo lo contrario de lo que queremos
+    infinito:           null,   // pedía que faltaran más de 20 días: ya no van a faltar
+    "fugaz-lenta":      null    // pedía 9, 19 o 29 días exactos
+  };
+
+  // La última semana entera: hoy mismo ya cuenta. Con cinco días la ventana
+  // se abría mañana, y mañana es tarde para lo que hay que enseñar.
+  var DIAS_RECTA = 7;
+  function rectaFinal() {
+    var falta = restante();
+    return falta > 0 && falta <= DIAS_RECTA * 86400000;
+  }
+  // `ultimos` guarda la hora de cada evento que ha salido alguna vez y no se
+  // poda nunca: es la lista fiable de lo ya visto (el registro sí se recorta).
+  function nuncaVisto(id) { return !(mem.ultimos || {})[id]; }
+
+  // ══════════════════════════════════════════════════════════════════
   //  MOTOR
   // ══════════════════════════════════════════════════════════════════
   var ocupado = false, vistosSesion = [], temporizador = 0, gastados = 0;
@@ -926,9 +965,11 @@
   var rapido = /[?&]rapido/.test(location.search);
 
   // La ración: la página da mucho y rápido, y después se calla. Si vuelve
-  // antes de la hora prometida, arranca con media ración.
+  // antes de la hora prometida, arranca con media ración. En la recta final
+  // la ración es doble: quedan pocas visitas para enseñarlo todo.
   mem.sesion = mem.sesion || {};
-  var RACION = (mem.sesion.vueltaA && Date.now() < mem.sesion.vueltaA) ? 3 : 6;
+  var media = mem.sesion.vueltaA && Date.now() < mem.sesion.vueltaA;
+  var RACION = rectaFinal() ? (media ? 6 : 12) : (media ? 3 : 6);
   var avisado = false;
 
   function libreEn(ms) { setTimeout(function () { ocupado = false; }, ms); }
@@ -984,8 +1025,14 @@
   function califica(e, c) {
     if (suave && e.movimiento) return false;
     if (vistosSesion.indexOf(e.id) >= 0) return false;         // uno por sesión
-    if (horasDesde(e.id) < (e.descanso || 3)) return false;
-    return !e.cuando || e.cuando(c);
+    // Estreno en la recta final: ni descanso ni esperar el momento.
+    var estreno = rectaFinal() && nuncaVisto(e.id);
+    if (!estreno && horasDesde(e.id) < (e.descanso || 3)) return false;
+    var condicion = e.cuando;
+    if (estreno && Object.prototype.hasOwnProperty.call(RELAJADO, e.id)) {
+      condicion = RELAJADO[e.id];
+    }
+    return !condicion || condicion(c);
   }
 
   // Deja constancia en el frasco de que esto pasó, con su hora.
@@ -1093,6 +1140,9 @@
   }
 
   function lanzar() {
+    // Con la puerta cerrada no se gasta nada: la pantalla está tapada y un
+    // evento que corriera ahí se daría por visto sin que ella lo viera.
+    if (document.documentElement.classList.contains("sin-entrar")) return;
     // El modo forzado es una herramienta de prueba: se salta el candado.
     if (!forzado && (ocupado || jugando() || document.hidden || enCalma())) return;
     if (forzado) {
@@ -1105,7 +1155,15 @@
     var lista = AMBIENTE.filter(function (e) { return califica(e, c); });
     if (!lista.length) return;
 
-    // Lo específico manda sobre lo genérico.
+    // En la recta final manda lo que no ha visto nunca: quedan pocos días y
+    // la gracia es que no se quede nada dentro sin enseñar.
+    var estrenos = rectaFinal() ? lista.filter(function (e) { return nuncaVisto(e.id); }) : [];
+    // Entre estrenos se sortea PAREJO, sin pesos: los legendarios pesan 0.5 y
+    // con el reparto de siempre no les llegaba el turno hasta el final, que es
+    // como no llegarles. Aquí lo que importa es que salgan todos.
+    if (estrenos.length) { correr(uno(estrenos)); return; }
+
+    // Fuera de la recta final, lo específico manda sobre lo genérico.
     var momentos = lista.filter(function (e) { return e.nivel === "momento"; });
     var pozo = momentos.length ? momentos : lista;
 
@@ -1424,10 +1482,40 @@
     // En el iPhone, sonido.volume es de SOLO LECTURA: mover el deslizador no
     // hacía nada. La única forma de mandar sobre el volumen ahí es meter el
     // audio por un nodo de ganancia; y al llegar a cero, además, se pausa.
+    //
+    // PERO eso tiene un precio en iOS: lo que pasa por WebAudio cuenta como
+    // sonido "de ambiente", y el interruptor de silencio del teléfono lo
+    // apaga —el mismo audio suelto, no—. Por eso ella no oía nada. Safari
+    // 16.4+ deja declarar que esto es reproducción de verdad; donde no se
+    // pueda declarar, se renuncia al deslizador antes que a la canción.
+    function sesionDeReproduccion() {
+      try {
+        if (navigator.audioSession) { navigator.audioSession.type = "playback"; return true; }
+      } catch (e) {}
+      return false;
+    }
+
+    // ¿Obedece `volume` en este navegador? En iOS no.
+    function volumenObedece() {
+      try {
+        var antes = sonido.volume;
+        sonido.volume = 0.5;
+        var manda = Math.abs(sonido.volume - 0.5) < 0.01;
+        sonido.volume = antes;
+        return manda;
+      } catch (e) { return false; }
+    }
+
     var contexto = null, ganancia = null;
     function conectarGanancia() {
       var Ctx = window.AudioContext || window.webkitAudioContext;
       if (contexto || !Ctx) return;
+      // Donde el volumen ya obedece, WebAudio no aporta nada y solo puede
+      // quitar: se deja el audio suelto, que es lo que mejor suena en todas.
+      if (volumenObedece()) return;
+      // Aquí estamos en iOS: sin poder declarar la sesión, meterlo por
+      // WebAudio es condenarlo a callar con el teléfono en silencio.
+      if (!sesionDeReproduccion()) return;
       try {
         contexto = new Ctx();
         var fuente = contexto.createMediaElementSource(sonido);
@@ -1486,10 +1574,26 @@
 
     // El primer toque en cualquier parte enciende el sonido: ningún navegador
     // deja sonar audio antes, y así ella no tiene que pulsar nada aparte.
+    var avisadoSilencio = false;
+    // Lo único que no se puede arreglar desde aquí es el interruptor de
+    // silencio del teléfono. Si tras dos segundos la canción no ha avanzado
+    // ni un segundo, se lo decimos en vez de dejarla pensando que está rota.
+    function comprobarQueSuena() {
+      if (avisadoSilencio) return;
+      var desde = sonido.currentTime;
+      setTimeout(function () {
+        if (!musicaEncendida || sonido.paused) return;
+        if (sonido.currentTime > desde + 0.3) return;      // suena: nada que decir
+        avisadoSilencio = true;
+        susurrar("¿no la oyes? mira el interruptor de silencio del teléfono", false);
+      }, 2200);
+    }
+
     window.arrancarMusica = function () {
       if (musicaEncendida || !sonido) return;
       if (volumen <= 0.001) return;                  // lo dejó en silencio
       musicaEncendida = true;
+      sesionDeReproduccion();
       conectarGanancia();
       if (contexto && contexto.state === "suspended") contexto.resume();
       sonido.muted = false;
@@ -1497,6 +1601,7 @@
       var promesa = sonido.play();
       if (promesa && promesa.catch) promesa.catch(function () { musicaEncendida = false; });
       subirSuave(volumen);
+      comprobarQueSuena();
       caja.classList.add("sonando");
     };
   }
@@ -1536,40 +1641,44 @@
 
   // Pistas de lo que aún no le ha salido. No dicen el nombre: dicen qué
   // hacer o cuándo mirar. Es la diferencia entre una lista y un juego.
-  var PISTAS = {
-    zorro: "hay algo que solo se acerca si te quedas quieta un buen rato",
-    luna: "algo asoma en las noches de luna llena, arriba a la derecha",
-    constelacion: "de madrugada, siete estrellas se ponen de acuerdo",
-    pecas: "toca muchas estrellas seguidas y el cielo te contesta con tu nombre",
-    nombre: "vuelve una segunda vez el mismo día y mira el cielo",
-    avioneta: "quédate dos minutos sin cerrar y algo cruzará colgando un mensaje",
-    "fugaz-lenta": "el día que el contador cambia de decena, una estrella baja a mirarlo",
-    "carta-rapida": "si te vas tres días y vuelves, del cielo cae una hoja escrita",
-    planeta: "de madrugada, sin tocar nada, alguien se sienta a mirar contigo",
-    "eco-poema": "cuando lleves varios versos ganados, el poema se desordena solo",
-    "lluvia-estrellas": "la primera visita del día es la que tiene premio gordo",
-    infinito: "mientras falte mucho, el contador a veces se equivoca a propósito",
-    "marcha-atras": "en los últimos días el reloj se pone nervioso y va al revés",
-    besos: "entra dos días seguidos y aparece un bloque que no debería estar",
-    etiquetas: "en la última semana el reloj deja de llamar a las cosas por su nombre",
-    lluvia: "las tardes de invierno se mojan",
-    "verso-extra": "cuando el poema se ilumine, quédate: a veces aparece un verso de más",
-    correccion: "de vez en cuando me corrijo a mí mismo en la nota de arriba",
-    margen: "a veces dejo un papelito pegado en el margen con la hora exacta",
-    globo: "algo sube despacio y revienta si lo tocas",
-    rosa: "hay una flor que crece abajo y suelta un pétalo al tocarla",
-    luciernagas: "si aparecen bichos de luz, persíguelos: huyen del dedo"
-  };
+  // EN ORDEN, y el orden importa: primero lo que depende de ella y puede
+  // hacer ahora mismo, y al final lo que hay que esperar. Cada pista dice el
+  // dato exacto —cuántos toques, cuántos minutos, a qué hora— pero nunca qué
+  // va a aparecer: eso es lo que se descubre.
+  //
+  // No se barajan. La misma pista se queda hasta que lo consigue, y solo
+  // entonces sube la siguiente: una pista que cambia sola no es una pista.
+  var PISTAS = [
+    ["pecas", "toca ocho estrellas seguidas y el cielo te contesta"],
+    ["zorro", "quédate quieta, sin tocar nada, tres cuartos de minuto: algo se acerca despacio"],
+    ["avioneta", "deja la página abierta dos minutos enteros y mira el cielo de lado a lado"],
+    ["rosa", "abajo del todo crece algo si esperas; tócalo y se deshoja"],
+    ["globo", "algo sube muy despacio y revienta si lo tocas"],
+    ["luciernagas", "si aparecen bichos de luz, persíguelos con el dedo: huyen"],
+    ["nombre", "vuelve una segunda vez el mismo día y mira el cielo"],
+    ["margen", "a veces dejo un papelito pegado en el margen con la hora exacta"],
+    ["correccion", "de vez en cuando me corrijo a mí mismo en la nota de arriba"],
+    ["verso-extra", "cuando el poema se ilumine, quédate: a veces hay un verso de más"],
+    ["besos", "entra dos días seguidos y en el reloj aparece un bloque que no debería estar"],
+    ["eco-poema", "con tres versos ya ganados, el poema se desordena solo"],
+    ["lluvia-estrellas", "la primera visita de cada día es la que tiene premio gordo"],
+    ["etiquetas", "esta última semana el reloj deja de llamar a las cosas por su nombre"],
+    ["marcha-atras", "estos últimos cinco días el reloj se pone nervioso y va al revés"],
+    ["lluvia", "las tardes de invierno, de la dos a las nueve, se mojan"],
+    ["constelacion", "de noche, siete estrellas se ponen de acuerdo"],
+    ["luna", "de noche, arriba a la derecha, asoma algo redondo"],
+    ["planeta", "de noche, un minuto entero sin tocar nada, y alguien se sienta a mirar contigo"],
+    ["fugaz-lenta", "cuando al contador le cambia la decena de días, una estrella baja a mirarlo"],
+    ["infinito", "el contador se equivoca a propósito de vez en cuando"],
+    ["carta-rapida", "del cielo cae una hoja escrita para quien vuelve después de días"]
+  ];
 
   function pistasPendientes(cuantas) {
-    var vistos = {};
-    (mem.registro || []).forEach(function (r) { vistos[r.id] = true; });
-    var libres = Object.keys(PISTAS).filter(function (id) { return !vistos[id]; });
-    for (var i = libres.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = libres[i]; libres[i] = libres[j]; libres[j] = t;
+    var fuera = [];
+    for (var i = 0; i < PISTAS.length && fuera.length < cuantas; i++) {
+      if (nuncaVisto(PISTAS[i][0])) fuera.push(PISTAS[i][1]);
     }
-    return libres.slice(0, cuantas).map(function (id) { return PISTAS[id]; });
+    return fuera;
   }
 
   function cuandoFue(t) {
@@ -1619,7 +1728,8 @@
       "racha de " + (mem.racha || 1) +
       (mem.creado ? " · frasco abierto el " + new Date(mem.creado).getDate() + "/" +
         (new Date(mem.creado).getMonth() + 1) : "") + "</p>" +
-      '<p class="apartado">pistas — lo que todavía no te ha salido</p>' +
+      '<p class="apartado">pistas — lo que todavía no te ha salido' +
+      (rectaFinal() ? " · estos días se dejan ver más" : "") + "</p>" +
       '<ul class="pistas">' + (pistasPendientes(3).map(function (p) {
         return "<li>" + p + "</li>";
       }).join("") || "<li>ya te ha salido de todo. y aun así vuelve.</li>") + "</ul>" +

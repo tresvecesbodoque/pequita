@@ -6,10 +6,10 @@
    de dirección también (de ahí el puente y el rescate por enlace). Aquí se
    guarda además en la app, una fila por persona.
 
-   SOLO APARATOS MARCADOS. Sin marca no se sube ni se baja nada: el frasco es
-   lo único que ella va juntando y no puede quedar a merced de quien pase por
-   la dirección. Un aparato suyo sin marcar guarda el suyo en local y no
-   pierde nada: el día que abra su enlace, los dos frascos se funden.
+   SOLO APARATOS CON NOMBRE. Quien no ha pasado por la puerta no sube ni baja
+   nada: el frasco es lo único que ella va juntando y no puede quedar a merced
+   de quien dé con la dirección. Un frasco que se hubiera empezado en local
+   sin nombre no se pierde: al identificarse, los dos se funden.
 
    Cómo no se pierde nada: se manda SIEMPRE lo que hay aquí y se guarda lo que
    contesta el servidor, que es la fusión de lo suyo con lo de allá. Como
@@ -36,9 +36,8 @@
   var aMemoria = typeof guardarMem === "function" ? guardarMem : null;
   if (!enMemoria || !aMemoria) return;
 
-  // Solo aparatos marcados: la marca la pone ?soy=zorro / ?soy=rosa una vez.
-  // Lo demás que llegue a esta dirección se cuenta como ella para la luz de
-  // presencia, pero NO toca el frasco.
+  // El nombre lo pone la puerta al entrar (o ?soy=zorro / ?soy=rosa). Si no
+  // hay nombre, este aparato no ha pasado por ahí y no se le toca el frasco.
   var quien = "";
   try { quien = enMemoria().quien || ""; } catch (e) { return; }
   if (quien !== "zorro" && quien !== "rosa") return;

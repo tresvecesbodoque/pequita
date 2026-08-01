@@ -127,6 +127,30 @@ cuando lo tiene gana a los de fondo.
 | Eco del poema ✦ | `eco-poema` | momento: con 3 versos ya ganados | 20 h |
 | Carta relámpago ✦ | `carta-rapida` | momento: al volver tras 3 días fuera | 20 h |
 
+### La recta final (última semana)
+
+La tabla de arriba es la de siempre. En los **últimos 7 días** cambia para lo
+que ella **todavía no haya visto nunca**, y solo para eso:
+
+- **Sin descanso y sin esperar su momento**: un estreno no hace cola.
+- **Sorteo parejo entre estrenos**, sin pesos: los legendarios pesan 0,5 y con
+  el reparto normal no les llegaba el turno hasta que ya era tarde.
+- **Ración doble** (12 por sesión en vez de 6).
+- Se relaja lo que ella **no puede provocar** — luna llena → cualquier noche;
+  madrugada → de noche; *faltan más de 20 días*, *bajar de decena* y *3 días
+  fuera* dejan de pedirse (eran imposibles de cumplir a estas alturas).
+- **NO se relaja lo que depende de ella**: quedarse quieta, volver dos veces el
+  mismo día, tocar ocho estrellas, dejar la página abierta dos minutos. Ahí
+  está el juego, y de eso hablan las pistas.
+
+### Las pistas
+
+Van **en orden fijo** (`PISTAS`, un array): primero lo que puede hacer ahora
+mismo, al final lo que hay que esperar. **No se barajan**: la misma pista se
+queda hasta que lo consigue y solo entonces sube la siguiente — una pista que
+cambia sola no es una pista. Se muestran tres, y "ya visto" se mira en
+`mem.ultimos`, que no se poda nunca (el registro sí se recorta a 80).
+
 ---
 
 ## 6. El 7 mágico
