@@ -953,9 +953,18 @@
     var falta = restante();
     return falta > 0 && falta <= DIAS_RECTA * 86400000;
   }
-  // `ultimos` guarda la hora de cada evento que ha salido alguna vez y no se
-  // poda nunca: es la lista fiable de lo ya visto (el registro sí se recorta).
-  function nuncaVisto(id) { return !(mem.ultimos || {})[id]; }
+  // "Visto alguna vez" es de ELLA, no de este aparato: el registro viaja entre
+  // sus aparatos (ver frasco.js) y `ultimos` no —ese es el reloj de descansos
+  // de aquí—. Mirando solo `ultimos`, en su computador todo parecería nuevo y
+  // las pistas le ofrecerían cosas que ya consiguió en el teléfono.
+  var vistosJamas = {};
+  function refrescarVistos() {
+    (mem.registro || []).forEach(function (r) { vistosJamas[r.id] = true; });
+    var u = mem.ultimos || {};
+    for (var id in u) if (Object.prototype.hasOwnProperty.call(u, id)) vistosJamas[id] = true;
+  }
+  refrescarVistos();
+  function nuncaVisto(id) { return !vistosJamas[id]; }
 
   // ══════════════════════════════════════════════════════════════════
   //  MOTOR
@@ -1039,6 +1048,7 @@
   function anotarEnRegistro(id) {
     mem.registro = mem.registro || [];
     mem.registro.push({ id: id, cuando: Date.now() });
+    vistosJamas[id] = true;
     if (mem.registro.length > 80) mem.registro.shift();
     persistir();
     pintarFrasco();
@@ -1632,6 +1642,9 @@
     mem.cartas = mem.cartas || [];
     mem.registro = mem.registro || [];
     mem.versos = mem.versos || 0;
+    // Lo que consiguió en otro aparato ya cuenta como visto aquí: las pistas
+    // dejan de ofrecerlo en cuanto llega.
+    refrescarVistos();
     pintarFrasco();
     for (var v = 0; v < Math.min(mem.versos, versosSemana.length); v++) {
       versosSemana[v].classList.add("ganado");
