@@ -38,8 +38,14 @@
 
   // Al marcar un aparato hay que VER que quedó marcado; si no, no hay forma de
   // saber si la luz calla porque no hay nadie o porque la marca no prendió.
-  var CONFIRMA = { zorro: "este aparato eres tú", rosa: "este aparato es ella" };
+  // El de ella no habla de marcas: dice para qué sirve la línea.
+  var CONFIRMA = { zorro: "este aparato eres tú", rosa: "aquí sabrás cuándo está él" };
   var CONFIRMA_DURA = 6000;
+
+  // Mientras el otro no haya pasado ni una vez no hay "hace cuánto" que dar,
+  // pero callarse es peor: desde fuera, no tener noticias y estar roto se ven
+  // exactamente igual. Así que la línea lo dice.
+  var NUNCA = { zorro: "él todavía no ha pasado por aquí", rosa: "ella todavía no ha pasado por aquí" };
 
   // En local (probando) se habla con el servidor de al lado; en producción,
   // con la app.
@@ -133,9 +139,16 @@
       return;
     }
 
+    // Sin respuesta todavía (o sin red): no se inventa nada.
+    if (!hayRespuesta) { caja.hidden = true; return; }
+
     var edad = edadAhora();
-    // Todavía no sabemos nada, o el otro no ha entrado nunca: no se dice nada.
-    if (!hayRespuesta || edad === null) { caja.hidden = true; return; }
+    if (edad === null) {          // el otro no ha pasado nunca
+      caja.hidden = false;
+      caja.classList.remove("juntos");
+      decir(NUNCA[otro]);
+      return;
+    }
 
     var juntos = edad < JUNTOS;
     if (juntos && !juntosAntes) encuentroHasta = Date.now() + ENCUENTRO_DURA;
