@@ -1516,6 +1516,24 @@
     frasco.innerHTML = '<span class="luz"></span>' + mem.coleccion.length + " de 60";
   }
 
+  // El frasco puede crecer mientras la página está abierta, si llega lo que
+  // ella juntó en otro aparato (ver frasco.js). Se vuelve a leer del disco y
+  // se repinta lo que esté a la vista; si no, lo de fuera no aparecería hasta
+  // la siguiente visita y parecería que no ha llegado.
+  window.recargarFrasco = function () {
+    mem = leerMem();
+    mem.coleccion = mem.coleccion || [];
+    mem.dias = mem.dias || [];
+    mem.cartas = mem.cartas || [];
+    mem.registro = mem.registro || [];
+    mem.versos = mem.versos || 0;
+    pintarFrasco();
+    for (var v = 0; v < Math.min(mem.versos, versosSemana.length); v++) {
+      versosSemana[v].classList.add("ganado");
+    }
+    if (panel.classList.contains("viva")) abrirColeccion();
+  };
+
   // Pistas de lo que aún no le ha salido. No dicen el nombre: dicen qué
   // hacer o cuándo mirar. Es la diferencia entre una lista y un juego.
   var PISTAS = {

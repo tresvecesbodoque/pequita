@@ -43,6 +43,15 @@ model Presencia {
   vistoEn DateTime @default(now())
 }
 
+// Frasco: lo que cada uno lleva juntado en el contador (luciérnagas, días,
+// versos, récord del juego), en JSON. Una fila por persona, y solo la
+// escriben los aparatos marcados. El servidor nunca pisa: funde (ver la ruta).
+model Frasco {
+  quien       String   @id
+  datos       String   @default("{}")
+  actualizado DateTime @default(now())
+}
+
 model Letter {
   id                  String         @id @default(cuid())
   slug                String         @unique @default(cuid())
