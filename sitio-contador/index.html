@@ -102,18 +102,92 @@
     .presencia.juntos .luz { animation: none; }
   }
 
-  /* El poema, en cursiva, grisáceo y sin negrita. CADA verso en UNA sola línea
-     en cualquier pantalla: nowrap + tamaño escalado al ancho (vw), calibrado para
-     que el verso más largo siempre quepa sin partirse ni salirse. */
+  /* ── El poema ────────────────────────────────────────────────────
+     Tres estrofas, cada una en su pantalla, y se pasan con el dedo. */
   .poema {
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(0.68rem, 3.55vw, 1.28rem);
-    line-height: 1.95;
     color: var(--ink-suave);
     letter-spacing: 0;
-    white-space: nowrap;
     transition: color 1.2s ease;
+  }
+
+  /* La tira que se desliza. Sin JavaScript sigue arrastrándose: el guion
+     solo añade los puntos y el ajuste al girar la pantalla. */
+  .estrofas {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    /* Que arrastrar el poema no dispare el "atrás" del navegador ni mueva
+       la página entera. */
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .estrofas::-webkit-scrollbar { display: none; }
+  .estrofas:focus-visible { outline: 1px dashed var(--borde); outline-offset: 6px; }
+  .estrofa {
+    flex: 0 0 100%;
+    min-width: 0;
+    scroll-snap-align: center;
+    /* Un dedo rápido pasa DE UNA en una: si no, se salta la estrofa del medio. */
+    scroll-snap-stop: always;
+  }
+
+  /* El día D no hay nada que descubrir: las tres, una debajo de otra. */
+  .estrofas--pila {
+    display: block;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+  .estrofas--pila .estrofa + .estrofa { margin-top: 30px; }
+
+  .estrofa-titulo {
+    font-style: normal;
+    font-variant: small-caps;
+    letter-spacing: .18em;
+    font-size: clamp(.74rem, 3vw, .92rem);
+    color: var(--gold);
+  }
+  .estrofa-via {
+    font-size: clamp(.6rem, 2.4vw, .72rem);
+    letter-spacing: .1em;
+    color: var(--ink-tenue);
+    margin: 3px 0 14px;
+  }
+
+  /* CADA verso en UNA sola línea en cualquier pantalla: nowrap + tamaño
+     escalado al ancho (vw). El calibrado lo manda el verso más largo del
+     poema —"cada taza queda quieta, encuentra su sitio,"—; si algún día
+     entra uno más largo, hay que rebajar el vw y volver a comprobarlo
+     desde 320 px. */
+  .verso {
+    display: block;
+    white-space: nowrap;
+    font-size: clamp(0.66rem, 3.28vw, 1.24rem);
+    line-height: 1.95;
+  }
+
+  /* Los puntos: dónde va una de tres. El botón es grande para el dedo
+     (24 px), aunque lo que se vea sea un punto de siete. */
+  .puntos { display: flex; justify-content: center; gap: 4px; margin-top: 10px; }
+  .punto {
+    position: relative; width: 24px; height: 24px; padding: 0;
+    border: 0; background: none; cursor: pointer; -webkit-appearance: none;
+  }
+  .punto::before {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%;
+    border: 1px solid var(--ink-tenue); background: none;
+    transition: background .4s ease, border-color .4s ease, transform .3s ease;
+  }
+  .punto[aria-current="true"]::before {
+    background: var(--gold); border-color: var(--gold); transform: scale(1.15);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .estrofas { scroll-behavior: auto; }
+    .punto::before { transition: none; }
   }
 
   .nota {
@@ -134,7 +208,10 @@
     max-height: 0; opacity: 0; overflow: hidden;
     transition: max-height .8s cubic-bezier(.22,1,.36,1), opacity .6s ease;
   }
-  .poema-caja.abierta { max-height: 30em; opacity: 1; }
+  /* Techo del despliegue: tiene que sobrar sobre la estrofa más alta, o el
+     último verso queda cortado. Con título, subtítulo, siete versos y los
+     puntos, la más alta ronda las 24 em. */
+  .poema-caja.abierta { max-height: 34em; opacity: 1; }
   .poema { margin-top: 14px; }
 
   .reloj { margin-top: 34px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
@@ -311,16 +388,56 @@
       <button class="poema-abrir" id="poemaAbrir" type="button"
               aria-expanded="false" aria-controls="poemaCaja">leer el poema ▾</button>
 
+      <!-- El poema: tres estrofas, una por pantalla, y se pasa con el dedo.
+           Los puntos de abajo los pone el guion; sin JavaScript esto sigue
+           siendo una tira que se arrastra, así que nunca queda encerrado. -->
       <div class="poema-caja" id="poemaCaja">
-        <p class="poema" id="poema">
-          <span class="verso">Divina, boca viva que salva mi carne;</span><br />
-          <span class="verso">roca rota donde este pacto se firma,</span><br />
-          <span class="verso">hueso expuesto al filo de ser vulnerable.</span><br />
-          <span class="verso">Asumo el crudo desastre de ser barro,</span><br />
-          <span class="verso">dedos que amasan este lodo sin rumbo,</span><br />
-          <span class="verso">pierdo mi nombre bajo este nuevo cielo,</span><br />
-          <span class="verso">llueve este cuerpo nuevo en tu noche</span>
-        </p>
+        <div class="poema" id="poema">
+          <div class="estrofas" id="estrofas" tabindex="0"
+               aria-roledescription="carrusel" aria-label="El poema, en tres estrofas">
+            <section class="estrofa" aria-label="Primera estrofa: la ceniza">
+              <p class="estrofa-titulo">I. La ceniza</p>
+              <p class="estrofa-via">Nigredo · Calcinatio</p>
+              <p class="versos">
+                <span class="verso">Y en el margen del mundo, sombra</span>
+                <span class="verso">el disenso: son dos; y son uno.</span>
+                <span class="verso">No es ninguno, juventud, ceniza y verbo,</span>
+                <span class="verso">aceptación a secas, no cabe el aire,</span>
+                <span class="verso">corto la brisa y enciendo la llama,</span>
+                <span class="verso">la mente calla, el juicio se inclina,</span>
+                <span class="verso">crepita un corazón sediento de tu paz.</span>
+              </p>
+            </section>
+
+            <section class="estrofa" aria-label="Segunda estrofa: el barro">
+              <p class="estrofa-titulo">II. El barro</p>
+              <p class="estrofa-via">Solutio · Sublimatio · Precipitatio</p>
+              <p class="versos">
+                <span class="verso">Divina, boca viva que salva mi carne;</span>
+                <span class="verso">roca rota donde este pacto se firma,</span>
+                <span class="verso">hueso expuesto al filo de ser vulnerable.</span>
+                <span class="verso">Asumo el crudo desastre de ser barro,</span>
+                <span class="verso">dedos que amasan este lodo sin rumbo,</span>
+                <span class="verso">pierdo mi nombre bajo este nuevo cielo,</span>
+                <span class="verso">llueve este cuerpo nuevo en tu noche.</span>
+              </p>
+            </section>
+
+            <section class="estrofa" aria-label="Tercera estrofa: la mesa">
+              <p class="estrofa-titulo">III. La mesa</p>
+              <p class="estrofa-via">Coagulatio</p>
+              <p class="versos">
+                <span class="verso">Todo pesa distinto desde que te quedas,</span>
+                <span class="verso">traigo la mesa, la pongo donde cabes,</span>
+                <span class="verso">cada taza queda quieta, encuentra su sitio,</span>
+                <span class="verso">corto el pan duro, reparto la corteza,</span>
+                <span class="verso">cuelgo tu abrigo junto al abrigo mío,</span>
+                <span class="verso">el techo es bajo, pero aquí cabemos.</span>
+                <span class="verso">Esto que armamos ya no se mueve.</span>
+              </p>
+            </section>
+          </div>
+        </div>
       </div>
 
       <button class="juego-abrir" id="juegoAbrir" type="button">atrapar estrellas ✦</button>
@@ -328,15 +445,51 @@
 
     <!-- EL día D -->
     <section class="listo" id="listo">
-      <p class="poema">
-        <span class="verso">Divina, boca viva que salva mi carne;</span><br />
-        <span class="verso">roca rota donde este pacto se firma,</span><br />
-        <span class="verso">hueso expuesto al filo de ser vulnerable.</span><br />
-        <span class="verso">Asumo el crudo desastre de ser barro,</span><br />
-        <span class="verso">dedos que amasan este lodo sin rumbo,</span><br />
-        <span class="verso">pierdo mi nombre bajo este nuevo cielo,</span><br />
-        <span class="verso">llueve este cuerpo nuevo en tu noche</span>
-      </p>
+      <!-- El día D ya no se esconde nada: las tres estrofas van una debajo de
+           otra, sin deslizar. Mismo componente, apilado. -->
+      <div class="poema">
+        <div class="estrofas estrofas--pila">
+          <section class="estrofa">
+            <p class="estrofa-titulo">I. La ceniza</p>
+            <p class="estrofa-via">Nigredo · Calcinatio</p>
+            <p class="versos">
+              <span class="verso">Y en el margen del mundo, sombra</span>
+              <span class="verso">el disenso: son dos; y son uno.</span>
+              <span class="verso">No es ninguno, juventud, ceniza y verbo,</span>
+              <span class="verso">aceptación a secas, no cabe el aire,</span>
+              <span class="verso">corto la brisa y enciendo la llama,</span>
+              <span class="verso">la mente calla, el juicio se inclina,</span>
+              <span class="verso">crepita un corazón sediento de tu paz.</span>
+            </p>
+          </section>
+          <section class="estrofa">
+            <p class="estrofa-titulo">II. El barro</p>
+            <p class="estrofa-via">Solutio · Sublimatio · Precipitatio</p>
+            <p class="versos">
+              <span class="verso">Divina, boca viva que salva mi carne;</span>
+              <span class="verso">roca rota donde este pacto se firma,</span>
+              <span class="verso">hueso expuesto al filo de ser vulnerable.</span>
+              <span class="verso">Asumo el crudo desastre de ser barro,</span>
+              <span class="verso">dedos que amasan este lodo sin rumbo,</span>
+              <span class="verso">pierdo mi nombre bajo este nuevo cielo,</span>
+              <span class="verso">llueve este cuerpo nuevo en tu noche.</span>
+            </p>
+          </section>
+          <section class="estrofa">
+            <p class="estrofa-titulo">III. La mesa</p>
+            <p class="estrofa-via">Coagulatio</p>
+            <p class="versos">
+              <span class="verso">Todo pesa distinto desde que te quedas,</span>
+              <span class="verso">traigo la mesa, la pongo donde cabes,</span>
+              <span class="verso">cada taza queda quieta, encuentra su sitio,</span>
+              <span class="verso">corto el pan duro, reparto la corteza,</span>
+              <span class="verso">cuelgo tu abrigo junto al abrigo mío,</span>
+              <span class="verso">el techo es bajo, pero aquí cabemos.</span>
+              <span class="verso">Esto que armamos ya no se mueve.</span>
+            </p>
+          </section>
+        </div>
+      </div>
       <h1 class="saludo">¡Feliz cumpleaños,<br />mi wawa!</h1>
       <p class="nota">Ya es tu día. Lo que te preparé con tanto cariño te espera.</p>
       <a class="btn" href="https://ishibonita.vercel.app">Entrar 🎁 →</a>
@@ -816,6 +969,87 @@
           if (!leerMem().poemaAbierto) poner(false);
         }, ms || 8000);
       };
+    })();
+
+    // ── Las tres estrofas, deslizables ────────────────────────────
+    // El deslizar lo hace el navegador (scroll-snap); aquí solo van los
+    // puntos, el teclado y —lo que de verdad importa— volver a encuadrar la
+    // estrofa al girar el teléfono: al cambiar el ancho, el desplazamiento
+    // en píxeles deja de coincidir con el borde y el poema se queda partido
+    // entre dos.
+    (function () {
+      var pista = document.getElementById("estrofas");
+      if (!pista) return;
+      var estrofas = pista.querySelectorAll(".estrofa");
+      if (estrofas.length < 2) return;
+
+      var puntos = document.createElement("div");
+      puntos.className = "puntos";
+      var botones = [];
+      for (var i = 0; i < estrofas.length; i++) {
+        (function (n) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "punto";
+          b.setAttribute("aria-label", "estrofa " + (n + 1) + " de " + estrofas.length);
+          b.addEventListener("click", function () { ir(n); });
+          puntos.appendChild(b);
+          botones.push(b);
+        })(i);
+      }
+      pista.parentNode.appendChild(puntos);
+
+      var actual = 0;
+      function ir(n) {
+        actual = n;
+        pista.scrollTo({ left: n * pista.clientWidth, behavior: "smooth" });
+        marcar();
+      }
+      function marcar() {
+        for (var k = 0; k < botones.length; k++) {
+          botones[k].setAttribute("aria-current", k === actual ? "true" : "false");
+        }
+      }
+
+      var pendiente = false;
+      pista.addEventListener("scroll", function () {
+        if (pendiente || !pista.clientWidth) return;
+        pendiente = true;
+        requestAnimationFrame(function () {
+          pendiente = false;
+          var n = Math.round(pista.scrollLeft / pista.clientWidth);
+          actual = Math.max(0, Math.min(estrofas.length - 1, n));
+          marcar();
+        });
+      }, { passive: true });
+
+      // Girar el teléfono, abrir el teclado, cambiar de ventana: se vuelve a
+      // encuadrar la misma estrofa, sin animación (no es un movimiento suyo).
+      function reencuadrar() {
+        if (!pista.clientWidth) return;
+        pista.scrollTo({ left: actual * pista.clientWidth, behavior: "auto" });
+      }
+      window.addEventListener("resize", reencuadrar);
+      window.addEventListener("orientationchange", function () {
+        setTimeout(reencuadrar, 250);   // iOS mide mal justo al girar
+      });
+
+      // Con el teclado, flechas: el contenedor ya desplaza solo, pero a saltos
+      // de píxeles; así salta de estrofa entera.
+      pista.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowRight" && actual < estrofas.length - 1) { e.preventDefault(); ir(actual + 1); }
+        if (e.key === "ArrowLeft" && actual > 0) { e.preventDefault(); ir(actual - 1); }
+      });
+
+      // Para los eventos: si encienden un verso que está en otra estrofa, no
+      // sirve de nada iluminarlo a espaldas de quien mira.
+      window.mostrarVerso = function (el) {
+        for (var k = 0; k < estrofas.length; k++) {
+          if (estrofas[k].contains(el)) { if (k !== actual) ir(k); return; }
+        }
+      };
+
+      marcar();
     })();
 
     // ── Minijuego: atrapar estrellas ───────────────────────────────

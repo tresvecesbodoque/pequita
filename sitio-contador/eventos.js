@@ -140,6 +140,14 @@
   var elSusurro = document.getElementById("susurroPortada");
   var poema = document.getElementById("poema");
   var versos = poema ? poema.getElementsByClassName("verso") : [];
+  // Los versos que la última semana enciende PARA SIEMPRE (E50) son los de la
+  // segunda estrofa: son los que ella lleva ganando desde cuando el poema era
+  // solo esa. Contarlos desde el principio de los veintiuno le movería el oro
+  // a otros versos y le borraría lo ganado.
+  var estrofas = poema ? poema.getElementsByClassName("estrofa") : [];
+  var versosSemana = estrofas.length > 1
+    ? estrofas[1].getElementsByClassName("verso")
+    : versos;
   var cieloEl = document.getElementById("cielo");
   var juegoEl = document.getElementById("juego");
   var relojEl = document.getElementById("reloj");
@@ -455,6 +463,9 @@
     { id: "verso", peso: 7, dura: 22000, correr: function () {             // E04
         if (window.abrirPoema) window.abrirPoema(7500);
         var i = Math.floor(Math.random() * versos.length);
+        // Con tres estrofas, el verso elegido puede estar en otra: no sirve de
+        // nada encenderlo donde ella no lo está mirando.
+        if (window.mostrarVerso) window.mostrarVerso(versos[i]);
         poema.classList.add("enfocado");
         versos[i].classList.add("viva");
         setTimeout(function () {
@@ -1749,8 +1760,8 @@
       mem.versos = Math.min(7, (mem.versos || 0) + 1);
       persistir();
     }
-    for (var i = 0; i < Math.min(mem.versos || 0, versos.length); i++) {
-      versos[i].classList.add("ganado");
+    for (var i = 0; i < Math.min(mem.versos || 0, versosSemana.length); i++) {
+      versosSemana[i].classList.add("ganado");
     }
 
     // E51 — sobres dormidos en los últimos tres días
@@ -1921,10 +1932,11 @@
     },
     "versos-semana": function () {
       if (window.abrirPoema) window.abrirPoema(9000);
-      for (var i = 0; i < 4; i++) versos[i].classList.add("ganado");
+      if (window.mostrarVerso && versosSemana[0]) window.mostrarVerso(versosSemana[0]);
+      for (var i = 0; i < 4; i++) versosSemana[i].classList.add("ganado");
       setTimeout(function () {
-        for (var j = 0; j < versos.length; j++) {
-          if (j >= (mem.versos || 0)) versos[j].classList.remove("ganado");
+        for (var j = 0; j < versosSemana.length; j++) {
+          if (j >= (mem.versos || 0)) versosSemana[j].classList.remove("ganado");
         }
       }, 8000);
     },
