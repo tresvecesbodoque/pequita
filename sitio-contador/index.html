@@ -81,12 +81,17 @@
 
   .wrap { position: relative; max-width: 600px; width: 100%; }
 
+  /* Es una frase larga, no dos palabras: se escala con el ancho, se aprieta
+     algo el espaciado y se deja que parta en líneas equilibradas. */
   .marca {
-    font-size: 1.25rem;
-    letter-spacing: .22em;
+    font-size: clamp(.86rem, 3.6vw, 1.15rem);
+    letter-spacing: .16em;
+    line-height: 1.55;
     font-variant: small-caps;
     color: var(--gold);
-    margin-bottom: 26px;
+    max-width: 22rem;
+    margin: 0 auto 24px;
+    text-wrap: balance;
   }
 
   /* ── La luz de encontrarse ───────────────────────────────────────
@@ -332,7 +337,7 @@
      poema deben caber sin tocar los bordes. */
   @media (max-width: 560px) {
     body { padding: 30px 12px; }
-    .marca { font-size: 1rem; margin-bottom: 16px; }
+    .marca { margin-bottom: 16px; }
     .nota { font-size: .92rem; line-height: 1.7; }
     .poema { margin-top: 22px; }
     .saludo { font-size: 1.85rem; }
@@ -368,7 +373,7 @@
   <main class="wrap">
     <!-- ANTES del día -->
     <section class="espera" id="espera">
-      <p class="marca" id="marca">Nosotros II</p>
+      <p class="marca" id="marca">Cuenta regresiva para el mejor día del año</p>
 
       <!-- La luz de encontrarse: dice si el otro está mirando esto ahora
            mismo. Nace escondida y solo aparece si hay algo que contar. -->

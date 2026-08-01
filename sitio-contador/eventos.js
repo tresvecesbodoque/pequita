@@ -253,27 +253,65 @@
       contenido + '</svg>';
   }
 
-  // El susurro vive pegado abajo, y abajo está el botón del juego. Con el
-  // poema abierto la página crece, el botón baja y se le montaba encima. Así
-  // que el susurro no se pone a una altura fija: se pone SIEMPRE justo encima
-  // del botón, y nunca más abajo de donde está el frasco.
+  // El susurro vive pegado abajo. Ahí abajo también está el botón del juego, y
+  // con el poema abierto la página crece y los dos se juntan.
+  //
+  // La regla es: se queda donde siempre, y SOLO si de verdad choca con el
+  // botón se aparta lo justo para pasarle por encima. Subirlo siempre —que es
+  // lo que hice primero— lo mete en mitad del poema cuando el botón está alto.
   function colocarSusurro() {
     // Con el panel de pruebas abierto manda su CSS, que ya lo sube del todo.
     if (cuerpo.classList.contains("con-pruebas")) { elSusurro.style.bottom = ""; return; }
-    var boton = document.getElementById("juegoAbrir");
-    var suelo = 72;
-    if (boton && boton.offsetParent) {
-      var r = boton.getBoundingClientRect();
-      if (r.height) suelo = Math.max(suelo, window.innerHeight - r.top + 14);
+
+    var suelo = Math.max(72, window.innerHeight * 0.05);   // el de siempre
+    elSusurro.style.bottom = suelo + "px";
+
+    var s = elSusurro.getBoundingClientRect();
+    if (!s.height) return;
+
+    // Lo que hay abajo y puede quedar debajo del susurro. La caja del poema
+    // solo estorba cuando está desplegada; los botones, solo si se ven (en
+    // plena escena se apartan, y entonces no hay nada que esquivar).
+    var estorbos = [document.getElementById("juegoAbrir"), document.getElementById("poemaCaja")];
+    var techo = null;
+    for (var i = 0; i < estorbos.length; i++) {
+      var el = estorbos[i];
+      if (!el || !el.offsetParent) continue;
+      if (el.id === "poemaCaja" && !el.classList.contains("abierta")) continue;
+      if (parseFloat(getComputedStyle(el).opacity) < 0.1) continue;
+      var r = el.getBoundingClientRect();
+      if (!r.height) continue;
+      if (r.top < s.bottom + 8 && r.bottom > s.top - 8) {       // se pisan
+        techo = techo === null ? r.top : Math.min(techo, r.top);
+      }
     }
-    // Que no se vaya tan arriba que tape el contador en una pantalla baja.
-    elSusurro.style.bottom = Math.min(suelo, window.innerHeight * 0.55) + "px";
+    // Se sube lo justo para pasar por encima de lo que estorbe, y nunca tanto
+    // como para meterse en el contador.
+    if (techo !== null) {
+      elSusurro.style.bottom =
+        Math.min(window.innerHeight - techo + 14, window.innerHeight * 0.5) + "px";
+    }
+
+    // Con el poema desplegado en una pantalla ancha no queda hueco libre:
+    // pase donde pase, cae sobre algo. Entonces se le pone cristal detrás
+    // para que se lea, en vez de dejarlo suelto sobre los versos.
+    var sigue = false, s2 = elSusurro.getBoundingClientRect();
+    for (var j = 0; j < estorbos.length; j++) {
+      var e2 = estorbos[j];
+      if (!e2 || !e2.offsetParent) continue;
+      if (e2.id === "poemaCaja" && !e2.classList.contains("abierta")) continue;
+      if (parseFloat(getComputedStyle(e2).opacity) < 0.1) continue;
+      var r2 = e2.getBoundingClientRect();
+      if (r2.height && r2.top < s2.bottom && r2.bottom > s2.top) sigue = true;
+    }
+    elSusurro.classList.toggle("sobre-algo", sigue);
   }
 
   // Un susurro también alimenta la colección del frasco (E48).
   function susurrar(texto, coleccionable) {
-    colocarSusurro();
+    // El texto primero: hay que medirlo puesto para saber si choca con algo.
     elSusurro.textContent = texto;
+    colocarSusurro();
     elSusurro.classList.remove("viva");
     void elSusurro.offsetWidth;
     elSusurro.classList.add("viva");
@@ -1101,6 +1139,10 @@
     var esc = { id: id, nodos: [], plazos: [], intervalos: [] };
     escenaViva = esc;
     escenaActual = esc;
+    // Mientras dura lo que sea que esté pasando, la pantalla se le deja
+    // entera: las puertas se apartan. Lo pidió ella, que quiso sacarle una
+    // foto al planeta y le salió con dos botones encima.
+    cuerpo.classList.add("en-escena");
     mostrarDetener(true);
     // A los 15 segundos la pantalla queda como estaba: el contador y el
     // frasco, nada más. Antes se iba con lo que pidiera cada evento (hasta
@@ -1154,6 +1196,8 @@
     var carino = document.getElementById("notaCarino");
     if (carino && NOTA_CARINO) carino.textContent = NOTA_CARINO;
     cuerpo.classList.remove("amanece");
+    cuerpo.classList.remove("en-escena");   // vuelven las puertas
+    if (notaEl) notaEl.classList.add("nota-guardada");
     window.relojTomado = false;
     mostrarDetener(false);
     despejar();
@@ -1454,12 +1498,16 @@
     else if (apaisado.addListener) apaisado.addListener(oyente);
   }
 
-  // E36 — mantener pulsado el "2/7"
+  // E36 — mantener pulsado el título: cuántas estrofas van entregadas. El
+  // número no se escribe a mano en ninguna parte: se cuentan las que hay en
+  // el poema, que son justo las que le han llegado (ver la entrega semanal).
+  var ORDINALES = ["ninguna", "una", "dos", "tres", "cuatro", "cinco", "seis", "siete"];
   if (marcaEl) {
     var pulsaMarca = 0;
     marcaEl.addEventListener("pointerdown", function () {
       pulsaMarca = setTimeout(function () {
-        susurrar(T("dosSiete.marca"));
+        var cuantas = document.querySelectorAll("#estrofas .estrofa").length;
+        susurrar(T("dosSiete.marca").replace("{n}", ORDINALES[cuantas] || cuantas));
       }, 900);
     });
     marcaEl.addEventListener("pointerup", function () { clearTimeout(pulsaMarca); });
@@ -1815,8 +1863,7 @@
       '<ul class="vividos">' + vividos + "</ul>" +
       '<p class="apartado">lo que te he dicho</p>' +
       "<ul>" + lista + "</ul>" +
-      '<div class="calendario">' + sellos + "</div>" +
-      '<button class="cerrar" type="button">cerrar</button>';
+      '<div class="calendario">' + sellos + "</div>";
     panel.querySelector(".cerrar").addEventListener("click", function () {
       panel.classList.remove("viva");
     });
@@ -1834,6 +1881,41 @@
   frasco.addEventListener("click", abrirColeccion);
   document.body.appendChild(frasco);
   document.body.appendChild(panel);
+
+  // ── Pantalla completa ─────────────────────────────────────────────
+  // Ella quiere mirar esto sin las pestañas del navegador arriba. Solo se
+  // ofrece donde el navegador deja hacerlo: en el iPhone no existe para una
+  // página entera, y un botón que no hace nada es peor que no tenerlo.
+  (function () {
+    var raiz = document.documentElement;
+    var puede = raiz.requestFullscreen || raiz.webkitRequestFullscreen;
+    if (!puede) return;
+
+    var boton = document.createElement("button");
+    boton.className = "pantalla";
+    boton.type = "button";
+
+    function enPantalla() {
+      return !!(document.fullscreenElement || document.webkitFullscreenElement);
+    }
+    function pintar() {
+      boton.textContent = enPantalla() ? "⤡ salir" : "⤢ pantalla completa";
+      boton.setAttribute("aria-pressed", enPantalla() ? "true" : "false");
+    }
+    boton.addEventListener("click", function () {
+      try {
+        if (enPantalla()) {
+          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        } else {
+          puede.call(raiz);
+        }
+      } catch (e) {}
+    });
+    document.addEventListener("fullscreenchange", pintar);
+    document.addEventListener("webkitfullscreenchange", pintar);
+    pintar();
+    document.body.appendChild(boton);
+  })();
   pintarFrasco();
 
   // ══════════════════════════════════════════════════════════════════

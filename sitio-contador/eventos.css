@@ -13,7 +13,10 @@
    opacidad y no se quita del sitio: quitándolo, el contador daba un salto.
    Un evento que necesite la nota (la corrección) la devuelve mientras dure. */
 .marca, .nota { transition: opacity 1.4s ease; }
-body.despejado .marca, body.despejado .nota { opacity: 0; }
+/* El título se queda: dice qué es esto, y quien llega a los veinte segundos
+   tiene el mismo derecho a saberlo que quien llegó al primero. Se retira solo
+   la nota, y solo cuando un evento la ha sacado a la vista. */
+body.despejado .nota { opacity: 0; }
 /* La luz de encontrarse se retira con el texto cuando solo cuenta cuándo pasó
    el otro por aquí. Encendida —los dos a la vez— se queda: es justo lo que hay
    que ver aunque la pantalla se despeje. */
@@ -26,6 +29,12 @@ body.despejado .presencia.juntos { opacity: 1; }
 body.despejado .poema-abrir, body.despejado .juego-abrir { opacity: .35; }
 body.despejado .poema-abrir:hover, body.despejado .juego-abrir:hover,
 body.despejado .poema-abrir:focus-visible, body.despejado .juego-abrir:focus-visible { opacity: 1; }
+/* Mientras pasa algo en el cielo, las puertas se van del todo: lo que hay en
+   pantalla es para mirarlo —y para fotografiarlo— sin dos botones encima.
+   Vuelven solas cuando la escena termina. */
+body.en-escena .poema-abrir, body.en-escena .juego-abrir {
+  opacity: 0; pointer-events: none;
+}
 @media (prefers-reduced-motion: reduce) {
   .marca, .nota { transition: none; }
 }
@@ -41,6 +50,14 @@ body.despejado .poema-abrir:focus-visible, body.despejado .juego-abrir:focus-vis
   width: min(24rem, 88vw); text-align: center; pointer-events: none; z-index: 6;
   font-style: italic; font-size: .95rem; line-height: 1.6;
   color: var(--gold-suave); opacity: 0;
+}
+/* Cuando no le queda más remedio que caer sobre algo (el poema desplegado en
+   una pantalla ancha), se pone cristal detrás para que se lea. Suelto sobre
+   el cielo es más bonito, así que solo se le pone cuando hace falta. */
+.susurro-portada.sobre-algo {
+  padding: 11px 18px; border-radius: 18px;
+  background: rgba(10, 16, 32, .86); backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px -14px #000;
 }
 .susurro-portada.viva { animation: asoma calc(8s + var(--extra)) ease forwards; }
 @keyframes asoma {
@@ -292,6 +309,22 @@ body.domingo { background: radial-gradient(1600px 900px at 50% -10%, #24274a 0%,
   font-family: inherit; font-size: .78rem; cursor: pointer;
 }
 .frasco:hover { background: rgba(217,168,63,.12); }
+
+/* Pantalla completa: para verlo sin las pestañas del navegador arriba. Solo
+   aparece donde el navegador lo permite (en el iPhone, no). */
+.pantalla {
+  position: fixed; right: 16px; bottom: 16px; z-index: 7;
+  display: flex; align-items: center; gap: 7px; padding: 8px 12px;
+  border: 1px solid var(--borde); border-radius: 999px;
+  background: var(--cristal); color: var(--gold);
+  font-family: inherit; font-size: .78rem; cursor: pointer;
+  transition: opacity .9s ease, background .2s ease;
+}
+.pantalla:hover { background: rgba(217,168,63,.12); }
+/* Como las puertas: durante una escena se quita de en medio, que para eso
+   está la pantalla completa. */
+body.en-escena .pantalla, body.en-escena .frasco { opacity: 0; pointer-events: none; }
+.frasco { transition: opacity .9s ease, background .2s ease; }
 .frasco .luz { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px var(--gold); }
 
 .coleccion {

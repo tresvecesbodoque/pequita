@@ -117,8 +117,8 @@ el tiempo también se equivoca
 haz un deseo
 
 [dosSiete.marca]
-# al mantener pulsado "Nosotros II"
-segunda de siete estrofas. las otras te van a llegar
+# al mantener pulsado el título. {n} = las estrofas que ya se entregaron
+van {n} de siete estrofas. las otras te van a llegar
 
 [sietes]
 # el día que faltan 7, después de la lluvia de 77 sietes
