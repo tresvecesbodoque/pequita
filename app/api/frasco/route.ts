@@ -36,10 +36,12 @@ const textos = (x: unknown, tope: number) =>
 
 const numero = (x: unknown) => (typeof x === "number" && isFinite(x) && x >= 0 ? x : 0);
 
-// Unión sin repetidos, conservando el orden de llegada (el viejo manda).
+// Unión sin repetidos, respetando el orden de la primera aparición. Se filtra
+// también lo ya guardado: si una versión vieja dejó algo repetido, aquí se
+// limpia en vez de arrastrarlo para siempre.
 function unir(viejo: string[], nuevo: string[], tope: number) {
-  const fuera = viejo.slice();
-  for (const x of nuevo) if (fuera.indexOf(x) < 0) fuera.push(x);
+  const fuera: string[] = [];
+  for (const x of [...viejo, ...nuevo]) if (fuera.indexOf(x) < 0) fuera.push(x);
   return fuera.slice(-tope);
 }
 

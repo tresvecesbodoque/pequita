@@ -634,9 +634,12 @@
       return riqueza(b) > riqueza(a) ? b : a;
     }
 
+    // Une sin repetir NUNCA, y respetando el orden de la primera aparición.
+    // Se filtra también lo viejo: si una copia venía con algo repetido, la
+    // fusión no debe arrastrarlo (y antes lo arrastraba, porque partía de ella).
     function unir(viejo, nuevo, clave) {
-      var lista = (viejo[clave] || []).slice();
-      (nuevo[clave] || []).forEach(function (x) {
+      var lista = [];
+      (viejo[clave] || []).concat(nuevo[clave] || []).forEach(function (x) {
         if (lista.indexOf(x) < 0) lista.push(x);
       });
       return lista;

@@ -261,6 +261,19 @@
   // ── Memoria ──────────────────────────────────────────────────────
   var mem = leerMem();
   mem.coleccion = mem.coleccion || [];
+  // Limpieza de una vez: si alguna frase quedó dos veces (de una fusión entre
+  // aparatos, de una versión vieja), se queda LA PRIMERA y se tira el resto.
+  // Si no, el "N de 60" contaría de más y la lista la enseñaría repetida.
+  (function () {
+    var vistas = {}, limpia = [];
+    for (var i = 0; i < mem.coleccion.length; i++) {
+      var f = mem.coleccion[i];
+      if (vistas[f]) continue;
+      vistas[f] = true;
+      limpia.push(f);
+    }
+    if (limpia.length !== mem.coleccion.length) mem.coleccion = limpia;
+  })();
   mem.dias = mem.dias || [];
   mem.versos = mem.versos || 0;
   mem.cartas = mem.cartas || [];
@@ -1703,13 +1716,30 @@
   }
 
   function abrirColeccion() {
-    var vividos = (mem.registro || []).slice().reverse().map(function (r) {
-      return '<li class="revivible"><span>' + (NOMBRES[r.id] || r.id) +
-        '<em>' + cuandoFue(r.cuando) + '</em></span>' +
-        '<button class="revivir" type="button" data-revivir="' + r.id + '">▶</button></li>';
+    // Cada cosa UNA vez, con la hora de la primera. El registro apunta todo lo
+    // que pasa —y algunas cosas pasan cada día—, pero esto no es el parte de
+    // lo ocurrido: es la lista de lo que ha descubierto, y descubrir la lluvia
+    // de pecas cuatro veces no es descubrirla cuatro veces.
+    var primera = {};
+    (mem.registro || []).forEach(function (r) {
+      if (!primera[r.id] || r.cuando < primera[r.id]) primera[r.id] = r.cuando;
+    });
+    var vividos = Object.keys(primera).sort(function (a, b) {
+      return primera[b] - primera[a];        // lo último descubierto, arriba
+    }).map(function (id) {
+      return '<li class="revivible"><span>' + (NOMBRES[id] || id) +
+        '<em>' + cuandoFue(primera[id]) + '</em></span>' +
+        '<button class="revivir" type="button" data-revivir="' + id + '">▶</button></li>';
     }).join("") || "<li>todavía no ha pasado nada. dale tiempo.</li>";
 
-    var lista = mem.coleccion.map(function (f) { return "<li>" + f + "</li>"; }).join("") ||
+    // Las frases ya se guardan sin repetir; aquí se filtra igual, porque esta
+    // lista no puede enseñar dos veces lo mismo pase lo que pase.
+    var dichas = {};
+    var lista = (mem.coleccion || []).filter(function (f) {
+      if (dichas[f]) return false;
+      dichas[f] = true;
+      return true;
+    }).map(function (f) { return "<li>" + f + "</li>"; }).join("") ||
       "<li>todavía no has encontrado ninguna. vuelve mañana.</li>";
     // Antes del cumpleaños, el calendario es la cuenta atrás: un hueco por
     // cada día que queda, y se van sellando al pasar. Después, el mes entero.
