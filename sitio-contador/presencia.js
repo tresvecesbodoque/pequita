@@ -6,12 +6,21 @@
    (que sí tiene base de datos), donde cada uno deja su latido y pregunta
    por el del otro. Ni chat ni historial: dos filas con una hora.
 
-   QUIÉN ES QUIÉN. No hay contraseñas. Se entra UNA vez con ?soy=zorro (él)
-   o ?soy=rosa (ella); la marca se guarda en la memoria del sitio —la misma
-   del frasco, con sus dos copias y su rescate por enlace— y la dirección se
-   limpia, para que un enlace compartido no convierta a nadie en otra
-   persona. Sin marca no se late ni se pregunta: quien pase por aquí de
-   rebote no enciende nada y no aparece en ninguna parte.
+   QUIÉN ES QUIÉN. Ni contraseñas ni preguntas al entrar. Lo que hay guardado
+   es POR APARATO, así que pedirle a ella que marque cada teléfono y cada
+   navegador que usa era condenar la luz a no encenderse casi nunca, y encima
+   en silencio. Se le da la vuelta: SOLO ÉL marca los suyos, una vez cada uno,
+   abriendo ?soy=zorro. Todo lo demás que llegue a esta dirección se cuenta
+   como ella, así que ella no tiene que hacer nada en ninguna parte.
+
+   El precio del trato: esta dirección es de los dos y de nadie más. Si un
+   tercero entra, a ella no le enciende nada (nadie es "él" sin marca), pero a
+   él le parecerá que es ella.
+
+   La marca se guarda en la memoria del sitio —la misma del frasco, con sus
+   dos copias y su rescate por enlace— y la dirección se limpia después, para
+   que un enlace compartido no convierta a nadie en otra persona. Un aparato
+   marcado por error se devuelve con ?soy=rosa.
    ══════════════════════════════════════════════════════════════════ */
 (function () {
   "use strict";
@@ -27,6 +36,11 @@
   var FRASE_JUNTOS = "los dos, aquí, ahora";
   var ENCUENTRO_DURA = 9000;
 
+  // Al marcar un aparato hay que VER que quedó marcado; si no, no hay forma de
+  // saber si la luz calla porque no hay nadie o porque la marca no prendió.
+  var CONFIRMA = { zorro: "este aparato eres tú", rosa: "este aparato es ella" };
+  var CONFIRMA_DURA = 6000;
+
   // En local (probando) se habla con el servidor de al lado; en producción,
   // con la app.
   var API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
@@ -40,9 +54,11 @@
   var aMemoria = typeof guardarMem === "function" ? guardarMem : function () {};
 
   var quien = "";
+  var marcadoAhora = false;
   var enLaUrl = /[?&]soy=([a-z]+)/i.exec(location.search);
   if (enLaUrl && QUIENES[enLaUrl[1].toLowerCase()]) {
     quien = enLaUrl[1].toLowerCase();
+    marcadoAhora = true;
     try {
       var datos = enMemoria();
       datos.quien = quien;
@@ -55,7 +71,8 @@
   } else {
     try { quien = enMemoria().quien || ""; } catch (e3) { quien = ""; }
   }
-  if (!QUIENES[quien]) return;
+  // Aparato sin marcar: es ella. Él marca los suyos; ella no marca nada.
+  if (!QUIENES[quien]) quien = "rosa";
 
   var caja = document.getElementById("presencia");
   var texto = document.getElementById("presenciaTexto");
@@ -74,6 +91,7 @@
   var pidiendo = false;
   var juntosAntes = false;
   var encuentroHasta = 0;
+  var confirmaHasta = marcadoAhora ? Date.now() + CONFIRMA_DURA : 0;
   var ultimoTexto = "";
 
   function esDeDia() { return document.documentElement.classList.contains("dia"); }
@@ -105,6 +123,15 @@
 
   function pintar() {
     if (esDeDia()) { caja.hidden = true; return; }
+
+    // Acaba de marcarse este aparato: primero se dice, y luego ya se mira si
+    // hay alguien. Es el único momento en que la línea habla de sí misma.
+    if (Date.now() < confirmaHasta) {
+      caja.hidden = false;
+      caja.classList.remove("juntos");
+      decir(CONFIRMA[quien]);
+      return;
+    }
 
     var edad = edadAhora();
     // Todavía no sabemos nada, o el otro no ha entrado nunca: no se dice nada.
@@ -148,6 +175,10 @@
   var relojLatido = setInterval(latir, LATIDO);
   var relojPintura = setInterval(pintar, PINTAR);
   latir();
+  if (confirmaHasta) {
+    pintar();
+    setTimeout(pintar, CONFIRMA_DURA + 50);   // que el aviso se retire a su hora
+  }
 
   // Volver a la pestaña cuenta como llegar: se late enseguida, sin esperar turno.
   document.addEventListener("visibilitychange", function () {
