@@ -239,6 +239,18 @@ html.dia .starfield::after {
   text-shadow: 0 0 14px rgba(217, 168, 63, 0.35);
 }
 
+/*
+ * Velo: apaga el escenario para que algo se ponga delante (hoy, el sobrecito
+ * de fotos al abrirse). Se tiñe del mundo vigente —noche o papel el día D—,
+ * así que no hay que escribir ningún color en el componente. La primera
+ * declaración es el respaldo para navegadores sin color-mix.
+ */
+.velo {
+  background: rgba(10, 16, 32, 0.78);
+  background: color-mix(in srgb, var(--fondo) 82%, transparent);
+  backdrop-filter: blur(6px);
+}
+
 /* Avioneta mensajera cruzando el cielo del álbum, con estela punteada */
 .avioneta {
   position: absolute;

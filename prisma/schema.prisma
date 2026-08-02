@@ -69,6 +69,11 @@ model Letter {
   // Vídeo-saludo breve (15-20s) opcional; se compilan en la "película" final.
   videoUrl            String?
 
+  // Fotos que viajan en su PROPIO sobrecito, aparte de la hoja escrita (es lo
+  // que pasa por defecto desde 2026-08-02). JSON: [{"url":…,"ratio":…}].
+  // Si es null, o la carta es anterior, las fotos van pegadas en la esquela.
+  photosJson          String?
+
   // Token secreto para que el autor corrija su carta mientras esté pendiente.
   editToken           String?  @unique
 

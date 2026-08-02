@@ -82,6 +82,14 @@ con el mundo diurno.
 - `.susurro` — cursiva dorada con halo suave.
 - `.hairline` (trazo fino discontinuo en oro) y `.doodle-underline` (garabato,
   ahora dorado).
+- `.velo` — apaga el escenario para que algo se ponga delante (el sobrecito de
+  fotos al abrirse). Se tiñe del mundo vigente con `color-mix` sobre `--fondo`,
+  así que el día D vira solo. Nunca escribir el velo con un rgba en el componente.
+
+Rótulos: hay un componente único, `components/ui/Rotulo.tsx` (versalitas
+espaciadas en oro). Toda etiqueta de formulario o de panel pasa por él —
+incluido el `label` de `Input`—, en vez de `text-sm font-medium text-[--muted]`.
+Así las opciones de diseño suenan igual que el resto del sitio.
 
 Archivadas hasta la revelación: `.sketch-card` y variantes, `.sketch-mini`,
 `.paper-texture`, `.maximal-tile`, `.starfield` granate.
@@ -98,10 +106,35 @@ apagan, y aparece el saludo con el enlace a la app.
 - Con `prefers-reduced-motion` el cambio es directo, sin animación.
 - La capa de eventos (`.capa-eventos`) no corre en modo día: el regalo ya llegó.
 
+## El correo: dos sobres, no uno
+
+La carta lleva **su** sobre; las fotos llevan **el suyo**. Por defecto (desde
+2026-08-02) las fotos de un familiar no se pegan sobre la hoja escrita —allí le
+robaban sitio al mensaje y encogían la letra—: viajan en un sobrecito propio
+(`Letter.photosJson`, componente `PhotoPocket`) que aparece junto a la carta ya
+abierta y se abre aparte, soltando las copias en abanico. Quien prefiera lo de
+antes lo elige al escribir ("Pegadas en la hoja").
+
+- El sobrecito es del **mismo papel** que el sobre grande (su color, su solapa,
+  su estrella de lacre), a escala. No es un bloque de cristal: es un objeto.
+- Respira (sube y baja despacio) para que se vea que se puede abrir.
+- Su rótulo va en pastilla: detrás no está el fondo del sitio sino el del TEMA
+  de la carta, que puede ser oscuro o claro.
+- En el libro impreso no hay sobre que abrir: las copias se pegan bajo la hoja.
+
 ## Reglas técnicas que no se negocian
 
 - Animaciones con ease "papel" `[0.22, 1, 0.36, 1]`; los objetos físicos se
   mueven, no se funden (la carta SALE del sobre).
+- **La apertura no frena**: cada gesto arranca cuando el anterior va por la
+  mitad (la hoja sale con la solapa aún cayendo, se despliega mientras llega al
+  centro). Un `await` por paso encadenaba cuatro paradas en seco.
+- **El papel no hace "shhh"**: los sonidos son crujido granular —cientos de
+  impulsos de 1–3 ms con densidad que decae—, no ruido filtrado con envolvente
+  (`lib/paperSound.ts`). Un barrido de ruido suena a viento, no a papel.
+- Todo editor de lienzo tiene **deshacer y rehacer** (botones a la izquierda de
+  la barra, separados de lo que añade cosas, más ⌘Z/⇧⌘Z). Los cambios seguidos
+  del mismo control se funden en un paso.
 - La solapa 3D nunca gira 180° completos (la proyección CSS la espeja):
   ~150° y desvanecer (`EnvelopePresenter`).
 - Los lienzos (`CanvasStage`) traen `z-index` internos ⇒ toda cara que los

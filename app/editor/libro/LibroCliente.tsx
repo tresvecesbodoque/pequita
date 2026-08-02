@@ -4,6 +4,7 @@
 
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { parseCanvas, EMPTY_ESQUELA } from "@/lib/types/canvas";
+import { parsePhotos } from "@/lib/guestCanvas";
 
 type LetterLite = {
   id: string;
@@ -12,6 +13,8 @@ type LetterLite = {
   esquelaCanvas: string;
   esquelaBaseImageUrl: string | null;
   sobreColor: string | null;
+  /** fotos que en la app viajan en su sobrecito; aquí se pegan bajo la hoja */
+  photosJson: string | null;
   audioUrl: string | null;
   qrInteriorDataUrl: string | null;
   createdAt: string;
@@ -51,6 +54,7 @@ export function LibroCliente({
       ) : (
         letters.map((l, i) => {
           const esquela = parseCanvas(l.esquelaCanvas, EMPTY_ESQUELA);
+          const fotos = parsePhotos(l.photosJson);
           return (
             <article
               key={l.id}
@@ -82,6 +86,26 @@ export function LibroCliente({
                   baseImageUrl={l.esquelaBaseImageUrl}
                 />
               </div>
+
+              {/* Las fotos que en la app llegan en su propio sobrecito: en
+                  papel no hay sobre que abrir, así que se pegan debajo de la
+                  hoja como copias reveladas. */}
+              {fotos.length > 0 && (
+                <div className="mt-4 flex w-full max-w-md flex-wrap items-start justify-center gap-3">
+                  {fotos.map((f, j) => (
+                    <img
+                      key={f.url}
+                      src={f.url}
+                      alt={`Foto ${j + 1}`}
+                      className="bg-white p-1.5 pb-4 shadow-sm ring-1 ring-[var(--border)]"
+                      style={{
+                        width: fotos.length === 1 ? "62%" : fotos.length === 2 ? "44%" : "30%",
+                        transform: `rotate(${[-1.5, 1, 2][j % 3]}deg)`,
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
 
               {l.audioUrl && l.qrInteriorDataUrl && (
                 <div className="mt-3 flex items-center gap-3 text-xs text-[var(--muted)]">

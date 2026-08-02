@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getLetter } from "@/lib/actions/letters";
 import { EnvelopePresenter } from "@/components/envelope/EnvelopePresenter";
 import { SITE } from "@/lib/site";
+import { parsePhotos } from "@/lib/guestCanvas";
 
 // Vista previa (protegida) de cómo se verá una carta en el presentador, aunque
 // todavía no esté publicada. Útil para revisar las cartas de familiares antes
@@ -45,6 +46,9 @@ export default async function PreviewPage({
         }}
         qrInterior={letter.qrInteriorDataUrl}
         audioUrl={letter.audioUrl}
+        videoUrl={letter.videoUrl}
+        photos={parsePhotos(letter.photosJson)}
+        authorName={letter.authorName}
       />
     </div>
   );

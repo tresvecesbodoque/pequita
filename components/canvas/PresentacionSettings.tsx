@@ -8,6 +8,7 @@ import { updateLetterMeta, regenerateQr } from "@/lib/actions/letters";
 import { uploadImage } from "@/lib/upload";
 import { Button } from "@/components/ui/Button";
 import { QRDisplay } from "@/components/qr/QRDisplay";
+import { Rotulo } from "@/components/ui/Rotulo";
 
 type Props = {
   letterId: string;
@@ -81,15 +82,19 @@ export function PresentacionSettings({
       {/* Preview + presets */}
       <div>
         <div
-          className="flex h-56 items-center justify-center rounded-2xl border border-[var(--border)]"
+          className="flex h-56 items-center justify-center rounded-2xl border-[1.5px] border-[var(--borde)]"
           style={backgroundLayerStyle(config)}
         >
-          <div className="rounded-md bg-[var(--surface)]/90 px-6 py-8 shadow-lg">
-            <span className="text-sm text-[var(--muted)]">Vista previa del fondo</span>
+          <div className="rounded-md bg-[#fffdf8]/90 px-6 py-8 shadow-lg">
+            <span className="text-xs uppercase tracking-[0.2em] text-[#4d2126]/70">
+              Vista previa del fondo
+            </span>
           </div>
         </div>
 
-        <h3 className="mt-6 text-lg">Temas</h3>
+        <Rotulo as="h3" className="mt-6 block">
+          Temas
+        </Rotulo>
         <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-5">
           {BACKGROUND_PRESETS.map((p) => {
             const active =
@@ -98,8 +103,11 @@ export function PresentacionSettings({
               <button
                 key={p.id}
                 onClick={() => choosePreset(p.id)}
-                className={`h-20 rounded-xl border-2 transition-transform hover:scale-[1.03] ${
-                  active ? "border-[var(--accent)]" : "border-[var(--border)]"
+                aria-pressed={active}
+                className={`h-20 rounded-xl border-[1.5px] transition-transform hover:scale-[1.03] ${
+                  active
+                    ? "border-[var(--gold)] shadow-[0_0_20px_-6px_var(--halo-oro)]"
+                    : "border-[var(--borde)]"
                 }`}
                 style={backgroundLayerStyle({
                   backgroundType: "PRESET",
@@ -130,12 +138,12 @@ export function PresentacionSettings({
             {uploading ? "Subiendo…" : "↑ Subir motivo propio (.png)"}
           </Button>
           {config.backgroundType === "CUSTOM" && config.backgroundImageUrl && (
-            <span className="text-xs text-[var(--accent)]">Motivo personalizado activo ✓</span>
+            <span className="text-xs text-[var(--gold)]">Motivo personalizado activo ✓</span>
           )}
         </div>
 
-        <label className="mt-5 flex max-w-xs flex-col gap-1 text-xs text-[var(--muted)]">
-          Densidad del patrón ({config.backgroundScale ?? "auto"} px)
+        <label className="mt-5 flex max-w-xs flex-col gap-1.5">
+          <Rotulo>Densidad del patrón · {config.backgroundScale ?? "auto"} px</Rotulo>
           <input
             type="range"
             min={20}
@@ -143,19 +151,21 @@ export function PresentacionSettings({
             step={4}
             value={config.backgroundScale ?? 80}
             onChange={(e) => setScale(Number(e.target.value))}
-            className="accent-[var(--accent)]"
+            className="accent-[var(--gold)]"
           />
         </label>
-        <p className="mt-1 max-w-sm text-xs text-[var(--muted)]">
+        <p className="mt-1 max-w-sm text-xs italic text-[var(--ink-tenue)]">
           Para que un motivo propio se repita sin cortes, debe ser una imagen
           &quot;seamless&quot; (que encaje consigo misma en los bordes).
         </p>
       </div>
 
       {/* QR + enlace */}
-      <aside className="paper-texture h-fit rounded-2xl border border-[var(--border)] p-5">
-        <h3 className="text-lg">Enlace y QR</h3>
-        <p className="mt-1 break-all text-xs text-[var(--muted)]">{shareUrl}</p>
+      <aside className="bloque-cristal h-fit p-5">
+        <Rotulo as="h3" className="block">
+          Enlace y QR
+        </Rotulo>
+        <p className="mt-1.5 break-all text-xs text-[var(--ink-tenue)]">{shareUrl}</p>
         <div className="mt-3 flex gap-2">
           <Button variant="outline" className="px-3 py-1.5 text-xs" onClick={copyLink}>
             {copied ? "¡Copiado!" : "Copiar enlace"}

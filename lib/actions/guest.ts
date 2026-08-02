@@ -56,7 +56,8 @@ function sanitizeGuestCanvas(raw: string, w: number, h: number): string | null {
       typeof s === "string" &&
       (s.startsWith("/stickers-base/") ||
         s.startsWith("/stickers-principito/") ||
-        s.startsWith("/uploads/") ||
+        // fotos y firmas subidas por el propio autor (disco en dev, R2 en prod)
+        isOwnMediaUrl(s) ||
         s.startsWith("https://") && s.includes(".blob.vercel-storage.com/") ||
         (s.startsWith("data:image/png;base64,") && s.length <= 150_000));
     const elements = data.elements
@@ -157,6 +158,11 @@ export async function submitGuestLetter(
     // photosMeta corrupto: la carta simplemente va sin fotos
   }
 
+  // Dónde viajan las fotos. Por defecto, en su PROPIO sobrecito, junto a la
+  // carta: sobre la hoja robaban sitio al mensaje y encogían la letra. Quien
+  // prefiera pegarlas dentro marca "carta" en el formulario.
+  const photosMode = String(formData.get("photosMode") ?? "sobre") === "carta" ? "carta" : "sobre";
+
   const audioRaw = String(formData.get("audioUrl") ?? "");
   const audioUrl = isOwnMediaUrl(audioRaw) ? audioRaw : null;
   const videoRaw = String(formData.get("videoUrl") ?? "");
@@ -181,7 +187,7 @@ export async function submitGuestLetter(
     authorName,
     fontFamily,
     ink: theme.ink,
-    photos,
+    photos: photosMode === "carta" ? photos : [],
     signatureUrl,
     authorName2,
     signatureUrl2,
@@ -198,6 +204,8 @@ export async function submitGuestLetter(
       authorMessage: message,
       audioUrl,
       videoUrl,
+      photosJson:
+        photosMode === "sobre" && photos.length > 0 ? JSON.stringify(photos) : null,
       editToken,
       esquelaCanvas: customEsquela ?? JSON.stringify(esquela),
       sobreCanvas: customSobre ?? JSON.stringify(sobre),

@@ -13,10 +13,12 @@ import { backgroundLayerStyle } from "@/lib/backgrounds/render";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Rotulo } from "@/components/ui/Rotulo";
 import { SignaturePad } from "@/components/ui/SignaturePad";
 import { VoiceRecorder } from "@/components/ui/VoiceRecorder";
 import { VideoRecorder } from "@/components/ui/VideoRecorder";
 import { uploadMedia } from "@/lib/uploadClient";
+import { shade } from "@/lib/color";
 
 const FONTS = [
   { label: "Manuscrita", value: "var(--font-hand)" },
@@ -31,6 +33,26 @@ const FONTS = [
 const MAX_MESSAGE = 1000;
 const MAX_FOTOS = 3;
 
+/** Sobrecito de muestra para la ficha de estilo: enseña el papel y la tinta. */
+function SobreMini({ color, ink }: { color: string; ink: string }) {
+  return (
+    <span
+      aria-hidden
+      className="relative inline-block h-4 w-6 shrink-0 rounded-[2px] ring-1 ring-black/15"
+      style={{ backgroundColor: color }}
+    >
+      <span
+        className="absolute inset-x-0 top-0 block h-[62%]"
+        style={{
+          clipPath: "polygon(0 0, 100% 0, 50% 100%)",
+          backgroundColor: ink,
+          opacity: 0.28,
+        }}
+      />
+    </span>
+  );
+}
+
 type FotoLocal = { file: File; url: string; ratio: number };
 
 export function EscribirForm({ recipientName }: { recipientName: string }) {
@@ -43,6 +65,9 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   const [authorName, setAuthorName] = useState("");
   const [message, setMessage] = useState("");
   const [fotos, setFotos] = useState<FotoLocal[]>([]);
+  // Dónde viajan las fotos. POR DEFECTO en su propio sobrecito, junto a la
+  // carta: sobre la hoja le robaban sitio al mensaje y encogían la letra.
+  const [fotosEn, setFotosEn] = useState<"sobre" | "carta">("sobre");
   const [signature, setSignature] = useState<string | null>(null);
   const [audio, setAudio] = useState<Blob | null>(null);
   const [video, setVideo] = useState<Blob | null>(null);
@@ -199,12 +224,13 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
         authorName: authorName || "tu nombre",
         fontFamily: font,
         ink: themeData.ink,
-        photos: fotos.map((f) => ({ url: f.url, ratio: f.ratio })),
+        // Con las fotos en su sobrecito, la hoja va limpia (igual que al enviar).
+        photos: fotosEn === "carta" ? fotos.map((f) => ({ url: f.url, ratio: f.ratio })) : [],
         signatureUrl: signature,
         authorName2: showSecond ? authorName2 || null : null,
         signatureUrl2: showSecond ? signature2 : null,
       }),
-    [message, authorName, font, themeData.ink, fotos, signature, showSecond, authorName2, signature2, recipientName]
+    [message, authorName, font, themeData.ink, fotos, fotosEn, signature, showSecond, authorName2, signature2, recipientName]
   );
 
   // Si cambia el contenido base, la personalización quedaría desfasada:
@@ -212,7 +238,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
   useEffect(() => {
     setCustom(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [message, authorName, font, theme, fotos, signature, showSecond, authorName2, signature2]);
+  }, [message, authorName, font, theme, fotos, fotosEn, signature, showSecond, authorName2, signature2]);
 
   function abrirEstudio() {
     setCustom({
@@ -221,10 +247,12 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
     });
   }
 
+  // Fichas de opción: el mismo vocabulario que los botones de la v3 (oro
+  // encendido con halo / cristal en reposo). Ver DESIGN.md.
   const chipActivo =
-    "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)] shadow-[0_0_20px_-6px_var(--halo-oro)]";
+    "border-[var(--gold)] bg-[var(--gold)]/12 text-[var(--gold)] shadow-[0_0_20px_-6px_var(--halo-oro)]";
   const chipInactivo =
-    "border-[var(--border)] text-[var(--foreground)] hover:border-[var(--accent-soft)]";
+    "border-[var(--borde)] bg-[var(--cristal)] text-[var(--ink)] backdrop-blur-[4px] hover:border-[var(--borde-vivo)]";
 
   return (
     <div className="flex flex-col gap-8">
@@ -266,10 +294,8 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
           onChange={(e) => setAuthorName(e.target.value)}
         />
 
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-[var(--muted)]">
-            Tu mensaje para {recipientName}
-          </span>
+        <label className="flex flex-col gap-2 text-sm">
+          <Rotulo>Tu mensaje para {recipientName}</Rotulo>
           <textarea
             name="message"
             rows={7}
@@ -278,18 +304,19 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
             onChange={(e) => setMessage(e.target.value)}
             placeholder={`Escríbele con cariño…`}
             required
-            className="resize-y rounded-xl border-2 border-[var(--border)] bg-[var(--surface)] px-4 py-3 leading-relaxed text-[var(--foreground)] outline-none transition-colors placeholder:text-[var(--muted)]/60 focus:border-[var(--accent)]"
+            className="resize-y rounded-xl border-[1.5px] border-[var(--borde)] bg-[var(--cristal)] px-4 py-3 leading-relaxed text-[var(--ink)] outline-none backdrop-blur-[4px] transition-colors placeholder:text-[var(--ink-tenue)] focus:border-[var(--borde-vivo)]"
           />
-          <span className="self-end text-xs text-[var(--muted)]">
+          <span className="self-end text-xs text-[var(--ink-tenue)]">
             {message.length}/{MAX_MESSAGE}
           </span>
         </label>
 
-        {/* Selector de tema */}
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-sm font-medium text-[var(--muted)]">
+        {/* Selector de tema: cada ficha ENSEÑA el sobre en vez de describirlo
+            con un emoji (el emoji sigue vivo en la estampilla del álbum). */}
+        <fieldset className="flex flex-col gap-2.5">
+          <Rotulo as="legend" className="mb-1">
             Elige un estilo
-          </legend>
+          </Rotulo>
           <input type="hidden" name="theme" value={theme} />
           <div className="flex flex-wrap gap-2">
             {LETTER_THEMES.map((t) => {
@@ -300,15 +327,11 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
                   type="button"
                   onClick={() => setTheme(t.id)}
                   aria-pressed={active}
-                  className={`flex items-center gap-2 rounded-full border-2 px-3.5 py-2 text-sm transition-all ${
+                  className={`flex items-center gap-2.5 rounded-full border-[1.5px] px-3.5 py-2 text-sm transition-all ${
                     active ? chipActivo : chipInactivo
                   }`}
                 >
-                  <span
-                    className="inline-block h-3.5 w-3.5 rounded-full ring-1 ring-black/10"
-                    style={{ backgroundColor: t.sobreColor }}
-                  />
-                  <span aria-hidden>{t.emoji}</span>
+                  <SobreMini color={t.sobreColor} ink={t.sobreInk} />
                   {t.name}
                 </button>
               );
@@ -317,10 +340,10 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
         </fieldset>
 
         {/* Selector de tipografía */}
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-sm font-medium text-[var(--muted)]">
+        <fieldset className="flex flex-col gap-2.5">
+          <Rotulo as="legend" className="mb-1">
             Tipo de letra
-          </legend>
+          </Rotulo>
           <input type="hidden" name="font" value={font} />
           <div className="flex flex-wrap gap-2">
             {FONTS.map((f) => {
@@ -332,7 +355,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
                   onClick={() => setFont(f.value)}
                   aria-pressed={active}
                   style={{ fontFamily: f.value }}
-                  className={`rounded-full border-2 px-4 py-2 text-base transition-all ${
+                  className={`rounded-full border-[1.5px] px-4 py-2 text-base transition-all ${
                     active ? chipActivo : chipInactivo
                   }`}
                 >
@@ -343,11 +366,10 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
           </div>
         </fieldset>
 
-        {/* Fotos opcionales (hasta 3: con 2–3 van en tira tipo collage) */}
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-[var(--muted)]">
-            Fotos (opcional, hasta {MAX_FOTOS})
-          </span>
+        {/* Fotos opcionales (hasta 3). Por defecto viajan en su propio
+            sobrecito; quien quiera puede pegarlas dentro de la hoja. */}
+        <div className="flex flex-col gap-2.5">
+          <Rotulo>Fotos (opcional, hasta {MAX_FOTOS})</Rotulo>
           <input
             ref={fileRef}
             type="file"
@@ -363,13 +385,16 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
                   <img
                     src={f.url}
                     alt={`Foto ${i + 1}`}
-                    className="h-20 w-20 rounded-xl object-cover ring-2 ring-[var(--border)]"
-                    style={{ transform: `rotate(${[-2, 1.5, 2.5][i % 3]}deg)` }}
+                    className="h-20 w-20 rounded-sm object-cover p-1 ring-1 ring-[var(--borde)]"
+                    style={{
+                      backgroundColor: "#fffdf8",
+                      transform: `rotate(${[-2, 1.5, 2.5][i % 3]}deg)`,
+                    }}
                   />
                   <button
                     type="button"
                     onClick={() => removePhoto(i)}
-                    className="text-xs text-[var(--muted)] hover:text-[var(--accent)] hover:underline"
+                    className="text-xs text-[var(--ink-tenue)] transition-colors hover:text-[var(--gold)]"
                   >
                     Quitar
                   </button>
@@ -381,21 +406,57 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--border)] px-4 py-3 text-sm text-[var(--muted)] transition-colors hover:border-[var(--accent)]"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border-[1.5px] border-dashed border-[var(--borde)] px-4 py-3 text-sm text-[var(--ink-tenue)] transition-colors hover:border-[var(--borde-vivo)] hover:text-[var(--ink)]"
             >
-              <span aria-hidden>📷</span>
+              <span aria-hidden className="text-[var(--gold)]">
+                +
+              </span>
               {fotos.length === 0
                 ? "Añadir una foto"
                 : `Añadir otra foto (${fotos.length}/${MAX_FOTOS})`}
             </button>
           )}
+
+          {/* Dónde viajan: sobrecito aparte (por defecto) o dentro de la hoja */}
+          <input type="hidden" name="photosMode" value={fotosEn} />
+          {fotos.length > 0 && (
+            <div className="flex flex-col gap-2 rounded-2xl border-[1.5px] border-[var(--borde)] bg-[var(--cristal)] p-3.5 backdrop-blur-[4px]">
+              <Rotulo>Cómo llegan</Rotulo>
+              <div className="flex flex-wrap gap-2">
+                {(
+                  [
+                    { id: "sobre", label: "En un sobrecito aparte" },
+                    { id: "carta", label: "Pegadas en la hoja" },
+                  ] as const
+                ).map((o) => {
+                  const active = fotosEn === o.id;
+                  return (
+                    <button
+                      key={o.id}
+                      type="button"
+                      onClick={() => setFotosEn(o.id)}
+                      aria-pressed={active}
+                      className={`rounded-full border-[1.5px] px-3.5 py-1.5 text-sm transition-all ${
+                        active ? chipActivo : chipInactivo
+                      }`}
+                    >
+                      {o.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs italic text-[var(--ink-tenue)]">
+                {fotosEn === "sobre"
+                  ? `Llegan en su propio sobre, al lado de la carta: ${recipientName} lo abre aparte y las fotos salen en abanico. Tu mensaje se queda con la hoja entera para él.`
+                  : "Van impresas en la hoja, sobre el mensaje. Con fotos grandes, el texto se hace más pequeño para caber."}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Firma a mano alzada */}
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-[var(--muted)]">
-            Tu firma (opcional)
-          </span>
+        <div className="flex flex-col gap-2.5">
+          <Rotulo>Tu firma (opcional)</Rotulo>
           <SignaturePad onChange={setSignature} />
         </div>
 
@@ -409,11 +470,9 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
             + Firmar entre dos (carta a cuatro manos)
           </button>
         ) : (
-          <div className="flex flex-col gap-3 rounded-2xl border-2 border-dashed border-[var(--border)] p-4">
+          <div className="flex flex-col gap-3 rounded-2xl border-[1.5px] border-dashed border-[var(--borde)] p-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-[var(--muted)]">
-                Segunda persona
-              </span>
+              <Rotulo>Segunda persona</Rotulo>
               <button
                 type="button"
                 onClick={() => {
@@ -421,7 +480,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
                   setAuthorName2("");
                   setSignature2(null);
                 }}
-                className="text-xs text-[var(--muted)] hover:underline"
+                className="text-xs text-[var(--ink-tenue)] transition-colors hover:text-[var(--gold)]"
               >
                 Quitar
               </button>
@@ -433,36 +492,30 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
               value={authorName2}
               onChange={(e) => setAuthorName2(e.target.value)}
             />
-            <div className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-[var(--muted)]">
-                Su firma (opcional)
-              </span>
+            <div className="flex flex-col gap-2.5">
+              <Rotulo>Su firma (opcional)</Rotulo>
               <SignaturePad onChange={setSignature2} />
             </div>
           </div>
         )}
 
         {/* Audio-carta */}
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-[var(--muted)]">
-            Tu voz (opcional)
-          </span>
+        <div className="flex flex-col gap-2.5">
+          <Rotulo>Tu voz (opcional)</Rotulo>
           <VoiceRecorder onChange={setAudio} />
         </div>
 
         {/* Vídeo-saludo breve: se compila en la "película" final */}
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-[var(--muted)]">
-            Un vídeo-saludo (opcional, 15-20s)
-          </span>
-          <p className="-mt-1 text-xs text-[var(--muted)]">
+        <div className="flex flex-col gap-2.5">
+          <Rotulo>Un vídeo-saludo (opcional, 15-20s)</Rotulo>
+          <p className="-mt-1 text-xs italic text-[var(--ink-tenue)]">
             Grábale o súbele un saludo corto. Todos se unen en una película para {recipientName}.
           </p>
           <VideoRecorder onChange={setVideo} />
         </div>
 
         {(state?.error || uploadError) && (
-          <p className="rounded-xl bg-[var(--accent)]/10 px-4 py-2.5 text-sm text-[var(--accent)]">
+          <p className="rounded-xl border-[1.5px] border-[var(--rose)]/50 bg-[var(--rose)]/10 px-4 py-2.5 text-sm text-[var(--rose)]">
             {uploadError ?? state?.error}
           </p>
         )}
@@ -471,7 +524,7 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
           {uploading ? "Subiendo…" : pending ? "Enviando…" : "Enviar mi carta ✉"}
         </Button>
 
-        <p className="text-center text-xs text-[var(--muted)]">
+        <p className="text-center text-xs italic text-[var(--ink-tenue)]">
           Tu carta se guardará y aparecerá en su álbum sorpresa una vez revisada.
         </p>
       </motion.form>
@@ -484,11 +537,8 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
         className="lg:sticky lg:top-6"
         aria-label="Vista previa de tu carta"
       >
-        <p
-          className="mb-2 text-center text-2xl text-[var(--accent)]"
-          style={{ fontFamily: "var(--font-sketch)" }}
-        >
-          Así se verá ✨
+        <p className="mb-3 text-center text-sm uppercase tracking-[0.28em] text-[var(--gold)]">
+          Así se verá
         </p>
         <div
           className="sketch-card sketch-card--gira overflow-hidden p-5"
@@ -509,13 +559,20 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
             />
           </div>
           {/* mini sobre del tema elegido */}
-          <div className="mx-auto mt-4 flex w-fit items-center gap-2 rounded-full bg-[var(--surface)]/85 px-3.5 py-1.5 text-xs text-[var(--muted)] shadow-sm backdrop-blur">
-            <span
-              className="inline-block h-3 w-3 rounded-full ring-1 ring-black/10"
-              style={{ backgroundColor: themeData.sobreColor }}
-            />
+          <div className="mx-auto mt-4 flex w-fit items-center gap-2 rounded-full border-[1.5px] border-[var(--borde)] bg-[var(--cristal)] px-3.5 py-1.5 text-xs italic text-[var(--ink)]/80 backdrop-blur">
+            <SobreMini color={themeData.sobreColor} ink={themeData.sobreInk} />
             llegará en un sobre {themeData.name.toLowerCase()}
           </div>
+
+          {/* y, si las fotos viajan aparte, su propio sobrecito al lado */}
+          {fotos.length > 0 && fotosEn === "sobre" && (
+            <div className="mx-auto mt-2 flex w-fit items-center gap-2 rounded-full border-[1.5px] border-[var(--borde)] bg-[var(--cristal)] px-3.5 py-1.5 text-xs italic text-[var(--ink)]/80 backdrop-blur">
+              <SobreMini color={shade(themeData.sobreColor, 8)} ink={themeData.sobreInk} />
+              {fotos.length === 1
+                ? "y tu foto, en un sobrecito aparte"
+                : `y tus ${fotos.length} fotos, en un sobrecito aparte`}
+            </div>
+          )}
         </div>
       </motion.aside>
     </div>
@@ -523,28 +580,28 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
     {/* Estudio de diseño: la misma interfaz del taller, para invitados */}
     <section className="sketch-card sketch-card--v3 p-5 sm:p-7">
       {!custom ? (
-        <div className="flex flex-col items-center gap-2 text-center">
-          <p className="text-sm text-[var(--muted)]">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <p className="text-sm italic text-[var(--ink)]/80">
             ¿Quieres decorarla a tu manera? Abre el estudio: stickers, textos y
             capas, igual que en el taller.
           </p>
           <Button type="button" variant="outline" onClick={abrirEstudio}>
-            🎨 Personalizar el diseño
+            <span aria-hidden>✦</span> Personalizar el diseño
           </Button>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-2xl">Tu estudio 🎨</h2>
+            <h2 className="text-2xl">Tu estudio</h2>
             <button
               type="button"
               onClick={() => setCustom(null)}
-              className="text-xs text-[var(--muted)] hover:underline"
+              className="text-xs text-[var(--ink-tenue)] transition-colors hover:text-[var(--gold)]"
             >
               Descartar personalización
             </button>
           </div>
-          <p className="-mt-2 text-xs text-[var(--muted)]">
+          <p className="-mt-2 text-xs italic text-[var(--ink-tenue)]">
             Ojo: si después cambias el mensaje, el nombre, el estilo o la firma,
             la personalización se reinicia desde el formulario.
           </p>

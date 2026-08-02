@@ -11,6 +11,7 @@ import { parseCanvas, EMPTY_ESQUELA, EMPTY_SOBRE } from "@/lib/types/canvas";
 import { shade } from "@/lib/color";
 import { AudioCard } from "@/components/ui/AudioCard";
 import { VideoCard } from "@/components/ui/VideoCard";
+import { PhotoPocket, type PocketPhoto } from "./PhotoPocket";
 import { playLacre, playSobre, playHoja, isMuted, setMuted } from "@/lib/paperSound";
 
 type Props = {
@@ -26,6 +27,10 @@ type Props = {
   audioUrl?: string | null;
   /** vídeo-saludo opcional del autor */
   videoUrl?: string | null;
+  /** fotos que viajan en su propio sobrecito, aparte de la hoja */
+  photos?: PocketPhoto[];
+  /** quién la escribe (rotula el sobrecito de fotos) */
+  authorName?: string | null;
 };
 
 // Esquirlas doradas del lacre al romperse: dirección de vuelo de cada una.
@@ -61,7 +66,18 @@ const LINING = (color: string) =>
 //  3. El sobre se retira hacia abajo mientras la hoja viaja al centro.
 //  4. La hoja se despliega por su pliegue y el mensaje queda a la vista,
 //     impreso en el papel. Sin fundidos cruzados ni textos superpuestos.
+//
+// FLUIDEZ (2026-08-02): los pasos SE SOLAPAN. Antes cada uno esperaba a que el
+// anterior terminara, así que el movimiento frenaba en seco cuatro veces y
+// volvía a arrancar. Ahora cada gesto empieza cuando el anterior va por la
+// mitad —la hoja sale mientras la solapa aún cae, el sobre se despide mientras
+// la hoja sube, la hoja se abre mientras termina de llegar al centro— y el
+// viaje de la hoja es UNA sola animación con paso intermedio (`times`), no dos
+// animaciones seguidas que se detienen en medio.
 const PAPER_EASE = [0.22, 1, 0.36, 1] as const;
+
+/** Espera una fracción del gesto anterior para encadenar sin frenar. */
+const wait = (s: number) => new Promise((r) => setTimeout(r, s * 1000));
 
 export function EnvelopePresenter({
   title,
@@ -74,6 +90,8 @@ export function EnvelopePresenter({
   qrInterior,
   audioUrl = null,
   videoUrl = null,
+  photos = [],
+  authorName = null,
 }: Props) {
   const esquela = parseCanvas(esquelaCanvas, EMPTY_ESQUELA);
   const sobre = parseCanvas(sobreCanvas, EMPTY_SOBRE);
@@ -115,70 +133,77 @@ export function EnvelopePresenter({
     // mismos pasos, duraciones mínimas y sin polvo de estrellas.
     const d = (x: number) => (reduced ? Math.min(x, 0.18) : x);
 
-    // 1) El sello se suelta y la solapa se abre con inercia de papel.
-    // No la giramos 180° completos: pasado el punto muerto la proyección CSS
-    // la muestra espejada sobre el sobre (dos triángulos flotantes). En vez de
-    // eso, gira hasta ~150° y se desvanece: el sobre queda como bolsillo
-    // abierto y la hoja sale limpia.
+    // Medidas del viaje de la hoja, calculadas antes de mover nada.
+    // dyOut: la hoja emerge y queda apenas apoyada en la boca del sobre (para
+    // no salirse de pantalla en móviles).
+    const dyOut = env.top - letter.bottom + Math.min(28, letter.height * 0.12);
+    // dyCenter/scale: al desplegarse, la hoja completa (el doble del paquete)
+    // queda centrada en la línea de pliegue: llevamos ese borde al centro y
+    // ESCALAMOS para que quepa entera en el escenario (hojas altas en pantallas
+    // bajas se cortaban por arriba sin forma de alcanzarlas, porque el
+    // escenario no hace scroll).
+    const dyCenter = stage.top + stage.height / 2 - letter.top;
+    const fit = (stage.height / 2 / letter.height) * 0.96;
+    const scale = Math.max(0.5, Math.min(1.06, fit));
+
     // 0) El lacre cede: tiembla, se agrieta y estalla en esquirlas doradas.
     await animate(
       ".seal",
       { rotate: [0, -9, 11, -7, 5, 0], scale: [1, 1.16, 1.16, 1] },
-      { duration: d(0.5), ease: "easeInOut" }
+      { duration: d(0.46), ease: "easeInOut" }
     );
     if (!reduced) setBurst(true);
     playLacre(); // el lacre se quiebra
-    animate(".seal", { opacity: 0, scale: 0.35 }, { duration: d(0.28), ease: "easeIn" });
-    playSobre(0.8); // la solapa del sobre se abre
-    await animate(
-      ".flap",
-      { rotateX: [0, -12, -105] },
-      { duration: d(0.8), ease: "easeIn", times: [0, 0.3, 1] }
-    );
-    await animate(
-      ".flap",
-      { rotateX: -150, opacity: 0 },
-      { duration: d(0.4), ease: "easeOut" }
-    );
+    animate(".seal", { opacity: 0, scale: 0.35 }, { duration: d(0.26), ease: "easeIn" });
 
-    // 2) La hoja doblada emerge desde dentro del sobre (queda apenas apoyada
-    // en la boca, para no salirse de pantalla en móviles).
-    const dyOut = env.top - letter.bottom + Math.min(28, letter.height * 0.12);
-    playSobre(1.1); // la hoja se desliza rozando la boca del sobre
-    await animate(".letter", { y: dyOut }, { duration: d(1.2), ease: PAPER_EASE });
-
-    // 3) El sobre se despide hacia abajo; la hoja viaja al centro del escenario.
+    // 1) La solapa se abre hacia atrás con inercia de papel, en UN gesto: el
+    // giro y el desvanecido van en la misma animación (antes eran dos, y entre
+    // una y otra la solapa se quedaba clavada un instante en -105°).
+    // No la giramos 180° completos: pasado el punto muerto la proyección CSS la
+    // muestra espejada sobre el sobre (dos triángulos flotantes). Gira hasta
+    // ~150° y se desvanece: el sobre queda como bolsillo abierto.
+    const dFlap = d(1.05);
+    playSobre(dFlap); // la solapa roza al abrirse
     animate(
-      ".env-piece",
-      { y: 110, opacity: 0 },
-      { duration: d(0.85), ease: "easeInOut" }
+      ".flap",
+      { rotateX: [0, -14, -108, -150], opacity: [1, 1, 1, 0] },
+      { duration: dFlap, ease: "easeInOut", times: [0, 0.18, 0.72, 1] }
     );
-    // Al desplegarse, la hoja completa (el doble del paquete) queda centrada en
-    // la línea de pliegue: llevamos ese borde al centro y ESCALAMOS para que
-    // quepa entera en el escenario (hojas altas en pantallas bajas se cortaban
-    // por arriba sin forma de alcanzarlas, porque el escenario no hace scroll).
-    const dyCenter = stage.top + stage.height / 2 - letter.top;
-    const fit = (stage.height / 2 / letter.height) * 0.96;
-    const scale = Math.max(0.5, Math.min(1.06, fit));
-    await animate(
+
+    // 2+3) La hoja sale y viaja al centro sin detenerse en medio. Arranca
+    // cuando la boca del sobre ya está franca, con la solapa todavía cayendo.
+    await wait(dFlap * 0.5);
+    const dViaje = d(1.95);
+    playSobre(1.15); // la hoja se desliza rozando la boca del sobre
+    animate(
       ".letter",
-      { y: dyCenter, scale },
-      { duration: d(0.95), ease: PAPER_EASE }
+      { y: [0, dyOut, dyCenter], scale: [1, 1, scale] },
+      { duration: dViaje, times: [0, 0.46, 1], ease: PAPER_EASE }
+    );
+    // El sobre se despide en cuanto la hoja ha asomado entera.
+    wait(dViaje * 0.44).then(() =>
+      animate(".env-piece", { y: 110, opacity: 0 }, { duration: d(0.8), ease: "easeInOut" })
     );
 
-    // 4) La hoja se despliega por el pliegue, con un respiro final de papel.
+    // 4) La hoja se despliega por el pliegue mientras termina de llegar: el
+    // papel se abre en el aire, no después de aterrizar.
+    await wait(dViaje * 0.72);
     playHoja(); // la hoja se desdobla
-    await animate(
+    const dAbrir = d(1.2);
+    const desplegar = animate(
       ".fold-flap",
-      { rotateX: [-180, 4, 0] },
-      { duration: d(1.35), ease: PAPER_EASE, times: [0, 0.82, 1] }
+      { rotateX: [-180, 5, 0] },
+      { duration: dAbrir, ease: PAPER_EASE, times: [0, 0.8, 1] }
     );
 
-    // Polvo de estrellas en el momento culminante.
+    // Polvo de estrellas cuando la hoja ya se abrió de par en par.
     if (!reduced) {
-      setDust(true);
-      setTimeout(() => setDust(false), 1600);
+      wait(dAbrir * 0.55).then(() => {
+        setDust(true);
+        setTimeout(() => setDust(false), 1600);
+      });
     }
+    await desplegar;
 
     setOpened(true);
     setBusy(false);
@@ -366,8 +391,18 @@ export function EnvelopePresenter({
 
         {/* Audio-carta y QR: en el flujo, bajo el escenario (dentro de la hoja
             animada se solapaban con los controles y estiraban el lienzo) */}
-        {opened && (audioUrl || videoUrl || qrInterior) && (
-          <div className="relative z-20 mt-2 flex flex-wrap items-center justify-center gap-3">
+        {opened && (photos.length > 0 || audioUrl || videoUrl || qrInterior) && (
+          <div className="relative z-20 mt-2 flex flex-wrap items-center justify-center gap-4">
+            {photos.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.6, ease: PAPER_EASE }}
+                className="pb-6"
+              >
+                <PhotoPocket photos={photos} color={envColor} authorName={authorName} />
+              </motion.div>
+            )}
             {audioUrl && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}

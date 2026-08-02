@@ -19,6 +19,7 @@ export default async function LibroPage() {
       esquelaCanvas: true,
       esquelaBaseImageUrl: true,
       sobreColor: true,
+      photosJson: true,
       audioUrl: true,
       qrInteriorDataUrl: true,
       createdAt: true,

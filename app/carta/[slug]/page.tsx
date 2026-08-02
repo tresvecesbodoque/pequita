@@ -6,6 +6,7 @@ import { isAuthenticated } from "@/lib/auth/session";
 import { EnvelopePresenter } from "@/components/envelope/EnvelopePresenter";
 import { MarcarLeida } from "@/components/album/MarcarLeida";
 import { NavBar } from "@/components/layout/NavBar";
+import { parsePhotos } from "@/lib/guestCanvas";
 
 // Siempre fresca: refleja al instante si una carta se publica o se despublica.
 export const dynamic = "force-dynamic";
@@ -65,6 +66,8 @@ export default async function CartaPage({
       qrInterior={letter.qrInteriorDataUrl}
       audioUrl={letter.audioUrl}
       videoUrl={letter.videoUrl}
+      photos={parsePhotos(letter.photosJson)}
+      authorName={letter.authorName}
       />
     </>
   );

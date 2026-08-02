@@ -27,6 +27,26 @@ function fitFontSize(len: number, widthPct: number, heightPct: number): number {
 
 export type GuestPhoto = { url: string; ratio: number };
 
+/**
+ * Lee el JSON de fotos que viajan en su propio sobrecito (`Letter.photosJson`).
+ * Devuelve lista vacía ante cualquier cosa rara: una carta nunca debe caerse
+ * porque sus fotos estén mal guardadas.
+ */
+export function parsePhotos(raw: string | null | undefined): GuestPhoto[] {
+  if (!raw) return [];
+  try {
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data)) return [];
+    return data
+      .map((p) => ({ url: String(p?.url ?? ""), ratio: Number(p?.ratio) }))
+      .filter((p) => p.url !== "")
+      .map((p) => ({ url: p.url, ratio: Number.isFinite(p.ratio) && p.ratio > 0 ? p.ratio : 1 }))
+      .slice(0, 3);
+  } catch {
+    return [];
+  }
+}
+
 export function buildGuestEsquela(opts: {
   message: string;
   authorName: string;
