@@ -204,6 +204,70 @@ window.POEMA = {
           ]
         }
       ]
+    },
+    {
+      num: "IV",
+      titulo: "El relámpago",
+      via: "Separatio",
+      cuando: "cuando coincidimos",
+      desde: "2026-08-06T00:00:00-04:00",
+      versos: [
+        {
+          texto: "En medio, la herida gira, respira, revela.",
+          parrafos: [
+            "Empieza diciendo dónde está, y eso es lo primero que hay que leer: <em>en medio</em>. De las siete estrofas ésta es la cuarta, la del centro. En la mitad de todo lo que escribí no puse la mesa, ni el fruto, ni la mañana. Puse una herida.",
+            "Y fíjate en los tres verbos, porque van en el orden en que ocurren. <em>Gira</em>, que es lo que hace una herida cuando uno no la deja tranquila. <em>Respira</em>, que es lo que solamente hacen las cosas vivas: no escribí que cicatriza, escribí que respira, o sea que sigue abierta y sigue con nosotros. Y <em>revela</em> al final, que es lo que ninguna herida quiere hacer y todas terminan haciendo: enseñar lo que había debajo."
+          ]
+        },
+        {
+          texto: "Parte el pacto, el impacto abre puerta.",
+          parrafos: [
+            "Este es uno de esos versos que dicen dos cosas a la vez, y las dos son ciertas.",
+            "<em>Parte</em> puede ser de partir en dos: la herida rompe lo que estaba firmado, y eso es lo que suena primero. Pero <em>parte</em> es también de partir hacia alguna parte, o sea arrancar: el pacto se pone en marcha justo ahí. No elegí entre las dos porque en la práctica pasaron juntas — lo que teníamos acordado se rompió, y en la misma sacudida empezó lo de verdad.",
+            "Fíjate además en <em>pacto</em> e <em>impacto</em>: es la misma palabra con dos letras de más. El golpe estaba escondido dentro del acuerdo desde antes de que lo diéramos.",
+            "Y al final, <em>abre puerta</em>, sin artículo. No es \"abre la puerta\", que sería una puerta concreta, ni \"abre una puerta\", que sería cualquiera. Le quité el artículo porque una puerta con nombre se puede cerrar, y ésta no."
+          ]
+        },
+        {
+          texto: "Tu dolor talla mi sombra, la nombra.",
+          parrafos: [
+            "Acuérdate de la primerísima línea del poema, donde dejé la palabra <em>sombra</em> sola al final del verso, sin verbo, porque todavía no tenía forma ni nombre que ponerle. Veintitrés versos después vuelve, y por fin le pasan las dos cosas que le faltaban.",
+            "Y las hace tu dolor, no el mío. <em>Tallar</em> es un oficio de quitar: el que talla no añade nada, va sacando lo que sobra hasta que aparece la figura que ya estaba dentro. Eso hizo tu dolor conmigo. <em>Nombrar</em> es lo que viene después, porque a lo que tiene nombre uno deja de tenerle el mismo miedo.",
+            "Lo que dice este verso no es cómodo de escribir, pero es cierto: no me vi entero hasta que te vi doliendo."
+          ]
+        },
+        {
+          texto: "Bebo del borde. Arde, muerde, vuelve canto.",
+          parrafos: [
+            "Este es el verso número veinticinco de cuarenta y nueve: el del medio exacto, el que parte el poema en dos mitades iguales. Y lo que pasa justo ahí es que por fin bebo.",
+            "El poema se llama <em>Siete noches de sed</em> y llevaba veinticuatro versos sin que nadie bebiera nada. Acá bebo, y no de un vaso: bebo <em>del borde</em>, del filo de la herida, que era lo único que había para tomar.",
+            "Los tres verbos vuelven a ir en el orden de lo que pasa: <em>arde</em> mientras ocurre, <em>muerde</em> después —el dolor que vuelve cuando uno creía que ya se había ido— y al final <em>vuelve canto</em>. Eso es lo más literal que tiene el poema, y es también su confesión: esto que estás leyendo es la herida convertida en otra cosa. Sin lo primero no existiría lo último."
+          ]
+        },
+        {
+          texto: "Caemos juntos, la raíz enlaza nuestros nombres.",
+          parrafos: [
+            "Fíjate en el verbo, porque es apenas el segundo que hacemos los dos. El primero fue <em>armamos</em>, con el que cerré la estrofa de la mesa, y era de construir; éste es de caer. Los puse casi seguidos a propósito: lo que se arma también se viene abajo, y lo que dice algo de dos personas no es no caerse nunca, es caerse al mismo tiempo.",
+            "Y abajo, donde caímos, hay una raíz. Una raíz no se ve, no se elige y no se suelta cuando conviene: es lo que queda cuando se corta todo lo de arriba. Y no enlaza nuestros cuerpos ni nuestros planes: enlaza los <em>nombres</em>, que es lo último que se pierde y lo único que no nos pueden quitar."
+          ]
+        },
+        {
+          texto: "Coincidir fue un relámpago dentro nuestro ser",
+          parrafos: [
+            "De acá sale el nombre de la estrofa, así que conviene mirar la palabra despacio. <em>Coincidir</em> quiere decir, literalmente, caer juntos. Es lo mismo que el verso anterior ya había dicho en palabras de todos los días —<em>caemos juntos</em>— y que acá vuelve a decirse con la palabra culta que lo lleva escondido en la raíz. Dos veces lo mismo, una encima de la otra, como el abrigo junto al abrigo.",
+            "Y elegí <em>relámpago</em> por tres cosas que hace a la vez: dura nada, se ve entero y cae. Encontrarte fue eso: no una decisión que tomé despacio, sino algo que pasó de golpe y alumbró todo lo que había alrededor.",
+            "Está escrito <em>dentro nuestro ser</em>, sin el \"de\". Sobraba una palabra y la ley del poema son siete exactas, así que la saqué; pero me quedé con cómo suena sin ella, porque así el relámpago no cae dentro <em>de</em> algo, como quien entra en una casa. Cae dentro nuestro, y ya."
+          ]
+        },
+        {
+          texto: "La herida respira ningún final nos desata",
+          parrafos: [
+            "Cierra igual que empezó. El primer verso de la estrofa decía que la herida <em>respira</em>, y el último lo repite exacto: en siete versos no se cerró, no cicatrizó, no se fue. Sigue haciendo lo único que hacía falta, que es seguir viva.",
+            "Y las dos mitades van pegadas, sin coma que las separe. Podría haber escrito \"la herida respira, ningún final nos desata\", y se leería más cómodo; no la puse porque no son dos ideas, es una sola: que respire es exactamente lo que hace que ningún final nos suelte. Tampoco lleva punto al terminar, ni el verso de antes. Los dejé abiertos para que se lean de un tirón y sin respirar entre uno y otro.",
+            "<em>Desatar</em> es lo que se le hace a un nudo, y el nudo lo puso el verso quinto cuando la raíz enlazó los nombres. Acá digo que no hay final que lo deshaga. Fíjate en que no dije que no habrá finales: los va a haber, y algunos ya pasaron. Dije que ninguno nos desata, que es distinto, y que es lo único que de verdad puedo prometerte."
+          ]
+        }
+      ]
     }
   ]
 };

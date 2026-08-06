@@ -316,7 +316,25 @@
   /* El día D. Solo se ve en modo día, así que sus colores salen de los tokens
      ya virados: --gold es bermellón y --ink es la tinta granate. */
   .listo { display: none; }
-  .listo.viva { display: block; animation: entra 1.2s ease both; }
+  /* Centrado en la pantalla, no colgando de arriba: el día D no hay nada más
+     que leer, así que el saludo se pone en medio y el botón de entrar queda
+     siempre a la vista sin tener que bajar. */
+  .listo.viva {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 78vh; animation: entra 1.2s ease both;
+  }
+  .listo .saludo { margin-top: 0; }
+
+  /* Volver a contar: esquina de la PANTALLA, discreto, en tinta del día. */
+  .volver-contar {
+    position: fixed; left: 14px; top: 14px; z-index: 30;
+    padding: 9px 15px; border-radius: 999px;
+    border: 1.5px solid var(--borde); background: rgba(255,255,255,.35);
+    color: var(--ink); font-family: inherit; font-size: .82rem; letter-spacing: .02em;
+    cursor: pointer; backdrop-filter: blur(6px); transition: border-color .2s ease, transform .2s ease;
+  }
+  .volver-contar:hover { border-color: var(--borde-vivo); transform: translateY(-1px); }
+  @media (max-width: 560px) { .volver-contar { left: 10px; top: 10px; font-size: .76rem; } }
   /* La cuenta atrás se retira mientras entra el papel, no de golpe. */
   #espera { transition: opacity .9s ease; }
   #espera.se-va { opacity: 0; }
@@ -331,6 +349,16 @@
     box-shadow: 0 10px 30px -10px var(--halo-oro); transition: transform .2s ease;
   }
   .btn:hover { transform: translateY(-2px); }
+  /* La clave, en voz baja: se dice, no se grita. La palabra sí destaca. */
+  .clave {
+    margin-top: 16px; font-size: .92rem; font-style: italic;
+    color: color-mix(in srgb, var(--ink) 62%, transparent);
+  }
+  .clave b {
+    font-style: normal; font-weight: 600; color: var(--gold);
+    letter-spacing: .06em; padding: 2px 9px; border-radius: 999px;
+    border: 1px solid var(--borde);
+  }
   @media (prefers-reduced-motion: reduce) { .cielo span { animation: none; } }
 
   /* Móvil: texto más contenido y con aire a los bordes. Las líneas largas del
@@ -454,6 +482,20 @@
                 <span class="verso">Esto que armamos ya no se mueve.</span>
               </p>
             </section>
+
+            <section class="estrofa" data-desde="2026-08-06T00:00:00-04:00" aria-label="Cuarta estrofa: el relámpago">
+              <p class="estrofa-titulo">IV. El relámpago</p>
+              <p class="estrofa-via">Separatio</p>
+              <p class="versos">
+                <span class="verso">En medio, la herida gira, respira, revela.</span>
+                <span class="verso">Parte el pacto, el impacto abre puerta.</span>
+                <span class="verso">Tu dolor talla mi sombra, la nombra.</span>
+                <span class="verso">Bebo del borde. Arde, muerde, vuelve canto.</span>
+                <span class="verso">Caemos juntos, la raíz enlaza nuestros nombres.</span>
+                <span class="verso">Coincidir fue un relámpago dentro nuestro ser</span>
+                <span class="verso">La herida respira ningún final nos desata</span>
+              </p>
+            </section>
           </div>
         </div>
       </div>
@@ -463,55 +505,24 @@
 
     <!-- EL día D -->
     <section class="listo" id="listo">
-      <!-- El día D ya no se esconde nada: las tres estrofas van una debajo de
-           otra, sin deslizar. Mismo componente, apilado. -->
-      <div class="poema">
-        <div class="estrofas estrofas--pila">
-          <section class="estrofa" data-desde="2026-07-16T00:00:00-04:00">
-            <p class="estrofa-titulo">I. La ceniza</p>
-            <p class="estrofa-via">Nigredo · Calcinatio</p>
-            <p class="versos">
-              <span class="verso">Y en el margen del mundo, sombra</span>
-              <span class="verso">el disenso: son dos; y son uno.</span>
-              <span class="verso">No es ninguno, juventud, ceniza y verbo,</span>
-              <span class="verso">aceptación a secas, no cabe el aire,</span>
-              <span class="verso">corto la brisa y enciendo la llama,</span>
-              <span class="verso">la mente calla, el juicio se inclina,</span>
-              <span class="verso">crepita un corazón sediento de tu paz.</span>
-            </p>
-          </section>
-          <section class="estrofa" data-desde="2026-07-23T00:00:00-04:00">
-            <p class="estrofa-titulo">II. El barro</p>
-            <p class="estrofa-via">Solutio · Sublimatio · Precipitatio</p>
-            <p class="versos">
-              <span class="verso">Divina, boca viva que salva mi carne;</span>
-              <span class="verso">roca rota donde este pacto se firma,</span>
-              <span class="verso">hueso expuesto al filo de ser vulnerable.</span>
-              <span class="verso">Asumo el crudo desastre de ser barro,</span>
-              <span class="verso">dedos que amasan este lodo sin rumbo,</span>
-              <span class="verso">pierdo mi nombre bajo este nuevo cielo,</span>
-              <span class="verso">llueve este cuerpo nuevo en tu noche.</span>
-            </p>
-          </section>
-          <section class="estrofa" data-desde="2026-07-30T00:00:00-04:00">
-            <p class="estrofa-titulo">III. La mesa</p>
-            <p class="estrofa-via">Coagulatio</p>
-            <p class="versos">
-              <span class="verso">Todo pesa distinto desde que te quedas,</span>
-              <span class="verso">traigo la mesa, la pongo donde cabes,</span>
-              <span class="verso">cada taza queda quieta, encuentra su sitio,</span>
-              <span class="verso">corto el pan duro, reparto la corteza,</span>
-              <span class="verso">cuelgo tu abrigo junto al abrigo mío,</span>
-              <span class="verso">el techo es bajo, pero aquí cabemos.</span>
-              <span class="verso">Esto que armamos ya no se mueve.</span>
-            </p>
-          </section>
-        </div>
-      </div>
+      <!-- El día D: solo el saludo, centrado. El poema NO se repite aquí
+           (vive en la portada, plegado): el día de su cumpleaños lo que
+           tiene que encontrar al abrir es su nombre, no siete estrofas
+           que la obliguen a bajar hasta el botón de entrar. -->
       <h1 class="saludo">¡Feliz cumpleaños,<br />mi wawa!</h1>
       <p class="nota">Ya es tu día. Lo que te preparé con tanto cariño te espera.</p>
-      <a class="btn" href="https://ishibonita.vercel.app">Entrar 🎁 →</a>
+      <!-- Directo al álbum, no a la portada: el día de su cumpleaños no tiene
+           que buscar por dónde se entra. Y la clave va escrita: un candado que
+           no puede abrir no protege nada, solo la deja fuera. -->
+      <a class="btn" href="https://ishibonita.vercel.app/para-ella">Entrar 🎁 →</a>
+      <p class="clave">te va a pedir una clave, y es <b>Morfina</b></p>
     </section>
+
+    <!-- El día no se acaba en el día: desde aquí se vuelve a contar, ahora
+         hacia el cumpleaños siguiente. Mismo reloj de siempre. -->
+    <button class="volver-contar" id="volverContar" type="button" hidden>
+      ↺ volver a contar
+    </button>
   </main>
 
   <!-- Minijuego: caen estrellas y se atrapan con el dedo. Acelera con el
@@ -542,7 +553,9 @@
     // ── Configuración ──────────────────────────────────────────────
     // 00:00:01 hora Santiago (Chile en agosto = UTC−4).
     var OBJETIVO = new Date("2026-08-07T00:00:01-04:00").getTime();
-    var DESTINO  = "https://ishibonita.vercel.app";
+    // Directo al álbum, no a la portada: el día de su cumpleaños no tiene que
+    // buscar por dónde se entra. La clave se la dice el saludo.
+    var DESTINO  = "https://ishibonita.vercel.app/para-ella";
     // ───────────────────────────────────────────────────────────────
 
     document.querySelector(".btn").setAttribute("href", DESTINO);
@@ -976,6 +989,18 @@
     // ── La revelación ─────────────────────────────────────────────
     // El día D el mundo pasa de la noche al papel (ver DESIGN.md). La clase
     // `dia` vira todos los tokens de golpe; el CSS se encarga del fundido.
+    var volver = document.getElementById("volverContar");
+    var marca = document.getElementById("marca");
+    var MARCA_ORIGINAL = marca ? marca.textContent : "";
+    // El cumpleaños siguiente, para quien quiera seguir contando.
+    var OBJETIVO_SIGUIENTE = new Date("2027-08-07T00:00:01-04:00").getTime();
+
+    function mostrarSaludo() {
+      espera.style.display = "none";
+      listo.classList.add("viva");
+      if (volver) volver.hidden = false;
+    }
+
     var yaEsDia = false;
     function amanece(conFundido) {
       if (yaEsDia) return;
@@ -983,16 +1008,12 @@
       document.documentElement.classList.add("dia");
       if (!conFundido) {
         // Se llegó con el día ya empezado: nada que ver desvanecerse.
-        espera.style.display = "none";
-        listo.classList.add("viva");
+        mostrarSaludo();
         return;
       }
       // La cuenta atrás se va mientras el papel entra; el saludo llega después.
       espera.classList.add("se-va");
-      setTimeout(function () {
-        espera.style.display = "none";
-        listo.classList.add("viva");
-      }, 900);
+      setTimeout(mostrarSaludo, 900);
     }
 
     var primerTick = true;
@@ -1018,6 +1039,39 @@
     }
     tick();
     var timer = setInterval(tick, 1000);
+
+    // ── Volver a contar ───────────────────────────────────────────
+    // El día no se acaba en el día. Desde el saludo se puede volver al reloj
+    // de siempre, ahora apuntando al cumpleaños siguiente, y desde el reloj se
+    // vuelve al saludo: el botón hace el viaje en los dos sentidos.
+    //
+    // El mundo se queda en papel aunque se vuelva a contar. Que el día llegó
+    // ya no se deshace; lo único que cambia es hacia dónde mira el reloj.
+    (function () {
+      if (!volver) return;
+      var contandoDeNuevo = false;
+
+      volver.addEventListener("click", function () {
+        contandoDeNuevo = !contandoDeNuevo;
+        clearInterval(timer);
+
+        if (contandoDeNuevo) {
+          OBJETIVO = OBJETIVO_SIGUIENTE;
+          listo.classList.remove("viva");
+          espera.classList.remove("se-va");
+          espera.style.display = "";
+          if (marca) marca.textContent = "El próximo cumpleaños llega en";
+          volver.textContent = "↺ volver al saludo";
+          tick();                       // sin esperar un segundo a que pinte
+          timer = setInterval(tick, 1000);
+        } else {
+          espera.style.display = "none";
+          if (marca) marca.textContent = MARCA_ORIGINAL;
+          volver.textContent = "↺ volver a contar";
+          listo.classList.add("viva");
+        }
+      });
+    })();
 
     // ── El poema, plegable ────────────────────────────────────────
     // Cerrado deja el contador en el centro. Se abre a mano, y también

@@ -18,7 +18,7 @@ export const SITE = {
    * entorno ALBUM_CODE en producción, que tiene prioridad). Déjala vacía ("")
    * si quieres que el álbum sea abierto, sin clave.
    */
-  albumCode: "siete",
+  albumCode: "Morfina",
   /**
    * Mensaje final oculto: se revela en el álbum cuando ella ha leído TODAS
    * las cartas (la constelación se completa).
