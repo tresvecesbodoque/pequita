@@ -52,6 +52,16 @@ model Frasco {
   actualizado DateTime @default(now())
 }
 
+// Lista de deseos: quién se apuntó a regalar cada cosa. El catálogo de regalos
+// vive en el código (`lib/regalos.ts`, que no cambia solo); aquí queda nada más
+// el "check" compartido, para que dos familiares no le compren lo mismo. Una
+// fila por regalo apartado: si nadie lo tomó, no hay fila.
+model RegaloTomado {
+  regaloId String   @id
+  quien    String
+  tomadoEn DateTime @default(now())
+}
+
 model Letter {
   id                  String         @id @default(cuid())
   slug                String         @unique @default(cuid())

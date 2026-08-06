@@ -24,6 +24,15 @@ export default function EscribirPage() {
           <p className="mx-auto mt-3 max-w-md leading-relaxed text-[var(--muted)]">
             {SITE.inviteSubtitle}
           </p>
+          {/* La lista de deseos vive al pie de la página; sin este atajo, quien
+              entra sin saber qué regalar no llega nunca hasta allá. */}
+          <a
+            href="#regalos"
+            className="mt-4 inline-block rounded-full border-[1.5px] border-[var(--borde)] bg-[var(--cristal)] px-4 py-2 text-sm text-[var(--ink)] backdrop-blur-[4px] transition-colors hover:border-[var(--borde-vivo)] hover:text-[var(--gold)]"
+          >
+            ¿Aún no sabes qué regalarle? Mira su lista de deseos ↓
+          </a>
+
           <div className="mx-auto mt-6 flex max-w-[240px] items-center gap-3">
             <div className="hairline flex-1" />
             <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
