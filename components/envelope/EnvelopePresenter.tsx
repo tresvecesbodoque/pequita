@@ -3,7 +3,13 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useAnimate } from "framer-motion";
+import {
+  motion,
+  useAnimate,
+  useMotionValue,
+  animate as animarValor,
+  type PanInfo,
+} from "framer-motion";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import { FoldedLetter } from "./FoldedLetter";
 import { backgroundLayerStyle, type BackgroundConfig } from "@/lib/backgrounds/render";
@@ -12,7 +18,15 @@ import { shade } from "@/lib/color";
 import { AudioCard } from "@/components/ui/AudioCard";
 import { VideoCard } from "@/components/ui/VideoCard";
 import { PhotoPocket, type PocketPhoto } from "./PhotoPocket";
-import { playLacre, playSobre, playHoja, isMuted, setMuted } from "@/lib/paperSound";
+import {
+  playLacre,
+  playSobre,
+  playHoja,
+  playRoce,
+  isMuted,
+  setMuted,
+  precargarSonidos,
+} from "@/lib/paperSound";
 
 type Props = {
   title: string;
@@ -106,9 +120,24 @@ export function EnvelopePresenter({
   // Remontar el escenario es la forma más fiable de "volver a cerrar".
   const [sceneKey, setSceneKey] = useState(0);
 
+  // Los dos papeles que se pueden AGARRAR. Su ángulo no lo manda la animación
+  // por su cuenta: vive aquí, y lo mueven tanto la secuencia como el dedo. Si
+  // lo animara por clase con `animate(".flap", …)` como antes, el arrastre y la
+  // secuencia se pelearían por el mismo `transform` y ganaría el último.
+  const flapDeg = useMotionValue(0); // 0 cerrada · −150 abierta del todo
+  const flapOpacity = useMotionValue(1);
+  const foldDeg = useMotionValue(-180); // −180 doblada · 0 desplegada
+  /** de dónde salía el pliegue al empezar a arrastrarlo */
+  const desde = useRef(0);
+  const lacreRoto = useRef(false);
+
   useEffect(() => {
     setMutedState(isMuted());
     setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    // Los sonidos son archivos: si se piden en el mismo instante en que se
+    // rompe el lacre, llegan tarde. Se bajan al montar el sobre, mientras la
+    // persona todavía está mirándolo cerrado.
+    precargarSonidos();
   }, []);
 
   function toggleMute() {
@@ -121,7 +150,75 @@ export function EnvelopePresenter({
   const envelopeRef = useRef<HTMLDivElement>(null);
   const letterRef = useRef<HTMLDivElement>(null);
 
-  async function open() {
+  const tope = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
+
+  /** El lacre cede: esquirlas y golpe. Solo puede pasar una vez. */
+  function romperLacre() {
+    if (lacreRoto.current) return;
+    lacreRoto.current = true;
+    if (!reduced) setBurst(true);
+    playLacre();
+    animate(".seal", { opacity: 0, scale: 0.35 }, { duration: d0(0.26), ease: "easeIn" });
+  }
+
+  // ————— La solapa del sobre, a dedo —————
+  // Se tira de ella hacia abajo y se abre. Pasada la mitad del recorrido, al
+  // soltarla la carta sigue sola; antes de eso, vuelve a su sitio.
+
+  function solapaPanStart() {
+    if (opened || busy) return;
+    desde.current = flapDeg.get();
+  }
+
+  function solapaPan(_e: PointerEvent, info: PanInfo) {
+    if (opened || busy) return;
+    const deg = tope(desde.current - info.offset.y * 0.85, -150, 0);
+    flapDeg.set(deg);
+    // Al despegarse del sobre, el lacre salta.
+    if (deg < -14) romperLacre();
+    playRoce(Math.min(1, Math.abs(info.velocity.y) / 700));
+  }
+
+  function solapaPanEnd() {
+    if (opened || busy) return;
+    if (flapDeg.get() <= -55) {
+      void open(true); // ya está franca: que salga la hoja
+    } else {
+      playSobre(0.5);
+      animarValor(flapDeg, 0, { type: "spring", stiffness: 220, damping: 22 });
+    }
+  }
+
+  // ————— El pliegue de la hoja, a dedo —————
+  // Con la carta ya en el centro, se puede doblar y desdoblar tirando de la
+  // mitad de arriba. Al soltar cae al extremo más cercano.
+
+  function pliegueStart() {
+    if (!opened) return;
+    desde.current = foldDeg.get();
+  }
+
+  function plieguePan(_e: PointerEvent, info: PanInfo) {
+    if (!opened) return;
+    foldDeg.set(tope(desde.current - info.offset.y * 0.9, -180, 0));
+    playRoce(Math.min(1, Math.abs(info.velocity.y) / 700));
+  }
+
+  function pliegueEnd() {
+    if (!opened) return;
+    const destino = foldDeg.get() < -90 ? -180 : 0;
+    playHoja();
+    animarValor(foldDeg, destino, { type: "spring", stiffness: 120, damping: 18 });
+  }
+
+  /** Duración con reduced-motion aplicado, fuera de `open` para reutilizarla. */
+  const d0 = (x: number) => (reduced ? Math.min(x, 0.18) : x);
+
+  /**
+   * @param desdeArrastre la persona ya abrió la solapa con el dedo; no hay que
+   *                      repetir el temblor del lacre ni abrirla desde cero.
+   */
+  async function open(desdeArrastre = false) {
     if (opened || busy) return;
     setBusy(true);
 
@@ -146,33 +243,45 @@ export function EnvelopePresenter({
     const fit = (stage.height / 2 / letter.height) * 0.96;
     const scale = Math.max(0.5, Math.min(1.06, fit));
 
-    // 0) El lacre cede: tiembla, se agrieta y estalla en esquirlas doradas.
-    await animate(
-      ".seal",
-      { rotate: [0, -9, 11, -7, 5, 0], scale: [1, 1.16, 1.16, 1] },
-      { duration: d(0.46), ease: "easeInOut" }
-    );
-    if (!reduced) setBurst(true);
-    playLacre(); // el lacre se quiebra
-    animate(".seal", { opacity: 0, scale: 0.35 }, { duration: d(0.26), ease: "easeIn" });
+    if (!desdeArrastre) {
+      // 0) El lacre cede: tiembla, se agrieta y estalla en esquirlas doradas.
+      await animate(
+        ".seal",
+        { rotate: [0, -9, 11, -7, 5, 0], scale: [1, 1.16, 1.16, 1] },
+        { duration: d(0.46), ease: "easeInOut" }
+      );
+      romperLacre();
 
-    // 1) La solapa se abre hacia atrás con inercia de papel, en UN gesto: el
-    // giro y el desvanecido van en la misma animación (antes eran dos, y entre
-    // una y otra la solapa se quedaba clavada un instante en -105°).
-    // No la giramos 180° completos: pasado el punto muerto la proyección CSS la
-    // muestra espejada sobre el sobre (dos triángulos flotantes). Gira hasta
-    // ~150° y se desvanece: el sobre queda como bolsillo abierto.
-    const dFlap = d(1.05);
-    playSobre(dFlap); // la solapa roza al abrirse
-    animate(
-      ".flap",
-      { rotateX: [0, -14, -108, -150], opacity: [1, 1, 1, 0] },
-      { duration: dFlap, ease: "easeInOut", times: [0, 0.18, 0.72, 1] }
-    );
+      // 1) La solapa se abre hacia atrás con inercia de papel, en UN gesto: el
+      // giro y el desvanecido van juntos (antes eran dos animaciones, y entre
+      // una y otra la solapa se quedaba clavada un instante en -105°).
+      // No la giramos 180° completos: pasado el punto muerto la proyección CSS
+      // la muestra espejada sobre el sobre (dos triángulos flotantes). Gira
+      // hasta ~150° y se desvanece: el sobre queda como bolsillo abierto.
+      const dFlap = d(1.05);
+      playSobre(dFlap); // la solapa roza al abrirse
+      animarValor(flapDeg, [flapDeg.get(), -14, -108, -150], {
+        duration: dFlap,
+        ease: "easeInOut",
+        times: [0, 0.18, 0.72, 1],
+      });
+      animarValor(flapOpacity, [1, 1, 1, 0], {
+        duration: dFlap,
+        ease: "easeInOut",
+        times: [0, 0.18, 0.72, 1],
+      });
+      await wait(dFlap * 0.5);
+    } else {
+      // La solapa ya la abrió la persona: solo termina el recorrido y se aparta.
+      const resto = d(0.55);
+      playSobre(0.6);
+      animarValor(flapDeg, -150, { duration: resto, ease: "easeOut" });
+      animarValor(flapOpacity, 0, { duration: resto, ease: "easeIn" });
+      await wait(resto * 0.45);
+    }
 
     // 2+3) La hoja sale y viaja al centro sin detenerse en medio. Arranca
     // cuando la boca del sobre ya está franca, con la solapa todavía cayendo.
-    await wait(dFlap * 0.5);
     const dViaje = d(1.95);
     playSobre(1.15); // la hoja se desliza rozando la boca del sobre
     animate(
@@ -190,11 +299,11 @@ export function EnvelopePresenter({
     await wait(dViaje * 0.72);
     playHoja(); // la hoja se desdobla
     const dAbrir = d(1.2);
-    const desplegar = animate(
-      ".fold-flap",
-      { rotateX: [-180, 5, 0] },
-      { duration: dAbrir, ease: PAPER_EASE, times: [0, 0.8, 1] }
-    );
+    const desplegar = animarValor(foldDeg, [-180, 5, 0], {
+      duration: dAbrir,
+      ease: PAPER_EASE,
+      times: [0, 0.8, 1],
+    });
 
     // Polvo de estrellas cuando la hoja ya se abrió de par en par.
     if (!reduced) {
@@ -214,6 +323,12 @@ export function EnvelopePresenter({
     setBusy(false);
     setBurst(false);
     setDust(false);
+    // Los ángulos viven en el componente, no en el DOM: remontar el escenario
+    // no los devuelve solos a su sitio y el sobre reaparecería ya abierto.
+    flapDeg.set(0);
+    flapOpacity.set(1);
+    foldDeg.set(-180);
+    lacreRoto.current = false;
     setSceneKey((k) => k + 1);
   }
 
@@ -253,8 +368,15 @@ export function EnvelopePresenter({
             className="envelope relative w-full max-w-md"
             style={{ perspective: 1300 }}
           >
-            {/* Cara frontal del sobre: el diseño hecho en el taller */}
-            <motion.div className="env-piece relative" style={{ zIndex: 4 }}>
+            {/* Cara frontal del sobre: el diseño hecho en el taller.
+                Con la carta ya fuera se APAGA al tacto: se ha ido con opacidad
+                0, pero un elemento invisible sigue recibiendo el dedo, y ahí
+                encima es justo donde queda el pliegue de la hoja. Sin esto, el
+                pliegue no se deja agarrar y no se entiende por qué. */}
+            <motion.div
+              className="env-piece relative"
+              style={{ zIndex: 4, pointerEvents: opened ? "none" : undefined }}
+            >
               <div className="overflow-hidden rounded-lg shadow-[0_30px_70px_-28px_rgba(16,27,54,0.6)] ring-1 ring-black/10">
                 <CanvasStage
                   data={sobre}
@@ -271,27 +393,51 @@ export function EnvelopePresenter({
               className="letter absolute inset-x-[8%] bottom-[7%]"
               style={{ zIndex: 3, transformOrigin: "top center" }}
             >
-              <FoldedLetter data={esquela} baseImageUrl={esquelaBaseImageUrl} />
+              <FoldedLetter
+                data={esquela}
+                baseImageUrl={esquelaBaseImageUrl}
+                foldDeg={foldDeg}
+                onFoldPanStart={pliegueStart}
+                onFoldPan={plieguePan}
+                onFoldPanEnd={pliegueEnd}
+              />
             </motion.div>
 
             {/* Solapa triangular: cerrada tapa la boca; al abrirse gira hacia
-                atrás y deja pasar la hoja por delante. */}
+                atrás y deja pasar la hoja por delante. SE PUEDE AGARRAR.
+                Ya NO lleva la clase `env-piece`: la llevaba, y entonces la
+                despedida del sobre (`animate(".env-piece", {y, opacity})`) caía
+                encima de su propio giro. Dos animaciones peleándose por el
+                mismo `transform` era el pliegue que se veía roto. */}
             <motion.div
-              className="flap env-piece absolute inset-x-0 top-0"
+              className="flap absolute inset-x-0 top-0"
               style={{
                 height: "56%",
                 zIndex: 30,
                 transformOrigin: "top center",
                 transformStyle: "preserve-3d",
+                rotateX: flapDeg,
+                opacity: flapOpacity,
                 willChange: "transform",
+                cursor: opened || busy ? undefined : "grab",
+                touchAction: opened || busy ? undefined : "none",
+                // Igual que la cara frontal: una vez abierta se quita de en
+                // medio del todo, o taparía la hoja desde su z-index 30.
+                pointerEvents: opened ? "none" : undefined,
               }}
+              onPanStart={solapaPanStart}
+              onPan={solapaPan}
+              onPanEnd={solapaPanEnd}
             >
               <div
                 className="absolute inset-0"
                 style={{
                   clipPath: "polygon(0 0, 100% 0, 50% 100%)",
                   background: `linear-gradient(180deg, ${flapColor}, ${shade(flapColor, -7)})`,
-                  filter: "drop-shadow(0 3px 5px rgba(16,27,54,0.18))",
+                  // Sin `filter` aquí: un filtro sobre un hijo de un
+                  // `preserve-3d` aplana la escena y deja de respetarse
+                  // `backface-visibility`, así que al girar asomaban las dos
+                  // caras a la vez. La sombra la da el degradado.
                   backfaceVisibility: "hidden",
                   WebkitBackfaceVisibility: "hidden",
                 }}
@@ -311,9 +457,10 @@ export function EnvelopePresenter({
               />
             </motion.div>
 
-            {/* Sello: una estrella dorada en la punta de la solapa */}
+            {/* Sello: una estrella dorada en la punta de la solapa. Tampoco es
+                `env-piece`: se desvanece con su propia animación al romperse. */}
             <motion.div
-              className="seal env-piece pointer-events-none absolute"
+              className="seal pointer-events-none absolute"
               style={{
                 zIndex: 31,
                 left: "calc(50% - 20px)",
@@ -441,7 +588,7 @@ export function EnvelopePresenter({
         <div className="relative z-20 mt-3 text-center">
           {!opened ? (
             <motion.button
-              onClick={open}
+              onClick={() => void open()}
               disabled={busy}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}

@@ -129,14 +129,37 @@ antes lo elige al escribir ("Pegadas en la hoja").
 - **La apertura no frena**: cada gesto arranca cuando el anterior va por la
   mitad (la hoja sale con la solapa aún cayendo, se despliega mientras llega al
   centro). Un `await` por paso encadenaba cuatro paradas en seco.
-- **El papel no hace "shhh"**: los sonidos son crujido granular —cientos de
-  impulsos de 1–3 ms con densidad que decae—, no ruido filtrado con envolvente
-  (`lib/paperSound.ts`). Un barrido de ruido suena a viento, no a papel.
+- **El sonido es grabado, no sintetizado** (`lib/paperSound.ts` +
+  `public/sonidos/`). Hubo dos intentos con WebAudio —ruido filtrado, que sonaba
+  a viento; y microcrujidos granulares, que ya sonaban a papel pero seguían
+  siendo una imitación— y los dos quedaron atrás el 2026-08-06, con dos
+  grabaciones de medio segundo. Los tres gestos de papel salen del mismo
+  archivo cambiando `playbackRate`: menos papel suena más agudo y más corto.
+- **Nada de WebAudio para esto.** En el iPhone, WebAudio hace que el
+  interruptor de silencio apague el sonido y deja de obedecer a `volume`. Con
+  `<audio>` corriente manda el sistema, que es lo que se quiere. Cada toque usa
+  un clon del elemento precargado: la apertura encadena dos roces que se
+  solapan, y un mismo elemento se cortaría a sí mismo al reiniciarse.
 - Todo editor de lienzo tiene **deshacer y rehacer** (botones a la izquierda de
   la barra, separados de lo que añade cosas, más ⌘Z/⇧⌘Z). Los cambios seguidos
   del mismo control se funden en un paso.
 - La solapa 3D nunca gira 180° completos (la proyección CSS la espeja):
   ~150° y desvanecer (`EnvelopePresenter`).
+- **El papel se toca.** La solapa del sobre y el pliegue de la hoja se agarran
+  con el dedo y suenan al moverse (`playRoce`, con su propio freno). Su ángulo
+  vive en un `MotionValue` —no en una animación por clase—, porque si no el
+  arrastre y la secuencia se pelean por el mismo `transform`. Tirar de la
+  solapa más de un tercio abre la carta; menos, y vuelve sola.
+- **Un elemento invisible sigue recibiendo el dedo.** Las piezas del sobre que
+  se van con `opacity: 0` quedan encima de la hoja y se comen el arrastre del
+  pliegue: al abrirse hay que apagarlas con `pointer-events: none`.
+- **Nada de `filter` dentro de un `preserve-3d`**: aplana la escena y deja de
+  respetarse `backface-visibility`, así que al girar la solapa asomaban sus dos
+  caras a la vez. Las sombras de las piezas 3D, con degradado.
+- **El pliegue de la hoja abierta es una RAYA, no una franja.** Cada mitad
+  ponía un degradado de 12 px contra el doblez y juntos hacían una banda oscura
+  de 24 px cruzando la carta por encima del texto. Un pelo de tinta y 4 px de
+  degradado bastan (`CREASE_LINE` en `FoldedLetter`).
 - Los lienzos (`CanvasStage`) traen `z-index` internos ⇒ toda cara que los
   envuelva lleva `isolation: isolate`.
 - SVG: jamás atributos duplicados (stroke/stroke-width) en un elemento.

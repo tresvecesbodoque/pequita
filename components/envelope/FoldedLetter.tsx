@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, type MotionValue, type PanInfo } from "framer-motion";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
 import type { CanvasData } from "@/lib/types/canvas";
 
@@ -12,12 +13,23 @@ import type { CanvasData } from "@/lib/types/canvas";
 // sin texto visible. Al desplegarse (rotateX 0) reconstruye la hoja completa y
 // el mensaje queda impreso en el propio papel, porque cada mitad renderiza su
 // porción del lienzo (no hay texto superpuesto a la animación).
+//
+// El pliegue SE AGARRA CON EL DEDO (2026-08-06): el ángulo ya no lo impone la
+// animación por su cuenta, viene de fuera en un `MotionValue` que tanto la
+// secuencia como el arrastre pueden mover. Si no se pasa ninguno, la hoja se
+// queda doblada y quieta, que es como la quiere el libro impreso.
 
 type Props = {
   data: CanvasData;
   baseImageUrl?: string | null;
-  /** clase que la secuencia de animación usa para rotar la solapa */
+  /** clase que la secuencia de animación usa para localizar la solapa */
   flapClassName?: string;
+  /** ángulo del pliegue: −180 doblada, 0 desplegada del todo */
+  foldDeg?: MotionValue<number>;
+  /** deja agarrar el pliegue y moverlo a mano */
+  onFoldPan?: (e: PointerEvent, info: PanInfo) => void;
+  onFoldPanStart?: (e: PointerEvent, info: PanInfo) => void;
+  onFoldPanEnd?: (e: PointerEvent, info: PanInfo) => void;
 };
 
 const PAPER = "#fffdf8";
@@ -41,10 +53,30 @@ const GRAIN = {
   opacity: 0.14,
 };
 
-export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }: Props) {
+// La marca del pliegue en la hoja ya abierta.
+//
+// Antes cada mitad ponía un degradado de 12 px al 7% contra la línea del
+// doblez; juntos hacían una banda oscura de 24 px cruzando la carta por la
+// mitad, justo encima del texto. Una hoja que estuvo doblada no tiene una
+// franja de sombra: tiene una RAYA. Eso es esto —un pelo de tinta y un
+// degradado de 4 px casi invisible—, que se lee como pliegue sin ensuciar
+// nada de lo que hay escrito.
+const CREASE_LINE = "rgba(16,27,54,0.10)";
+const CREASE_FADE = 4;
+
+export function FoldedLetter({
+  data,
+  baseImageUrl,
+  flapClassName = "fold-flap",
+  foldDeg,
+  onFoldPan,
+  onFoldPanStart,
+  onFoldPanEnd,
+}: Props) {
   const aspect = data.canvasWidth / data.canvasHeight;
   // El contenedor es la mitad inferior de la hoja: doble de ancho relativo.
   const halfAspect = aspect * 2;
+  const agarrable = Boolean(onFoldPan);
 
   return (
     <div
@@ -69,15 +101,21 @@ export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }
         </div>
         {/* grano de papel */}
         <div className="pointer-events-none absolute inset-0" style={GRAIN} />
-        {/* sombra suave bajo la línea de pliegue (discreta: cae sobre texto) */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-3 bg-gradient-to-b from-black/[0.07] to-transparent" />
+        {/* la raya del pliegue, por debajo */}
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0"
+          style={{
+            height: CREASE_FADE,
+            background: `linear-gradient(to bottom, ${CREASE_LINE}, transparent)`,
+          }}
+        />
         {/* insinuación de canto de papel en los lados */}
         <div className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/[0.06] to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-1.5 bg-gradient-to-l from-black/[0.06] to-transparent" />
       </div>
 
       {/* Solapa superior: bisagra en la línea de pliegue. Empieza doblada. */}
-      <div
+      <motion.div
         className={`${flapClassName} absolute inset-x-0`}
         style={{
           top: "-100%",
@@ -85,9 +123,14 @@ export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }
           zIndex: 2,
           transformOrigin: "bottom center",
           transformStyle: "preserve-3d",
-          transform: "rotateX(-180deg)",
+          rotateX: foldDeg ?? -180,
           willChange: "transform",
+          cursor: agarrable ? "grab" : undefined,
+          touchAction: agarrable ? "none" : undefined,
         }}
+        onPan={onFoldPan}
+        onPanStart={onFoldPanStart}
+        onPanEnd={onFoldPanEnd}
       >
         {/* Cara frontal (visible al desplegar): la parte alta de la carta */}
         <div
@@ -106,8 +149,14 @@ export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }
           </div>
           {/* grano de papel */}
           <div className="pointer-events-none absolute inset-0" style={GRAIN} />
-          {/* sombra sobre la línea de pliegue (discreta: cae sobre texto) */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3 bg-gradient-to-t from-black/[0.07] to-transparent" />
+          {/* la raya del pliegue, por encima */}
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0"
+            style={{
+              height: CREASE_FADE,
+              background: `linear-gradient(to top, ${CREASE_LINE}, transparent)`,
+            }}
+          />
           {/* insinuación de canto de papel en los lados */}
           <div className="pointer-events-none absolute inset-y-0 left-0 w-1.5 bg-gradient-to-r from-black/[0.06] to-transparent" />
           <div className="pointer-events-none absolute inset-y-0 right-0 w-1.5 bg-gradient-to-l from-black/[0.06] to-transparent" />
@@ -126,7 +175,7 @@ export function FoldedLetter({ data, baseImageUrl, flapClassName = "fold-flap" }
         >
           <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-black/10 to-transparent" />
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -81,10 +81,13 @@ export default function Home() {
           </div>
 
           {/* Hub: todos los caminos salen de aquí (iconos a tinta, no emoji:
-              los emoji de sistema rompen el mundo dibujado a mano) */}
-          <div className="mx-auto mt-7 grid max-w-md gap-3 sm:grid-cols-3">
+              los emoji de sistema rompen el mundo dibujado a mano).
+              Dos columnas y no cuatro: con cuatro losetas en fila, "Lista de
+              deseos" y "¿Qué es este regalo?" se parten en tres renglones. */}
+          <div className="mx-auto mt-7 grid max-w-md grid-cols-2 gap-3">
             <HubCard href="/saber-mas" icon={<IconLibro />} titulo="Saber más" nota="¿Qué es este regalo?" />
             <HubCard href="/para-ella" icon={<IconLuna />} titulo="El álbum" nota="El cielo de Isidora" />
+            <HubCard href="/lista-de-deseos" icon={<IconPaquete />} titulo="Lista de deseos" nota="Qué regalarle" />
             <HubCard href="/editor" icon={<IconLlave />} titulo="El taller" nota="Solo con llave" />
           </div>
         </div>
@@ -149,6 +152,26 @@ function IconLuna() {
         fill="var(--gold)"
         stroke="var(--foreground)"
         strokeWidth="1"
+      />
+    </svg>
+  );
+}
+
+function IconPaquete() {
+  return (
+    <svg viewBox="0 0 32 24" className="h-full w-full" fill="none" aria-hidden>
+      <g stroke="var(--foreground)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 9.5h20V21H6z" />
+        <path d="M4.5 5.5h23v4h-23z" />
+        <path d="M16 5.5V21" />
+      </g>
+      <path
+        d="M16 5.5c-1.6-2.2-5-3.8-6.4-2.2-1.2 1.4 1.6 2.2 6.4 2.2zM16 5.5c1.6-2.2 5-3.8 6.4-2.2 1.2 1.4-1.6 2.2-6.4 2.2z"
+        fill="var(--gold)"
+        fillOpacity="0.35"
+        stroke="var(--foreground)"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
       />
     </svg>
   );

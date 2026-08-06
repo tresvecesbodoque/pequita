@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
-import { EscribirForm } from "./EscribirForm";
+import { ListaDeseos } from "@/components/regalos/ListaDeseos";
 import { NavBar } from "@/components/layout/NavBar";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: `Escribe una carta para ${SITE.recipientName}`,
-  description: SITE.inviteSubtitle,
+  title: `Lista de deseos — qué regalarle a ${SITE.recipientName}`,
+  description: `Las cosas que ${SITE.recipientName} lleva tiempo queriendo, con su enlace y una marca para que dos personas no le regalen lo mismo.`,
 };
 
-export default function EscribirPage() {
+// La cuarta parada del hub. Vive aparte de /escribir a propósito: quien solo
+// quiere ver qué regalarle no tiene por qué cruzar un formulario que no va a
+// rellenar, y quien viene a escribir no se encuentra la tienda debajo de su carta.
+export default function ListaDeseosPage() {
   return (
     <main className="maximal-tile min-h-screen">
       <NavBar />
@@ -20,9 +23,11 @@ export default function EscribirPage() {
           >
             Pequita
           </p>
-          <h1 className="mt-2 text-3xl sm:text-4xl">{SITE.inviteTitle}</h1>
-          <p className="mx-auto mt-3 max-w-md leading-relaxed text-[var(--muted)]">
-            {SITE.inviteSubtitle}
+          <h1 className="mt-2 text-3xl sm:text-4xl">Lista de deseos</h1>
+          <p className="mx-auto mt-3 max-w-lg leading-relaxed text-[var(--muted)]">
+            Si aún no sabes qué regalarle, aquí hay algunas cosas que quiere hace
+            tiempo, para todos los presupuestos. Si eliges una, márcala: el resto
+            de la familia lo verá y así nadie llega con el mismo regalo.
           </p>
           <div className="mx-auto mt-6 flex max-w-[240px] items-center gap-3">
             <div className="hairline flex-1" />
@@ -38,7 +43,7 @@ export default function EscribirPage() {
           </div>
         </header>
 
-        <EscribirForm recipientName={SITE.recipientName} />
+        <ListaDeseos />
       </div>
     </main>
   );

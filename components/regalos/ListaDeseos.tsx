@@ -3,10 +3,11 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   CATEGORIAS_REGALOS,
   NOTAS_ENVIO,
+  PLAZOS,
   PRESUPUESTOS,
   REGALOS,
   enlaceRegalo,
@@ -16,10 +17,10 @@ import {
 } from "@/lib/regalos";
 import { Rotulo } from "@/components/ui/Rotulo";
 
-// Lista de deseos en /escribir. Para quien llega a escribir la carta y se queda
-// pensando qué regalar: aquí están las cosas que ella lleva tiempo queriendo,
-// con su enlace de compra y un "check" que ven todos, para que dos familiares
-// no aparezcan el mismo día con el mismo brillo de labios.
+// El cuerpo de /lista-de-deseos: las cosas que ella lleva tiempo queriendo, con
+// su enlace de compra y un "check" que ven todos, para que dos familiares no
+// aparezcan el mismo día con el mismo brillo de labios. El título y la frase de
+// bienvenida los pone la página; esto es la lista y nada más.
 //
 // El "check" no es privado ni tiene contraseña: se firma con el nombre que cada
 // uno escriba, y solo quien apartó algo puede soltarlo. Es un acuerdo entre
@@ -99,8 +100,7 @@ function Foto({ regalo }: { regalo: Regalo }) {
   );
 }
 
-export function ListaDeseos({ nombreSugerido = "" }: { nombreSugerido?: string }) {
-  const [abierto, setAbierto] = useState(true);
+export function ListaDeseos() {
   const [tomados, setTomados] = useState<Tomados>({});
   const [sinBase, setSinBase] = useState(false);
   const [cargando, setCargando] = useState(true);
@@ -108,8 +108,8 @@ export function ListaDeseos({ nombreSugerido = "" }: { nombreSugerido?: string }
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
-  // Quién marca. Se recuerda entre visitas y, si no hay nada, se hereda del
-  // nombre que ya escribió en la carta (que es la misma persona).
+  // Quién marca. Se recuerda entre visitas y, si es la primera, se hereda del
+  // nombre con que firmó su carta (que es la misma persona).
   const [nombre, setNombre] = useState("");
   const [pideNombre, setPideNombre] = useState(false);
   const nombreRef = useRef<HTMLInputElement>(null);
@@ -118,7 +118,7 @@ export function ListaDeseos({ nombreSugerido = "" }: { nombreSugerido?: string }
   const [pres, setPres] = useState<Presupuesto | "todo">("todo");
   const [soloLibres, setSoloLibres] = useState(false);
 
-  const yo = (nombre.trim() || nombreSugerido.trim()).slice(0, 40);
+  const yo = nombre.trim().slice(0, 40);
 
   useEffect(() => {
     try {
@@ -267,276 +267,265 @@ export function ListaDeseos({ nombreSugerido = "" }: { nombreSugerido?: string }
 
   return (
     <section className="sketch-card sketch-card--v3 p-5 sm:p-7" id="regalos">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Rotulo>Lista de deseos</Rotulo>
-          <h2 className="mt-1.5 text-2xl sm:text-3xl">¿Aún no sabes qué regalarle?</h2>
-          <p className="mt-2 max-w-xl text-sm italic leading-relaxed text-[var(--ink)]/80">
-            Aquí hay algunas cosas que quiere hace tiempo, para todos los
-            presupuestos. Si eliges una, márcala: el resto de la familia lo verá
-            y así nadie llega con el mismo regalo.
+      {/* El título y la explicación los pone la página: aquí empieza la lista.
+          Tampoco hay ya botón de cerrar — en su propia página, cerrar la lista
+          es salirse de ella. */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {/* Quién firma las marcas */}
+        <div
+          className={`flex flex-wrap items-center gap-3 rounded-2xl border-[1.5px] p-3.5 backdrop-blur-[4px] transition-colors ${
+            pideNombre && yo.trim().length < 2
+              ? "border-[var(--rose)]/60 bg-[var(--rose)]/10"
+              : "border-[var(--borde)] bg-[var(--cristal)]"
+          }`}
+        >
+          <label className="flex flex-1 flex-col gap-1.5">
+            <Rotulo>Marcas como</Rotulo>
+            <input
+              ref={nombreRef}
+              value={nombre}
+              onChange={(e) => {
+                setNombre(e.target.value);
+                setPideNombre(false);
+              }}
+              placeholder="Tu nombre"
+              maxLength={40}
+              className="w-full max-w-xs rounded-xl border-[1.5px] border-[var(--borde)] bg-[var(--cristal)] px-3.5 py-2 text-sm text-[var(--ink)] outline-none transition-colors placeholder:text-[var(--ink-tenue)] focus:border-[var(--borde-vivo)]"
+            />
+          </label>
+          <p className="flex-1 text-xs italic text-[var(--ink-tenue)]">
+            {yo.trim().length >= 2
+              ? `Lo que marques aparecerá como “lo regala ${yo.trim()}”.`
+              : "Escribe tu nombre para poder marcar lo que vas a regalar."}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setAbierto((v) => !v)}
-          aria-expanded={abierto}
-          className="shrink-0 rounded-full border-[1.5px] border-[var(--borde)] bg-[var(--cristal)] px-3.5 py-1.5 text-xs text-[var(--ink)] backdrop-blur-[4px] transition-colors hover:border-[var(--borde-vivo)]"
-        >
-          {abierto ? "Cerrar la lista" : `Ver la lista (${REGALOS.length})`}
-        </button>
-      </header>
 
-      <AnimatePresence initial={false}>
-        {abierto && (
-          <motion.div
-            key="lista"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
-          >
-            {/* Quién firma las marcas */}
-            <div
-              className={`mt-5 flex flex-wrap items-center gap-3 rounded-2xl border-[1.5px] p-3.5 backdrop-blur-[4px] transition-colors ${
-                pideNombre && yo.trim().length < 2
-                  ? "border-[var(--rose)]/60 bg-[var(--rose)]/10"
-                  : "border-[var(--borde)] bg-[var(--cristal)]"
-              }`}
-            >
-              <label className="flex flex-1 flex-col gap-1.5">
-                <Rotulo>Marcas como</Rotulo>
-                <input
-                  ref={nombreRef}
-                  value={nombre}
-                  onChange={(e) => {
-                    setNombre(e.target.value);
-                    setPideNombre(false);
-                  }}
-                  placeholder={nombreSugerido || "Tu nombre"}
-                  maxLength={40}
-                  className="w-full max-w-xs rounded-xl border-[1.5px] border-[var(--borde)] bg-[var(--cristal)] px-3.5 py-2 text-sm text-[var(--ink)] outline-none transition-colors placeholder:text-[var(--ink-tenue)] focus:border-[var(--borde-vivo)]"
-                />
-              </label>
-              <p className="flex-1 text-xs italic text-[var(--ink-tenue)]">
-                {yo.trim().length >= 2
-                  ? `Lo que marques aparecerá como “lo regala ${yo.trim()}”.`
-                  : "Escribe tu nombre para poder marcar lo que vas a regalar."}
-              </p>
-            </div>
-
-            {/* Filtros */}
-            <div className="mt-4 flex flex-col gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <Rotulo className="mr-1">Qué</Rotulo>
-                {[{ id: "todo", titulo: "Todo" }, ...CATEGORIAS_REGALOS].map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setCat(c.id)}
-                    aria-pressed={cat === c.id}
-                    className={`rounded-full border-[1.5px] px-3 py-1.5 text-xs transition-all ${
-                      cat === c.id ? chipActivo : chipInactivo
-                    }`}
-                  >
-                    {c.titulo}
-                  </button>
-                ))}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Rotulo className="mr-1">Cuánto</Rotulo>
-                {[{ id: "todo" as const, label: "Cualquiera", pista: "" }, ...PRESUPUESTOS].map(
-                  (p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setPres(p.id as Presupuesto | "todo")}
-                      aria-pressed={pres === p.id}
-                      title={p.pista || undefined}
-                      className={`rounded-full border-[1.5px] px-3 py-1.5 text-xs transition-all ${
-                        pres === p.id ? chipActivo : chipInactivo
-                      }`}
-                    >
-                      {p.label}
-                      {p.pista && (
-                        <span className="ml-1.5 opacity-60">{p.pista}</span>
-                      )}
-                    </button>
-                  ),
-                )}
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSoloLibres((v) => !v)}
-                  aria-pressed={soloLibres}
-                  className={`rounded-full border-[1.5px] px-3 py-1.5 text-xs transition-all ${
-                    soloLibres ? chipActivo : chipInactivo
-                  }`}
-                >
-                  {soloLibres ? "✓ " : ""}Esconder lo que ya tiene dueño
-                </button>
-                <p className="text-xs italic text-[var(--ink-tenue)]">
-                  {cargando
-                    ? "Viendo qué hay tomado…"
-                    : sinBase
-                      ? "Las marcas no están disponibles ahora mismo."
-                      : apartados === 0
-                        ? "Todavía nadie ha apartado nada."
-                        : `${apartados} de ${REGALOS.length} ya tienen quién los regale.`}
-                </p>
-              </div>
-            </div>
-
-            {(error || aviso) && (
-              <p
-                className={`mt-4 rounded-xl border-[1.5px] px-4 py-2.5 text-sm ${
-                  error
-                    ? "border-[var(--rose)]/50 bg-[var(--rose)]/10 text-[var(--rose)]"
-                    : "border-[var(--borde)] bg-[var(--cristal)] text-[var(--ink)]"
+        {/* Filtros */}
+        <div className="mt-4 flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Rotulo className="mr-1">Qué</Rotulo>
+            {[{ id: "todo", titulo: "Todo" }, ...CATEGORIAS_REGALOS].map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setCat(c.id)}
+                aria-pressed={cat === c.id}
+                className={`rounded-full border-[1.5px] px-3 py-1.5 text-xs transition-all ${
+                  cat === c.id ? chipActivo : chipInactivo
                 }`}
               >
-                {error ?? aviso}
-              </p>
+                {c.titulo}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Rotulo className="mr-1">Cuánto</Rotulo>
+            {[{ id: "todo" as const, label: "Cualquiera", pista: "" }, ...PRESUPUESTOS].map(
+              (p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setPres(p.id as Presupuesto | "todo")}
+                  aria-pressed={pres === p.id}
+                  title={p.pista || undefined}
+                  className={`rounded-full border-[1.5px] px-3 py-1.5 text-xs transition-all ${
+                    pres === p.id ? chipActivo : chipInactivo
+                  }`}
+                >
+                  {p.label}
+                  {p.pista && (
+                    <span className="ml-1.5 opacity-60">{p.pista}</span>
+                  )}
+                </button>
+              ),
             )}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => setSoloLibres((v) => !v)}
+              aria-pressed={soloLibres}
+              className={`rounded-full border-[1.5px] px-3 py-1.5 text-xs transition-all ${
+                soloLibres ? chipActivo : chipInactivo
+              }`}
+            >
+              {soloLibres ? "✓ " : ""}Esconder lo que ya tiene dueño
+            </button>
+            <p className="text-xs italic text-[var(--ink-tenue)]">
+              {cargando
+                ? "Viendo qué hay tomado…"
+                : sinBase
+                  ? "Las marcas no están disponibles ahora mismo."
+                  : apartados === 0
+                    ? "Todavía nadie ha apartado nada."
+                    : `${apartados} de ${REGALOS.length} ya tienen quién los regale.`}
+            </p>
+          </div>
+        </div>
 
-            {/* Las cosas */}
-            {visibles.length === 0 ? (
-              <p className="mt-8 text-center text-sm italic text-[var(--ink-tenue)]">
-                Con esos filtros no queda nada. Prueba a soltar alguno.
-              </p>
-            ) : (
-              visibles.map((c) => (
-                <div key={c.id} className="mt-8">
-                  <h3 className="text-xl text-[var(--gold)]">{c.titulo}</h3>
-                  <p className="mt-1 text-xs italic text-[var(--ink-tenue)]">{c.resumen}</p>
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {c.items.map((r) => {
-                      const tomado = tomados[r.id];
-                      const mio = tomado ? esMio(tomado.quien) : false;
-                      const ajeno = Boolean(tomado) && !mio;
-                      const ocupado = enVuelo.has(r.id);
-                      const enlace = enlaceRegalo(r);
-                      const precio = precioLegible(r);
-                      const banda = PRESUPUESTOS.find((p) => p.id === r.presupuesto);
-
-                      return (
-                        <article
-                          key={r.id}
-                          className={`relative flex flex-col gap-3 rounded-2xl border-[1.5px] p-3.5 backdrop-blur-[4px] transition-all ${
-                            mio
-                              ? "border-[var(--gold)] bg-[var(--gold)]/[0.07]"
-                              : "border-[var(--borde)] bg-[var(--cristal)]"
-                          } ${ajeno ? "opacity-60" : ""}`}
-                        >
-                          <Foto regalo={r} />
-
-                          <div className="flex flex-1 flex-col gap-1.5">
-                            <h4 className="pr-12 text-lg leading-tight text-[var(--ink)]">
-                              {r.nombre}
-                            </h4>
-                            {!r.fotos?.length && (
-                              <span className="absolute right-3 top-3">
-                                <PaqueteDibujado />
-                              </span>
-                            )}
-                            {r.marca && (
-                              <p className="text-xs uppercase tracking-[0.14em] text-[var(--ink-tenue)]">
-                                {r.marca}
-                              </p>
-                            )}
-                            <p className="text-sm leading-relaxed text-[var(--ink)]/80">
-                              {r.detalle}
-                            </p>
-                            {r.aviso && (
-                              <p className="mt-0.5 text-xs italic leading-relaxed text-[var(--ink-calida)]/85">
-                                ⚠ {r.aviso}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-2">
-                            {precio && (
-                              <span className="rounded-full border border-[var(--borde)] px-2.5 py-1 text-xs text-[var(--ink)]">
-                                {precio}
-                              </span>
-                            )}
-                            {banda && (
-                              <span className="text-xs italic text-[var(--ink-tenue)]">
-                                {banda.label}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            {enlace && (
-                              <a
-                                href={enlace}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex-1 rounded-full border-[1.5px] border-[var(--borde)] bg-[var(--cristal)] px-3 py-2 text-center text-xs text-[var(--ink)] transition-colors hover:border-[var(--borde-vivo)] hover:text-[var(--gold)]"
-                              >
-                                {r.url ? `Ver en ${r.tienda ?? "la tienda"}` : "Buscarlo"} ↗
-                              </a>
-                            )}
-                            {!enlace && r.tienda && (
-                              <span className="flex-1 px-1 py-2 text-center text-xs italic text-[var(--ink-tenue)]">
-                                En {r.tienda}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* El check compartido */}
-                          <button
-                            type="button"
-                            onClick={() => alternar(r)}
-                            disabled={ajeno || ocupado || sinBase}
-                            aria-pressed={Boolean(tomado)}
-                            className={`flex items-center justify-center gap-2 rounded-full border-[1.5px] px-3 py-2 text-xs transition-all ${
-                              mio
-                                ? "border-[var(--gold)] bg-[var(--gold)]/15 text-[var(--gold)]"
-                                : ajeno
-                                  ? "cursor-default border-[var(--borde)] text-[var(--ink-tenue)]"
-                                  : "border-[var(--borde)] text-[var(--ink)] hover:border-[var(--borde-vivo)] hover:text-[var(--gold)]"
-                            } ${ocupado ? "opacity-50" : ""}`}
-                          >
-                            <span
-                              aria-hidden
-                              className={`flex h-4 w-4 items-center justify-center rounded-[4px] border ${
-                                tomado
-                                  ? "border-[var(--gold)] bg-[var(--gold)]/25 text-[var(--gold)]"
-                                  : "border-[var(--borde)]"
-                              }`}
-                            >
-                              {tomado ? "✓" : ""}
-                            </span>
-                            {mio
-                              ? "Lo regalas tú — soltar"
-                              : ajeno
-                                ? `Lo regala ${tomado!.quien}`
-                                : "Esto lo regalo yo"}
-                          </button>
-                        </article>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))
-            )}
-
-            {/* Despacho */}
-            <div className="mt-8 flex flex-col gap-2 rounded-2xl border-[1.5px] border-dashed border-[var(--borde)] p-4">
-              <Rotulo>Si lo mandas por encomienda</Rotulo>
-              {NOTAS_ENVIO.map((n) => (
-                <p key={n.tienda} className="text-xs leading-relaxed text-[var(--ink)]/75">
-                  <span className="text-[var(--ink-calida)]">{n.tienda}:</span> {n.texto}
-                </p>
-              ))}
-            </div>
-          </motion.div>
+        {(error || aviso) && (
+          <p
+            className={`mt-4 rounded-xl border-[1.5px] px-4 py-2.5 text-sm ${
+              error
+                ? "border-[var(--rose)]/50 bg-[var(--rose)]/10 text-[var(--rose)]"
+                : "border-[var(--borde)] bg-[var(--cristal)] text-[var(--ink)]"
+            }`}
+          >
+            {error ?? aviso}
+          </p>
         )}
-      </AnimatePresence>
+
+        {/* Las cosas */}
+        {visibles.length === 0 ? (
+          <p className="mt-8 text-center text-sm italic text-[var(--ink-tenue)]">
+            Con esos filtros no queda nada. Prueba a soltar alguno.
+          </p>
+        ) : (
+          visibles.map((c) => (
+            <div key={c.id} className="mt-8">
+              <h3 className="text-xl text-[var(--gold)]">{c.titulo}</h3>
+              <p className="mt-1 text-xs italic text-[var(--ink-tenue)]">{c.resumen}</p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {c.items.map((r) => {
+                  const tomado = tomados[r.id];
+                  const mio = tomado ? esMio(tomado.quien) : false;
+                  const ajeno = Boolean(tomado) && !mio;
+                  const ocupado = enVuelo.has(r.id);
+                  const enlace = enlaceRegalo(r);
+                  const precio = precioLegible(r);
+                  const banda = PRESUPUESTOS.find((p) => p.id === r.presupuesto);
+
+                  return (
+                    <article
+                      key={r.id}
+                      className={`relative flex flex-col gap-3 rounded-2xl border-[1.5px] p-3.5 backdrop-blur-[4px] transition-all ${
+                        mio
+                          ? "border-[var(--gold)] bg-[var(--gold)]/[0.07]"
+                          : "border-[var(--borde)] bg-[var(--cristal)]"
+                      } ${ajeno ? "opacity-60" : ""}`}
+                    >
+                      <Foto regalo={r} />
+
+                      <div className="flex flex-1 flex-col gap-1.5">
+                        <h4 className="pr-12 text-lg leading-tight text-[var(--ink)]">
+                          {r.nombre}
+                        </h4>
+                        {!r.fotos?.length && (
+                          <span className="absolute right-3 top-3">
+                            <PaqueteDibujado />
+                          </span>
+                        )}
+                        {r.marca && (
+                          <p className="text-xs uppercase tracking-[0.14em] text-[var(--ink-tenue)]">
+                            {r.marca}
+                          </p>
+                        )}
+                        <p className="text-sm leading-relaxed text-[var(--ink)]/80">
+                          {r.detalle}
+                        </p>
+                        {r.aviso && (
+                          <p className="mt-0.5 text-xs italic leading-relaxed text-[var(--ink-calida)]/85">
+                            ⚠ {r.aviso}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        {precio && (
+                          <span className="rounded-full border border-[var(--borde)] px-2.5 py-1 text-xs text-[var(--ink)]">
+                            {precio}
+                          </span>
+                        )}
+                        {banda && (
+                          <span className="text-xs italic text-[var(--ink-tenue)]">
+                            {banda.label}
+                          </span>
+                        )}
+                        {/* Lo que se consigue hoy va encendido; lo que hay que
+                            esperar, apagado. El cumpleaños es el que manda. */}
+                        {r.plazo && (
+                          <span
+                            className={`ml-auto text-xs italic ${
+                              r.plazo === "hoy"
+                                ? "text-[var(--ink-calida)]"
+                                : "text-[var(--ink-tenue)]"
+                            }`}
+                          >
+                            {PLAZOS[r.plazo]}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {enlace && (
+                          <a
+                            href={enlace}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 rounded-full border-[1.5px] border-[var(--borde)] bg-[var(--cristal)] px-3 py-2 text-center text-xs text-[var(--ink)] transition-colors hover:border-[var(--borde-vivo)] hover:text-[var(--gold)]"
+                          >
+                            {r.url ? `Ver en ${r.tienda ?? "la tienda"}` : "Buscarlo"} ↗
+                          </a>
+                        )}
+                        {!enlace && r.tienda && (
+                          <span className="flex-1 px-1 py-2 text-center text-xs italic text-[var(--ink-tenue)]">
+                            En {r.tienda}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* El check compartido */}
+                      <button
+                        type="button"
+                        onClick={() => alternar(r)}
+                        disabled={ajeno || ocupado || sinBase}
+                        aria-pressed={Boolean(tomado)}
+                        className={`flex items-center justify-center gap-2 rounded-full border-[1.5px] px-3 py-2 text-xs transition-all ${
+                          mio
+                            ? "border-[var(--gold)] bg-[var(--gold)]/15 text-[var(--gold)]"
+                            : ajeno
+                              ? "cursor-default border-[var(--borde)] text-[var(--ink-tenue)]"
+                              : "border-[var(--borde)] text-[var(--ink)] hover:border-[var(--borde-vivo)] hover:text-[var(--gold)]"
+                        } ${ocupado ? "opacity-50" : ""}`}
+                      >
+                        <span
+                          aria-hidden
+                          className={`flex h-4 w-4 items-center justify-center rounded-[4px] border ${
+                            tomado
+                              ? "border-[var(--gold)] bg-[var(--gold)]/25 text-[var(--gold)]"
+                              : "border-[var(--borde)]"
+                          }`}
+                        >
+                          {tomado ? "✓" : ""}
+                        </span>
+                        {mio
+                          ? "Lo regalas tú — soltar"
+                          : ajeno
+                            ? `Lo regala ${tomado!.quien}`
+                            : "Esto lo regalo yo"}
+                      </button>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          ))
+        )}
+
+        {/* Despacho */}
+        <div className="mt-8 flex flex-col gap-2 rounded-2xl border-[1.5px] border-dashed border-[var(--borde)] p-4">
+          <Rotulo>Si lo mandas por encomienda</Rotulo>
+          {NOTAS_ENVIO.map((n) => (
+            <p key={n.tienda} className="text-xs leading-relaxed text-[var(--ink)]/75">
+              <span className="text-[var(--ink-calida)]">{n.tienda}:</span> {n.texto}
+            </p>
+          ))}
+        </div>
+      </motion.div>
     </section>
   );
 }

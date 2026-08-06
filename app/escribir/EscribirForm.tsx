@@ -8,7 +8,6 @@ import { submitGuestLetter, type GuestSubmitState } from "@/lib/actions/guest";
 import { LETTER_THEMES, getTheme } from "@/lib/letterThemes";
 import { buildGuestEsquela, buildGuestSobre } from "@/lib/guestCanvas";
 import { GuestStudio } from "@/components/guest/GuestStudio";
-import { ListaDeseos } from "@/components/regalos/ListaDeseos";
 import { parseCanvas, EMPTY_ESQUELA } from "@/lib/types/canvas";
 import { backgroundLayerStyle } from "@/lib/backgrounds/render";
 import { CanvasStage } from "@/components/canvas/CanvasStage";
@@ -616,10 +615,6 @@ export function EscribirForm({ recipientName }: { recipientName: string }) {
         </div>
       )}
     </section>
-
-    {/* La carta es el regalo; esto es para quien además quiere llevarle algo.
-        Hereda el nombre del formulario: es la misma persona firmando. */}
-    <ListaDeseos nombreSugerido={authorName} />
     </div>
   );
 }
