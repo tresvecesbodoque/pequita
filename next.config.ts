@@ -12,6 +12,21 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.r2.dev" },
     ],
   },
+
+  // El álbum se sirve ESPEJADO desde el contador (misiete), que reenvía
+  // /para-ella, /carta/* y /pelicula a esta app. Ella nunca ve el dominio de
+  // la app, y así tampoco la lista de deseos: el regalo sigue siendo sorpresa.
+  // Para el candado del álbum (server action) esos reenvíos llegan con el
+  // Origin del contador y Next los rechazaría como CSRF si no van declarados.
+  experimental: {
+    serverActions: {
+      allowedOrigins: [
+        "misiete.vercel.app",
+        "dossieteshastaelsiete.vercel.app",
+        "ishibonita.vercel.app",
+      ],
+    },
+  },
 };
 
 export default nextConfig;
