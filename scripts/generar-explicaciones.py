@@ -31,6 +31,12 @@ VIAS = ["Nigredo · Calcinatio", "Solutio · Sublimatio · Precipitatio",
 
 ROMANOS = ["I", "II", "III", "IV", "V", "VI", "VII"]
 
+# Tope de publicación. El .md marca hasta dónde llega lo revisado, pero él puede
+# tener una estrofa lista en el poema y su explicación todavía a medias: el sitio
+# no publica una sin la otra. Subir este número cuando la explicación esté hecha
+# (y devolver su <section> a sitio-contador/index.html, que va escrita a mano).
+HASTA = 3
+
 
 def enriquecer(t):
     """Markdown mínimo a HTML: cursivas, negritas y comillas de código."""
@@ -100,6 +106,12 @@ def main():
 
     if not estrofas:
         sys.exit("No se encontró ninguna estrofa revisada en el .md")
+
+    # Lo que pase del tope se queda fuera, por muy revisado que esté el .md.
+    if len(estrofas) > HASTA:
+        fuera = ", ".join(e["num"] for e in estrofas[HASTA:])
+        print(f"  fuera por el tope HASTA={HASTA}: {fuera}")
+        estrofas = estrofas[:HASTA]
 
     for e in estrofas:
         if len(e["versos"]) != 7:

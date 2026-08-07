@@ -267,8 +267,12 @@ body.en-escena .poema-abrir, body.en-escena .juego-abrir {
 /* ── El poema ──────────────────────────────────────────────────── */
 .verso { transition: opacity .7s ease, color .7s ease, transform .9s ease; }
 .poema.enfocado .verso { opacity: .3; }
-.poema.enfocado .verso.viva { opacity: 1; color: rgba(246,227,200,.95); }
-.verso.ganado { color: rgba(246,227,200,.95); opacity: 1; }   /* E50 */
+/* El verso encendido va con la tinta cálida del TOKEN, no con el crema
+   escrito a mano: el día del cumpleaños el sitio vira al papel y un crema
+   fijo desaparece sobre el papel. Le pasaba justo a la estrofa II, que es la
+   única con versos ganados (E50), y se leía como si no estuviera. */
+.poema.enfocado .verso.viva { opacity: 1; color: var(--ink-calida); }
+.verso.ganado { color: var(--ink-calida); opacity: 1; }   /* E50 */
 .verso.baila { transform: translateX(var(--desvio, 0)); }      /* E58 */
 
 /* ── Interacción ───────────────────────────────────────────────── */
@@ -429,6 +433,10 @@ body.en-escena .pantalla, body.en-escena .frasco { opacity: 0; pointer-events: n
 
 /* ── Sobres dormidos (E51) ─────────────────────────────────────── */
 .sobre { position: fixed; right: 18px; bottom: 18px; z-index: 6; animation: duerme 4s ease-in-out infinite; }
+/* El sobre duerme en la misma esquina que el botón de pantalla completa, y el
+   botón va encima. Donde el botón existe —en el iPhone no—, el sobre sube
+   por encima de él en vez de quedarse debajo. */
+body.con-pantalla .sobre { bottom: 74px; }
 @keyframes duerme { 0%,100% { transform: rotate(-4deg) translateY(0) } 50% { transform: rotate(3deg) translateY(-5px) } }
 
 /* ── Víspera y día D (E52–E54) ─────────────────────────────────── */
