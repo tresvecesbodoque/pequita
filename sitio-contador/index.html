@@ -241,8 +241,13 @@
     background:
       radial-gradient(1200px 700px at 50% -10%, #1b2748 0%, transparent 60%),
       linear-gradient(180deg, #0b1428 0%, #070c19 100%);
+    color: var(--ink);
     touch-action: none; user-select: none; -webkit-user-select: none;
   }
+  /* El día D la partida también vira al papel: el telón del día en vez del
+     cielo. Lo de dentro (marcador, reloj, susurros) ya va con los tokens, así
+     que se pinta solo con la tinta que toque. */
+  html.dia .juego { background: var(--telon-dia); }
   .juego.viva { display: block; }
   .juego canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
@@ -252,10 +257,10 @@
     font-size: .95rem; color: var(--gold); pointer-events: none;
   }
   .juego-hud .marcador { font-variant-numeric: tabular-nums; }
-  .juego-hud .tiempo { color: rgba(234,228,214,.6); font-variant-numeric: tabular-nums; }
+  .juego-hud .tiempo { color: var(--ink-suave); font-variant-numeric: tabular-nums; }
   .juego-salir {
     position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-    border: 0; background: none; color: rgba(234,228,214,.4);
+    border: 0; background: none; color: var(--ink-tenue);
     font-family: inherit; font-size: .8rem; letter-spacing: .18em;
     cursor: pointer; padding: 8px 14px;
   }
@@ -265,7 +270,7 @@
     position: absolute; left: 50%; top: 22%; transform: translateX(-50%);
     width: min(22rem, 84vw); text-align: center; pointer-events: none;
     font-style: italic; font-size: 1rem; line-height: 1.6;
-    color: rgba(234,228,214,.85); opacity: 0;
+    color: var(--ink); opacity: 0;
   }
   .juego-susurro.viva { animation: susurra 3.4s ease forwards; }
   @keyframes susurra {
@@ -278,7 +283,7 @@
     position: absolute; inset: 0; display: none;
     flex-direction: column; align-items: center; justify-content: center;
     gap: 14px; padding: 40px 26px; text-align: center;
-    background: rgba(7,12,25,.82); backdrop-filter: blur(6px);
+    background: color-mix(in srgb, var(--fondo) 86%, transparent); backdrop-filter: blur(6px);
   }
   .juego-fin.viva { display: flex; animation: entra .5s ease both; }
   @keyframes entra { from { opacity: 0 } to { opacity: 1 } }
@@ -286,9 +291,9 @@
     font-size: clamp(2.6rem, 12vw, 4rem); color: var(--gold); line-height: 1;
     font-variant-numeric: tabular-nums;
   }
-  .juego-fin .pie { font-size: .8rem; letter-spacing: .16em; color: rgba(234,228,214,.5); }
+  .juego-fin .pie { font-size: .8rem; letter-spacing: .16em; color: var(--ink-tenue); }
   .juego-fin .frase {
-    font-style: italic; color: rgba(234,228,214,.85); max-width: 24rem;
+    font-style: italic; color: var(--ink); max-width: 24rem;
     line-height: 1.65; margin-top: 6px;
   }
   /* La pista: solo aparece al batir el récord. Va en dorado y con marco
@@ -296,13 +301,13 @@
   .juego-fin .pista {
     display: none; max-width: 25rem; margin-top: 4px;
     padding: 14px 18px; border-radius: 16px;
-    border: 1px solid rgba(217,168,63,.35); background: rgba(217,168,63,.07);
+    border: 1px solid var(--borde); background: color-mix(in srgb, var(--gold) 7%, transparent);
     color: var(--gold); line-height: 1.6; font-size: .95rem;
   }
   .juego-fin .pista.viva { display: block; animation: pista-asoma 1.1s ease .35s both; }
   .juego-fin .pista .llave {
     display: block; font-size: .68rem; letter-spacing: .2em; text-transform: uppercase;
-    color: rgba(217,168,63,.6); margin-bottom: 7px;
+    color: var(--gold-suave); margin-bottom: 7px;
   }
   /* Nombre propio: eventos.css ya tiene un @keyframes "asoma" y, al
      cargarse después, ganaría el suyo. */
@@ -1309,7 +1314,37 @@
         if (guardar && window.guardarEnFrasco) window.guardarEnFrasco(texto);
       }
 
+      // ── La paleta de la partida ──────────────────────────────────
+      // El día D el sitio entero vira al papel cambiando los TOKENS (ver
+      // tokens.css); pero el lienzo no hereda CSS, así que aquí se leen a
+      // mano al empezar cada partida. Así la estrella se pinta del oro que
+      // esté vigente —bermellón sobre el papel— y no de un dorado fijo que
+      // en el día se vería como una mancha.
+      var P = { dia: false, oro: "#d9a83f", rosa: "#c96b74", calida: "#f6e3c8" };
+      function leerPaleta() {
+        var raiz = getComputedStyle(document.documentElement);
+        function tomar(nombre, porDefecto) {
+          var v = (raiz.getPropertyValue(nombre) || "").trim();
+          return /^(#|rgb)/.test(v) ? v : porDefecto;   // si no resolvió, la noche
+        }
+        P.dia = document.documentElement.classList.contains("dia");
+        P.oro = tomar("--gold", "#d9a83f");
+        P.rosa = tomar("--rose", "#c96b74");
+        P.calida = tomar("--ink-calida", "#f6e3c8");
+      }
+      // El mismo color del token, con la transparencia que pida el dibujo.
+      function conAlfa(color, a) {
+        var hex = color.match(/^#([0-9a-fA-F]{6})$/);
+        if (hex) {
+          var n = parseInt(hex[1], 16);
+          return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")";
+        }
+        var trio = color.match(/(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+        return trio ? "rgba(" + trio[1] + "," + trio[2] + "," + trio[3] + "," + a + ")" : color;
+      }
+
       function medir() {
+        leerPaleta();
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         W = caja.clientWidth; H = caja.clientHeight;
         lienzo.width = Math.round(W * dpr);
@@ -1368,7 +1403,7 @@
             bichos.splice(i, 1);
             puntos += b.tipo === "corazon" ? 3 : 1;
             elMarcador.textContent = "✦ " + puntos;
-            chispear(b.x, b.y, b.tipo === "corazon" ? "#c96b74" : "#d9a83f");
+            chispear(b.x, b.y, b.tipo === "corazon" ? P.rosa : P.oro);
             if (puntos % 7 === 0) susurrar(fraseDeLosSiete(), true);   // guiño al 7 de agosto
             return;
           }
@@ -1394,6 +1429,9 @@
       }
 
       function pintarCielo() {
+        // De día no hay estrellas de fondo, igual que en la portada, que el
+        // día D apaga su cielo: sobre el papel serían motas de suciedad.
+        if (P.dia) return;
         ctx.fillStyle = "#ffffff";
         for (var e = 0; e < cielo.length; e++) {
           var s = cielo[e];
@@ -1408,19 +1446,20 @@
         pintarCielo();
         for (var i = 0; i < bichos.length; i++) {
           var b = bichos[i];
-          ctx.shadowBlur = suave ? 0 : 18;
+          // El resplandor es cosa de la noche: sobre el papel, tinta plana.
+          ctx.shadowBlur = (suave || P.dia) ? 0 : 18;
           if (b.tipo === "corazon") {
-            ctx.fillStyle = "#c96b74"; ctx.shadowColor = "rgba(201,107,116,.8)";
+            ctx.fillStyle = P.rosa; ctx.shadowColor = conAlfa(P.rosa, .8);
             corazon(b.x, b.y, b.r);
           } else if (b.tipo === "luciernaga") {
             var brillo = 0.55 + 0.45 * Math.sin(b.fase);
             var bat = suave ? 1 : 0.3 + 0.7 * Math.abs(Math.sin(b.fase * 5));
             ctx.save();
             ctx.translate(b.x, b.y);
-            ctx.shadowColor = "rgba(246,227,200,.9)";
+            ctx.shadowColor = conAlfa(P.calida, .9);
             // las dos alas
-            ctx.fillStyle = "rgba(246,227,200,.18)";
-            ctx.strokeStyle = "rgba(246,227,200,.55)";
+            ctx.fillStyle = conAlfa(P.calida, .18);
+            ctx.strokeStyle = conAlfa(P.calida, .55);
             ctx.lineWidth = 0.9;
             for (var a = -1; a <= 1; a += 2) {
               ctx.save();
@@ -1432,14 +1471,14 @@
               ctx.restore();
             }
             // el cuerpo y la panza encendida
-            ctx.strokeStyle = "rgba(246,227,200,.7)";
+            ctx.strokeStyle = conAlfa(P.calida, .7);
             ctx.lineWidth = 1.3;
             ctx.beginPath(); ctx.moveTo(0, -b.r * 0.3); ctx.lineTo(0, b.r * 0.35); ctx.stroke();
-            ctx.fillStyle = "rgba(246,227,200," + brillo.toFixed(2) + ")";
+            ctx.fillStyle = conAlfa(P.calida, brillo.toFixed(2));
             ctx.beginPath(); ctx.arc(0, b.r * 0.45, b.r * 0.5, 0, Math.PI * 2); ctx.fill();
             ctx.restore();
           } else {
-            ctx.fillStyle = "#d9a83f"; ctx.shadowColor = "rgba(217,168,63,.85)";
+            ctx.fillStyle = P.oro; ctx.shadowColor = conAlfa(P.oro, .85);
             estrella(b.x, b.y, b.r, b.giro);
           }
         }
