@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/para-ella", "destination": "https://ishibonita.vercel.app/para-ella" },
+    { "source": "/pelicula", "destination": "https://ishibonita.vercel.app/pelicula" },
+    { "source": "/carta/:slug*", "destination": "https://ishibonita.vercel.app/carta/:slug*" },
+    { "source": "/_next/:path*", "destination": "https://ishibonita.vercel.app/_next/:path*" },
+    { "source": "/sonidos/:path*", "destination": "https://ishibonita.vercel.app/sonidos/:path*" },
+    { "source": "/stickers-base/:path*", "destination": "https://ishibonita.vercel.app/stickers-base/:path*" },
+    { "source": "/stickers-principito/:path*", "destination": "https://ishibonita.vercel.app/stickers-principito/:path*" },
+    { "source": "/uploads/:path*", "destination": "https://ishibonita.vercel.app/uploads/:path*" }
+  ]
+}

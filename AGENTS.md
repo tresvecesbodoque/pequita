@@ -13,7 +13,15 @@ solo cuando tocan:
   imágenes, imports) → escribir un script en `scripts/` y correrlo, no hacerlo
   paso a paso en el chat. Imágenes con IA: skill central `gen-imagenes`.
 - **Verificación visual** → dev server SOLO en `127.0.0.1` + Playwright
-  (carta con contenido real: slug `pzjDPC-PyM` en `dev.db`; clave del álbum: `cumple`).
+  (carta con contenido real: slug `pzjDPC-PyM` en `dev.db`; clave del álbum:
+  `Morfina`, la de `lib/site.ts`).
+- **El álbum va ESPEJADO en el contador** → `sitio-contador/vercel.json` reenvía
+  `/para-ella`, `/carta/*`, `/pelicula` y `/_next/*` a la app. Ella entra por
+  misiete y nunca ve el dominio de la app, porque allí está `/lista-de-deseos`
+  y el regalo es sorpresa. Por eso: **no enlazar a `ishibonita` desde el
+  contador**, y si se añade una página al álbum, añadirla también al reenvío.
+  Los orígenes del contador van en `serverActions.allowedOrigins`
+  (`next.config.ts`) o el candado del álbum deja de abrir.
 - **Insumos externos pesados** (PDF/Word) → convertir a `.txt` con script y
   leer el `.txt`, nunca el original.
 <!-- END:nextjs-agent-rules -->

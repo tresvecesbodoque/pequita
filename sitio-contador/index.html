@@ -514,7 +514,7 @@
       <!-- Directo al álbum, no a la portada: el día de su cumpleaños no tiene
            que buscar por dónde se entra. Y la clave va escrita: un candado que
            no puede abrir no protege nada, solo la deja fuera. -->
-      <a class="btn" href="https://ishibonita.vercel.app/para-ella">Entrar 🎁 →</a>
+      <a class="btn" href="/para-ella">Entrar 🎁 →</a>
       <p class="clave">te va a pedir una clave, y es <b>Morfina</b></p>
     </section>
 
@@ -555,7 +555,10 @@
     var OBJETIVO = new Date("2026-08-07T00:00:01-04:00").getTime();
     // Directo al álbum, no a la portada: el día de su cumpleaños no tiene que
     // buscar por dónde se entra. La clave se la dice el saludo.
-    var DESTINO  = "https://ishibonita.vercel.app/para-ella";
+    // El álbum se sirve DESDE ESTE MISMO DOMINIO (ver `vercel.json`, que
+    // reenvía /para-ella a la app). No se enlaza al dominio de la app a
+    // propósito: allí vive la lista de deseos, y eso tiene que ser sorpresa.
+    var DESTINO  = "/para-ella";
     // ───────────────────────────────────────────────────────────────
 
     document.querySelector(".btn").setAttribute("href", DESTINO);
@@ -621,6 +624,18 @@
         localStorage.setItem(COPIA, texto);
       } catch (e) {}
     }
+
+    // Escribir SIN fundir. Es excepcional a propósito: que nada encoja es lo
+    // que protege el frasco, y por eso guardarMem solo suma. Pero cuando hay
+    // que sacar algo que no es suyo —una frase de una prueba que se coló—, la
+    // fusión lo devuelve una y otra vez. Único usuario: la purga de `BASURA`.
+    window.escribirMemCruda = function (datos) {
+      try {
+        var texto = JSON.stringify(datos || {});
+        localStorage.setItem(MEM, texto);
+        localStorage.setItem(COPIA, texto);
+      } catch (e) {}
+    };
 
     // Borrado de verdad: solo desde la herramienta del panel de pruebas, y
     // dejando SIEMPRE un respaldo, para que un borrado sea reversible.
@@ -1287,11 +1302,16 @@
       var jugando = false, pulsando = false;
       var proximo = 0, ultimo = 0, rafId = 0;
 
-      function susurrar(texto) {
+      // El juego tiene su propio susurro (el de la portada está tapado por el
+      // lienzo). Lo que aquí se le dice es tan suyo como lo de fuera, así que
+      // `guardar` lo manda al frasco: antes se leía y se perdía. Las
+      // instrucciones no se guardan; las frases escritas para ella, sí.
+      function susurrar(texto, guardar) {
         elSusurro.textContent = texto;
         elSusurro.classList.remove("viva");
         void elSusurro.offsetWidth;   // reinicia la animación
         elSusurro.classList.add("viva");
+        if (guardar && window.guardarEnFrasco) window.guardarEnFrasco(texto);
       }
 
       function medir() {
@@ -1354,7 +1374,7 @@
             puntos += b.tipo === "corazon" ? 3 : 1;
             elMarcador.textContent = "✦ " + puntos;
             chispear(b.x, b.y, b.tipo === "corazon" ? "#c96b74" : "#d9a83f");
-            if (puntos % 7 === 0) susurrar(fraseDeLosSiete());   // guiño al 7 de agosto
+            if (puntos % 7 === 0) susurrar(fraseDeLosSiete(), true);   // guiño al 7 de agosto
             return;
           }
         }
@@ -1454,7 +1474,7 @@
         if (nivel > nivelVisto) {
           nivelVisto = nivel;
           var iPique = Math.min(nivel - 1, PIQUES.length - 1);
-          susurrar(textoJuego("juego.piques", iPique, PIQUES[iPique]));
+          susurrar(textoJuego("juego.piques", iPique, PIQUES[iPique]), true);
         }
 
         proximo -= dt * 1000;
