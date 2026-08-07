@@ -1,0 +1,97 @@
+/* ══════════════════════════════════════════════════════════════════
+   EL LABERINTO DE LA ROSA — cuatro puertas
+   El segundo minijuego del contador. Todo lo que se ve dentro se pinta
+   en el lienzo (ver laberinto.js); esto es solo el marco: la pantalla,
+   la cabecera, los avisos y el regalo del final.
+   Colores SIEMPRE por token: la partida vira al papel el día D igual
+   que el resto del sitio.
+   ══════════════════════════════════════════════════════════════════ */
+
+.laberinto {
+  /* Mismo criterio que el juego de estrellas: por encima de los botones
+     fijos de la página (el de volver va en 30) y por debajo de la puerta
+     (50). Mientras se juega, esto es la pantalla entera. */
+  position: fixed; inset: 0; z-index: 35; display: none;
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #1b2748 0%, transparent 60%),
+    linear-gradient(180deg, #0b1428 0%, #070c19 100%);
+  color: var(--ink);
+  touch-action: none; user-select: none; -webkit-user-select: none;
+}
+html.dia .laberinto { background: var(--telon-dia); }
+.laberinto.viva { display: block; }
+.laberinto canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* ── Cabecera: qué puerta y cuánto queda ─────────────────────────── */
+.lab-hud {
+  position: absolute; top: 0; left: 0; right: 0; padding: 16px 18px;
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: 12px; pointer-events: none; font-size: .95rem; color: var(--gold);
+}
+.lab-hud .lab-hud-puerta { font-variant: small-caps; letter-spacing: .16em; }
+.lab-hud .lab-hud-reloj { color: var(--ink-suave); font-variant-numeric: tabular-nums; }
+.lab-salir {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  border: 0; background: none; color: var(--ink-tenue);
+  font-family: inherit; font-size: .8rem; letter-spacing: .18em;
+  cursor: pointer; padding: 8px 14px;
+}
+
+/* Atajo al regalo, solo para quien ya cruzó las cuatro puertas. */
+.lab-regalo {
+  position: absolute; right: 14px; bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  padding: 9px 16px; border-radius: 999px;
+  border: 1px solid var(--borde); background: none; color: var(--gold);
+  font-family: inherit; font-size: .78rem; letter-spacing: .1em; cursor: pointer;
+}
+.lab-regalo:hover { border-color: var(--borde-vivo); }
+.lab-regalo[hidden] { display: none; }
+
+/* ── Lo que se dice sin interrumpir: instrucción, fallo, puerta ───── */
+.lab-nota {
+  position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%);
+  width: min(24rem, 86vw); text-align: center; pointer-events: none;
+  font-style: italic; font-size: 1rem; line-height: 1.6;
+  color: var(--ink); opacity: 0; transition: opacity .5s ease;
+}
+.lab-nota.viva { opacity: 1; }
+
+/* ── El regalo ───────────────────────────────────────────────────── */
+.lab-premio {
+  position: absolute; inset: 0; display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; padding: 28px 22px calc(28px + env(safe-area-inset-bottom, 0px));
+  text-align: center; overflow-y: auto;
+  background: color-mix(in srgb, var(--fondo) 88%, transparent);
+  backdrop-filter: blur(8px);
+}
+.lab-premio.viva { display: flex; animation: lab-entra .8s ease both; }
+@keyframes lab-entra { from { opacity: 0 } to { opacity: 1 } }
+.lab-premio .lab-titulo {
+  font-size: clamp(1.1rem, 5vw, 1.5rem); color: var(--gold);
+  font-variant: small-caps; letter-spacing: .12em;
+}
+.lab-premio img {
+  max-width: min(20rem, 78vw); max-height: 62vh; width: auto; height: auto;
+  border-radius: 12px; border: 1px solid var(--borde);
+  box-shadow: 0 18px 50px -22px rgba(0, 0, 0, .8);
+  animation: lab-revela 1.4s cubic-bezier(.22, 1, .36, 1) both;
+}
+@keyframes lab-revela {
+  from { opacity: 0; transform: scale(.86) rotate(-1.5deg) }
+  to   { opacity: 1; transform: none }
+}
+.lab-premio .lab-frase {
+  font-style: italic; color: var(--ink); max-width: 24rem; line-height: 1.65;
+}
+.lab-premio .lab-cerrar {
+  margin-top: 4px; padding: 11px 20px; border-radius: 999px;
+  border: 1.5px solid var(--borde); background: none; color: var(--gold);
+  font-family: inherit; font-size: .9rem; letter-spacing: .06em; cursor: pointer;
+}
+.lab-premio .lab-cerrar:hover { border-color: var(--borde-vivo); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lab-premio.viva, .lab-premio img { animation: none; }
+  .lab-nota { transition: none; }
+}

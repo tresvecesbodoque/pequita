@@ -387,6 +387,7 @@
   }
 </style>
 <link rel="stylesheet" href="eventos.css" />
+<link rel="stylesheet" href="laberinto.css" />
 </head>
 <body>
   <div class="cielo" id="cielo" aria-hidden="true"></div>
@@ -501,6 +502,9 @@
       </div>
 
       <button class="juego-abrir" id="juegoAbrir" type="button">atrapar estrellas ✦</button>
+      <!-- El segundo juego: cuatro puertas y, al final, otro regalo. Vive en
+           laberinto.js, que se cuelga solo de este botón. -->
+      <button class="juego-abrir" id="labAbrir" type="button">el laberinto de la rosa ✿</button>
     </section>
 
     <!-- EL día D -->
@@ -1666,6 +1670,7 @@
     })();
   </script>
   <script src="confeti.js" defer></script>
+  <script src="laberinto.js" defer></script>
   <script src="eventos.js" defer></script>
   <script src="presencia.js" defer></script>
   <script src="frasco.js" defer></script>
