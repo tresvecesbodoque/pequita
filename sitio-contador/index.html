@@ -231,7 +231,11 @@
   .juego-abrir:hover { transform: translateY(-2px); background: rgba(217,168,63,.12); }
 
   .juego {
-    position: fixed; inset: 0; z-index: 20; display: none;
+    /* Por encima de los botones fijos de la página (el de volver va en 30) y
+       por debajo de la puerta (50): mientras se juega, la partida es la
+       pantalla entera. Con z-index 20, «volver a contar» flotaba encima del
+       marcador y ella tocaba el botón creyendo que tocaba una estrella. */
+    position: fixed; inset: 0; z-index: 35; display: none;
     /* Opaco: el contador no debe verse por detrás. El cielo de la portada se
        repinta dentro del lienzo para que la partida no parezca otra página. */
     background:
