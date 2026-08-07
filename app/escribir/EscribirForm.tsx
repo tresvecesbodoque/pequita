@@ -30,7 +30,7 @@ const FONTS = [
   // que las eligieron y sin la variable se romperían (ver DESIGN.md).
 ] as const;
 
-const MAX_MESSAGE = 1000;
+const MAX_MESSAGE = 2000;
 const MAX_FOTOS = 3;
 
 /** Sobrecito de muestra para la ficha de estilo: enseña el papel y la tinta. */

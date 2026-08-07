@@ -13,7 +13,7 @@ import { buildGuestEsquela, buildGuestSobre } from "@/lib/guestCanvas";
 // (isPublished=false) hasta que el dueño la apruebe en el panel.
 
 const MAX_NAME = 40;
-const MAX_MESSAGE = 1000;
+const MAX_MESSAGE = 2000;
 const ALLOWED_FONTS = new Set([
   "var(--font-hand)",
   "var(--font-hand2)",

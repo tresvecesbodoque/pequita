@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { editGuestLetter, type GuestEditState } from "@/lib/actions/guest";
 import { Button } from "@/components/ui/Button";
 
-const MAX_MESSAGE = 1000;
+const MAX_MESSAGE = 2000;
 
 export function CorregirForm({
   token,
