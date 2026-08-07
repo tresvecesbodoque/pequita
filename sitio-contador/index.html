@@ -1010,10 +1010,47 @@
     // El cumpleaños siguiente, para quien quiera seguir contando.
     var OBJETIVO_SIGUIENTE = new Date("2027-08-07T00:00:01-04:00").getTime();
 
+    // ── El confeti del día ────────────────────────────────────────
+    // El mismo de la app (components/ui/BirthdayConfetti.tsx) y con la misma
+    // librería, para que los dos sitios celebren igual: una ráfaga central y
+    // dos surtidores laterales que se cruzan durante 2,2 s.
+    //
+    // Los cinco colores van literales a propósito, en contra de la norma de
+    // DESIGN.md: no son la paleta del sitio, son la mezcla de fiesta que ya
+    // usa la app, y tienen que ser LOS MISMOS a los dos lados.
+    //
+    // Y es SOLO POR HOY: se pide el día del cumpleaños y no el resto del año,
+    // así que no basta con la clase `dia` (que se queda puesta después). La
+    // ventana es el propio día, de la medianoche a la medianoche siguiente.
+    var CONFETI_COLORES = ["#d9a83f", "#7c1b22", "#e7d8b5", "#c94f4f", "#f4ede0"];
+    var confetiLanzado = false;
+    function esHoyElCumple() {
+      var ahora = Date.now();
+      return ahora >= OBJETIVO && ahora < OBJETIVO + 86400000;
+    }
+    function lanzarConfeti() {
+      if (confetiLanzado || !esHoyElCumple()) return;
+      if (typeof confetti !== "function") return;   // aún no cargó: se deja pasar
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      confetiLanzado = true;
+
+      confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 }, colors: CONFETI_COLORES });
+      var fin = Date.now() + 2200;
+      (function marco() {
+        confetti({ particleCount: 5, angle: 60, spread: 60, origin: { x: 0 }, colors: CONFETI_COLORES });
+        confetti({ particleCount: 5, angle: 120, spread: 60, origin: { x: 1 }, colors: CONFETI_COLORES });
+        if (Date.now() < fin) requestAnimationFrame(marco);
+      })();
+    }
+
     function mostrarSaludo() {
       espera.style.display = "none";
       listo.classList.add("viva");
       if (volver) volver.hidden = false;
+      // La librería va con `defer`: si el saludo llega antes que ella, se
+      // espera a que la página termine de cargar en vez de perder el confeti.
+      if (typeof confetti === "function") lanzarConfeti();
+      else window.addEventListener("load", lanzarConfeti, { once: true });
     }
 
     var yaEsDia = false;
@@ -1628,6 +1665,7 @@
       });
     })();
   </script>
+  <script src="confeti.js" defer></script>
   <script src="eventos.js" defer></script>
   <script src="presencia.js" defer></script>
   <script src="frasco.js" defer></script>
