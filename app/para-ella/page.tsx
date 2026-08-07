@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { AlbumEnvelopes, type SobreItem } from "@/components/album/AlbumEnvelopes";
 import { AlbumGate } from "@/components/album/AlbumGate";
 import { AvionMensajero } from "@/components/album/AvionMensajero";
+import { BroteRosa } from "@/components/album/BroteRosa";
 import { Constelacion } from "@/components/album/Constelacion";
 import { Countdown } from "@/components/album/Countdown";
 import { NavBar } from "@/components/layout/NavBar";
@@ -114,31 +115,9 @@ export default async function AlbumPage({
           </p>
         </div>
 
-        {/* El pequeño planeta: horizonte curvo con su rosa y una estrella */}
-        <div className="pointer-events-none relative z-10 mx-auto mt-12 max-w-md" aria-hidden>
-          <svg viewBox="0 0 400 96" fill="none" className="w-full">
-            {/* horizonte del planeta */}
-            <path
-              d="M8 92c48-38 118-60 192-60s144 22 192 60"
-              stroke="var(--gold)"
-              strokeOpacity="0.65"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-            {/* la rosa, bajo su rectitud de flor */}
-            <g stroke="var(--rose)" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M200 34v-12" />
-              <path d="M200 26c-3-1-5-4-5-7 3 0 6 2 5 7z" fill="var(--rose)" fillOpacity="0.35" />
-              <path d="M200 22c1-4 4-6 7-6 0 4-3 7-7 6z" fill="var(--rose)" fillOpacity="0.35" />
-            </g>
-            {/* estrellas cercanas */}
-            <g fill="var(--night-ink)" fillOpacity="0.8">
-              <path d="M96 30l1.6 3.8 3.8 1.6-3.8 1.6L96 41l-1.6-4-3.8-1.6 3.8-1.6z" />
-              <circle cx="306" cy="26" r="1.6" />
-              <circle cx="132" cy="14" r="1.2" />
-            </g>
-          </svg>
-        </div>
+        {/* El pequeño planeta: horizonte curvo y, encima, lo que va creciendo
+            con cada carta leída — brote al principio, rosa al terminarlas. */}
+        <BroteRosa slugs={letters.map((l) => l.slug)} />
 
         {/* Prioridad: día D (cuenta regresiva) > clave (candado) > constelación */}
         {beforeReveal ? (
