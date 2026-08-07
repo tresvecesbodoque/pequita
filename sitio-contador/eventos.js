@@ -162,6 +162,10 @@
   // frasco sigue diciendo lo que él escribió.
   var NOTA_HTML = notaEl ? notaEl.innerHTML.replace(/\s+id="[^"]*"/g, "") : "";
 
+  // La carta relámpago es demasiado larga para el frasco: se guarda por su
+  // nombre. Aquí, en un sitio, porque el frasco también la cuenta.
+  var CARTA_DEL_CIELO = "(la carta que cayó del cielo)";
+
   var suave = window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -321,19 +325,39 @@
   // ── Memoria ──────────────────────────────────────────────────────
   var mem = leerMem();
   mem.coleccion = mem.coleccion || [];
+
+  // Frases que NO son suyas y hay que sacar de en medio. En el frasco entró
+  // una de una prueba contra producción; como el servidor funde y nunca resta,
+  // borrarla allí no basta: vuelve en cuanto un aparato que la tenga guardada
+  // sincroniza. Se limpia aquí, en cada carga y después de cada sincronización.
+  var BASURA = ["ya la tengo"];
+
   // Limpieza de una vez: si alguna frase quedó dos veces (de una fusión entre
   // aparatos, de una versión vieja), se queda LA PRIMERA y se tira el resto.
-  // Si no, el "N de 60" contaría de más y la lista la enseñaría repetida.
-  (function () {
+  // Si no, el total contaría de más y la lista la enseñaría repetida.
+  function limpiarColeccion() {
     var vistas = {}, limpia = [];
     for (var i = 0; i < mem.coleccion.length; i++) {
       var f = mem.coleccion[i];
-      if (vistas[f]) continue;
+      if (vistas[f] || BASURA.indexOf(f) >= 0) continue;
       vistas[f] = true;
       limpia.push(f);
     }
-    if (limpia.length !== mem.coleccion.length) mem.coleccion = limpia;
-  })();
+    if (limpia.length === mem.coleccion.length) return false;
+    mem.coleccion = limpia;
+    return true;
+  }
+
+  // Y dejarlo también en el disco. No vale `persistir()`: guardarMem funde con
+  // lo que hay guardado, así que una lista más corta no borra nada. Se escribe
+  // a mano, que para eso está.
+  function purgarColeccion() {
+    if (!limpiarColeccion()) return;
+    var disco = leerMem();
+    disco.coleccion = mem.coleccion.slice();
+    if (window.escribirMemCruda) window.escribirMemCruda(disco);
+  }
+  purgarColeccion();
   mem.dias = mem.dias || [];
   mem.versos = mem.versos || 0;
   mem.cartas = mem.cartas || [];
@@ -343,19 +367,31 @@
   // copia entera, borraríamos lo que hayan guardado mientras tanto el
   // minijuego (récord y partidas) o el poema plegable, porque ellos leen y
   // escriben por su cuenta. Ese era el modo de perder el frasco.
+  // Lo que es de otros y aquí solo se lleva de recuerdo: `juego` lo escribe el
+  // minijuego al acabar cada partida y `poemaAbierto` el plegable. Nuestra
+  // copia es la de cuando cargó la página, así que escribirla otra vez
+  // devolvía el récord —o el poema— a como estaba hace media hora.
+  var AJENAS = { juego: true, poemaAbierto: true };
   function persistir() {
     var disco = leerMem();
-    for (var k in mem) if (Object.prototype.hasOwnProperty.call(mem, k)) disco[k] = mem[k];
+    for (var k in mem) {
+      if (!Object.prototype.hasOwnProperty.call(mem, k) || AJENAS[k]) continue;
+      disco[k] = mem[k];
+    }
     guardarMem(disco);
   }
 
   function guardarEnFrasco(texto) {
+    if (!texto) return;
     if (mem.coleccion.indexOf(texto) < 0) {
       mem.coleccion.push(texto);
       persistir();
       pintarFrasco();
     }
   }
+  // El minijuego vive en index.html y tiene su propio susurro; desde allí se
+  // llama a esto para que lo que dice mientras ella juega también se guarde.
+  window.guardarEnFrasco = guardarEnFrasco;
 
   var hoy = fechaLocal();
   var ayer = fechaLocal(new Date(Date.now() - 86400000));
@@ -938,7 +974,7 @@
         el.className = "carta-rapida";
         el.textContent = T("carta-relampago");
         ponFijo(el, 11500);
-        guardarEnFrasco("(la carta que cayó del cielo)");
+        guardarEnFrasco(CARTA_DEL_CIELO);
       } }
   ];
 
@@ -1502,12 +1538,15 @@
   // número no se escribe a mano en ninguna parte: se cuentan las que hay en
   // el poema, que son justo las que le han llegado (ver la entrega semanal).
   var ORDINALES = ["ninguna", "una", "dos", "tres", "cuatro", "cinco", "seis", "siete"];
+  function fraseDeLasEstrofas() {
+    var cuantas = document.querySelectorAll("#estrofas .estrofa").length;
+    return T("dosSiete.marca").replace("{n}", ORDINALES[cuantas] || cuantas);
+  }
   if (marcaEl) {
     var pulsaMarca = 0;
     marcaEl.addEventListener("pointerdown", function () {
       pulsaMarca = setTimeout(function () {
-        var cuantas = document.querySelectorAll("#estrofas .estrofa").length;
-        susurrar(T("dosSiete.marca").replace("{n}", ORDINALES[cuantas] || cuantas));
+        susurrar(fraseDeLasEstrofas());
       }, 900);
     });
     marcaEl.addEventListener("pointerup", function () { clearTimeout(pulsaMarca); });
@@ -1721,8 +1760,40 @@
   var panel = document.createElement("div");
   panel.className = "coleccion";
 
+  // Cuántas hay que encontrar. NO es un número escrito a mano: se cuentan las
+  // frases que de verdad pueden entrar aquí. textos.txt se reescribe, y un
+  // total inventado promete lo que ya no existe (o se queda corto y el frasco
+  // acaba diciendo "63 de 60"). Solo suma lo que pasa por susurrar() como
+  // coleccionable: lo que se dibuja en la página —la rosa, el margen, la
+  // corrección, las palabras de las estrellas— no se guarda y no cuenta.
+  var LISTAS_FRASCO = [
+    "saludo.madrugada", "saludo.manana", "saludo.tarde", "saludo.noche",
+    "zorro", "globo", "luna", "planeta", "lluvia", "lluvia-estrellas", "eco",
+    "cartas", "carta.diad", "lunes", "dia7", "dia2", "racha", "ausencia",
+    "tardio", "inactividad", "pulsacion", "verso8", "dosSiete.hora", "sietes",
+    "juego.piques", "juego.siete",
+    "dias.30", "dias.21", "dias.14", "dias.10", "dias.7", "dias.3", "dias.2", "dias.1"
+  ];
+
+  function totalColeccionable() {
+    var vistas = {}, total = 0;
+    function suma(t) {
+      if (!t || vistas[t]) return;
+      vistas[t] = true;
+      total++;
+    }
+    LISTAS_FRASCO.forEach(function (clave) { TL(clave).forEach(suma); });
+    var banco = TL("banco");
+    if (!banco.length) banco = window.FRASES || [];   // antes de leer textos.txt
+    banco.forEach(suma);
+    suma(CARTA_DEL_CIELO);
+    suma(fraseDeLasEstrofas());
+    return total;
+  }
+
   function pintarFrasco() {
-    frasco.innerHTML = '<span class="luz"></span>' + mem.coleccion.length + " de 60";
+    frasco.innerHTML = '<span class="luz"></span>' + mem.coleccion.length +
+      " de " + totalColeccionable();
   }
 
   // El frasco puede crecer mientras la página está abierta, si llega lo que
@@ -1736,6 +1807,10 @@
     mem.cartas = mem.cartas || [];
     mem.registro = mem.registro || [];
     mem.versos = mem.versos || 0;
+    // Lo que llega de fuera se funde con lo de aquí, así que la basura del
+    // servidor vuelve a entrar en cada sincronización: se saca otra vez, y el
+    // disco queda limpio, que es lo que se sube en la vuelta siguiente.
+    purgarColeccion();
     // Lo que consiguió en otro aparato ya cuenta como visto aquí: las pistas
     // dejan de ofrecerlo en cuanto llega.
     refrescarVistos();
@@ -1780,10 +1855,31 @@
     ["carta-rapida", "del cielo cae una hoja escrita para quien vuelve después de días"]
   ];
 
+  // Cuando ya ha visto salir todo, lo que le queda por encontrar no son
+  // apariciones: son gestos. Estas pistas no miran el registro —ahí está todo
+  // hecho— sino el frasco: quedan mientras falte alguna frase de su lista.
+  var PISTAS_FRASE = [
+    ["cartas", "la nota dorada de aquí arriba: tócala tres veces seguidas y suelta una cartita"],
+    ["luna", "de noche, arriba a la derecha, asoma algo redondo. tócalo"],
+    ["dosSiete.marca", "aguanta el dedo en el título de la portada, sin soltar, y te digo cuántas estrofas van"],
+    ["juego.siete", "en el juego, cada siete estrellas te digo algo. ahora eso también se guarda aquí"]
+  ];
+
+  function faltaAlgunaDe(clave) {
+    var lista = TL(clave);
+    for (var i = 0; i < lista.length; i++) {
+      if (mem.coleccion.indexOf(lista[i]) < 0) return true;
+    }
+    return false;
+  }
+
   function pistasPendientes(cuantas) {
-    var fuera = [];
-    for (var i = 0; i < PISTAS.length && fuera.length < cuantas; i++) {
+    var fuera = [], i;
+    for (i = 0; i < PISTAS.length && fuera.length < cuantas; i++) {
       if (nuncaVisto(PISTAS[i][0])) fuera.push(PISTAS[i][1]);
+    }
+    for (i = 0; i < PISTAS_FRASE.length && fuera.length < cuantas; i++) {
+      if (faltaAlgunaDe(PISTAS_FRASE[i][0])) fuera.push(PISTAS_FRASE[i][1]);
     }
     return fuera;
   }
@@ -1868,13 +1964,18 @@
       panel.classList.remove("viva");
     });
     engancharCarta(panel.querySelector(".nota-frasco"));
-    // El play cierra el frasco y lo vuelve a poner en pantalla.
-    panel.addEventListener("click", function (e) {
-      var b = e.target.closest && e.target.closest("[data-revivir]");
-      if (!b) return;
-      panel.classList.remove("viva");
-      setTimeout(function () { revivir(b.dataset.revivir); }, 450);
-    });
+    // El play cierra el frasco y lo vuelve a poner en pantalla. Se engancha
+    // UNA vez: el panel se vuelve a pintar cada vez que se abre, y sumando un
+    // oyente por apertura el ▶ acababa lanzando el evento tres veces.
+    if (!panel.dataset.enganchado) {
+      panel.dataset.enganchado = "1";
+      panel.addEventListener("click", function (e) {
+        var b = e.target.closest && e.target.closest("[data-revivir]");
+        if (!b) return;
+        panel.classList.remove("viva");
+        setTimeout(function () { revivir(b.dataset.revivir); }, 450);
+      });
+    }
     panel.classList.add("viva");
   }
 
@@ -1914,6 +2015,9 @@
     document.addEventListener("fullscreenchange", pintar);
     document.addEventListener("webkitfullscreenchange", pintar);
     pintar();
+    // Avisa al CSS de que esta esquina está ocupada: el sobre dormido vive
+    // justo ahí y se quedaba debajo del botón.
+    cuerpo.classList.add("con-pantalla");
     document.body.appendChild(boton);
   })();
   pintarFrasco();
@@ -2030,6 +2134,13 @@
     return T("saludo.noche");
   }
 
+  // Las que se entregan el último día si no llegaron a su hora. En orden, de
+  // la más lejana a la más cercana, que es como se habrían leído. No están
+  // aquí ni `dia7` ni `dia2` —esos vuelven cada mes— ni nada que dependa de
+  // un gesto suyo: eso se sigue ganando.
+  var REZAGADAS = ["dias.30", "dias.21", "dias.14", "dias.10", "dias.7",
+                   "sietes", "dias.3", "dias.2", "dias.1"];
+
   function alEntrar() {
     var h = new Date().getHours(), dia = new Date().getDay(), fecha = new Date().getDate();
     if (h < 5) cuerpo.classList.add("madrugada");                     // E47
@@ -2087,6 +2198,22 @@
     }
     if ((mem.racha || 0) >= 3 && primeraDelDia) cola.push(T("racha"));  // E44
     if (diasFuera > 3) cola.push(T("ausencia"));      // E45
+
+    // Lo que se quedó por decir. Las notas de los días redondos y el 7 mágico
+    // solo salían el día exacto y en la primera visita: quien ese día entró
+    // tarde —o entró cuando ya faltaban nueve— no las leyó nunca, y esos días
+    // no vuelven. Llegado el último, se le entregan las que le falten, una
+    // detrás de otra. Solo las que faltan: las que ya tiene no se repiten, y
+    // el día que no quede ninguna esto no hace nada.
+    // Con la puerta cerrada, no: se dirían a una pantalla tapada y, como solo
+    // se entregan una vez, se perderían para siempre. Al contestar, la página
+    // se recarga y vuelven a estar aquí.
+    if (faltan <= 0 && !document.documentElement.classList.contains("sin-entrar")) {
+      REZAGADAS.forEach(function (clave) {
+        var t = T(clave);
+        if (t && mem.coleccion.indexOf(t) < 0) cola.push(t);
+      });
+    }
 
     cola.forEach(function (texto, i) {
       setTimeout(function () {
@@ -2436,6 +2563,9 @@
 
   // ── Arranque ─────────────────────────────────────────────────────
   function arrancar() {
+    // Con textos.txt ya leído, el total del frasco puede cambiar: se repinta
+    // antes de que ella lo mire.
+    pintarFrasco();
     var retraso = alEntrar();
     despertar();
     setTimeout(agendar, rapido ? 600 : Math.min(retraso, 30000));

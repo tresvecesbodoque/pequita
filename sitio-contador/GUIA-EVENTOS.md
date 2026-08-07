@@ -39,10 +39,22 @@ Cuando se agota la ración, la portada se calla y aparece una de estas tres, con
 Lo que **nunca se agota**: tocar estrellas, las criaturas que estén en pantalla,
 el frasco, el minijuego y la música.
 
+**El minijuego también llena el frasco**: los piques de cada escalón y lo que
+dice cada siete estrellas atrapadas se guardan como cualquier otro susurro
+(`susurrar(texto, true)` en `index.html`, que llama a `window.guardarEnFrasco`).
+Las instrucciones no; los cierres y la pista del récord tampoco, que se leen en
+el panel del final y no son susurros.
+
 **Memoria.** Cada evento apunta cuándo se vio (`localStorage`). Al elegir gana
 **el que lleva más tiempo sin salir**, y el azar solo desempata entre los tres
-más olvidados: por eso cada sesión trae cosas distintas. El frasco muestra
-**"N de 60"** para que se vea cuánto falta por descubrir.
+más olvidados: por eso cada sesión trae cosas distintas.
+
+**El frasco muestra "N de M", y M no está escrito a mano**: `totalColeccionable()`
+cuenta las frases que de verdad pueden entrar (las que pasan por `susurrar()`
+como coleccionables, sin repetir). Hoy son **76**. Si añades líneas a
+`textos.txt`, el total sube solo; lo que se dibuja en la página y no se
+susurra —la rosa, el margen, la corrección, las palabras de las estrellas—
+no cuenta y no aparece ahí.
 
 ---
 
@@ -80,12 +92,12 @@ volviéndose a plegar al terminar si ella no lo había abierto.
 | **El globo** (`globo`) | Revienta en confeti | *"eso también era para ti"* |
 | **La luna** (`luna`) | Parpadea | *"también te ves de noche"* |
 | **Mantener pulsado** 2 s, con el dedo quieto | El fondo amanece 3 s | *"quédate un poquito, que aquí no molestas nunca"* |
-| **Tres toques** en la nota (`carta-corta`) | Una carta corta que no se repite | Seis escritas + una séptima que solo aparece el día D |
+| **Tres toques** en la nota dorada (`carta-corta`) | Una carta corta que no se repite | Seis escritas + una séptima que solo aparece el día D |
 | **Siete toques en el reloj** (`dias-juntos`) | Aparece un quinto bloque contando **hacia delante** desde el 7 de marzo de 2026 a las 21:00, con días, horas, minutos y segundos en vivo | — |
-| **Pulsar "Nosotros II"** (`dos-siete`) | Revela qué es | *"segunda de siete estrofas. las otras te van a llegar"* |
+| **Mantener pulsado el título** de la portada, 0,9 s (`dos-siete`) | Dice cuántas estrofas van entregadas, contando las que hay en el poema | *"van tres de siete estrofas. las otras te van a llegar"* |
 | **Arrastrar el dedo** | Polvo dorado | — |
 | **Girar el teléfono** a horizontal | El cielo se cae | *"se te cayó el cielo encima"* |
-| **El frasco** | Abre la colección y el calendario de días | — |
+| **El frasco** | Abre la colección y el calendario de días. **La nota dorada vive aquí dentro**, arriba del todo: en la portada está oculta desde que se mudó, y los tres toques solo funcionan sobre esta copia | — |
 | **"leer el poema ▾"** | Despliega el poema bajo el contador y recuerda si lo dejó abierto | — |
 
 ---
@@ -143,6 +155,15 @@ que ella **todavía no haya visto nunca**, y solo para eso:
   mismo día, tocar ocho estrellas, dejar la página abierta dos minutos. Ahí
   está el juego, y de eso hablan las pistas.
 
+### Lo que se quedó por decir
+
+Las notas de los días redondos (30/21/14/10/7/3/2/1) y la del 7 mágico salían
+**solo ese día exacto y en la primera visita**: quien entró tarde —o empezó a
+usar la página cuando ya faltaban nueve días— no las leyó nunca, y esos días no
+vuelven. **El último día se entregan las que falten** (`REZAGADAS` en
+`eventos.js`), una detrás de otra en la cola de entrada, de la más lejana a la
+más cercana. Solo las que falten, solo con la puerta abierta, y una vez.
+
 ### Las pistas
 
 Van **en orden fijo** (`PISTAS`, un array): primero lo que puede hacer ahora
@@ -150,6 +171,11 @@ mismo, al final lo que hay que esperar. **No se barajan**: la misma pista se
 queda hasta que lo consigue y solo entonces sube la siguiente — una pista que
 cambia sola no es una pista. Se muestran tres, y "ya visto" se mira en
 `mem.ultimos`, que no se poda nunca (el registro sí se recorta a 80).
+
+Cuando ya ha visto salir **todos** los eventos, lo que le queda por encontrar
+no son apariciones sino gestos: entonces entran las de `PISTAS_FRASE` (la nota
+dorada, la luna, el título, el juego), que no miran el registro sino qué frases
+le faltan en el frasco.
 
 ---
 
