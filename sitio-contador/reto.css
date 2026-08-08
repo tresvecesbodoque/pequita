@@ -42,6 +42,19 @@ html.dia .reto { background: var(--telon-dia); }
   cursor: pointer; padding: 8px 14px;
 }
 
+/* Repasar una etapa ya superada, sin tocar el avance real: se vuelve a la
+   etapa donde iba de verdad apenas se gana la que se está repasando.
+   Va debajo de la cabecera, no a su misma altura: ahí arriba a la derecha
+   ya vive el contador de `.reto-marca` y se pisarían. */
+.reto-anteriores {
+  position: absolute; top: 46px; right: 14px; max-width: 46vw;
+  border: 1px solid var(--borde); background: none; color: var(--ink-tenue);
+  font-family: inherit; font-size: .74rem; letter-spacing: .02em;
+  padding: 6px 10px; border-radius: 999px; cursor: pointer;
+}
+.reto-anteriores:hover { border-color: var(--borde-vivo); }
+.reto-anteriores[hidden] { display: none; }
+
 /* Atajo al regalo, solo para quien ya cruzó todas las puertas. */
 .reto-regalo {
   position: absolute; right: 14px; bottom: max(14px, env(safe-area-inset-bottom, 0px));

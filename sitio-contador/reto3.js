@@ -71,6 +71,9 @@
       '<span class="reto-marca" id="r3Marca"></span>' +
     '</div>' +
     '<button class="reto-salir" id="r3Salir" type="button">volver</button>' +
+    '<select class="reto-anteriores" id="r3Anteriores" hidden>' +
+      '<option value="">repasar una llave…</option>' +
+    '</select>' +
     '<div class="llave-cerradura" id="r3Cerradura" hidden>' +
       '<p class="cerradura-leyenda">● en su sitio · ○ en el grupo, mal puesta</p>' +
       '<div class="cerradura-intentos" id="r3Intentos"></div>' +
@@ -101,6 +104,7 @@
   var elFoto = caja.querySelector("#r3Foto");
   var elFrase = caja.querySelector("#r3Frase");
   var elVerRegalo = caja.querySelector("#r3VerRegalo");
+  var elAnteriores = caja.querySelector("#r3Anteriores");
 
   // ── Paleta por tokens: el juego amanece con el sitio ──────────────
   var P = { dia: false, oro: "#d9a83f", rosa: "#c96b74", calida: "#f6e3c8" };
@@ -134,6 +138,10 @@
   var etapa = 0, fallos = 0, viva = false, ultimo = 0, rafId = 0;
   var transicion = false, reloj = 0;
   var TOQUE_ARRIBA = 38;
+  // Repaso: mientras `practica` es verdadero se está rejugando una llave
+  // ya girada, elegida del desplegable. `etapaAntes` guarda dónde iba de
+  // verdad, para volver ahí al terminar sin tocar el avance guardado.
+  var practica = false, etapaAntes = 0;
 
   var notaId = 0;
   function nota(texto, ms) {
@@ -538,11 +546,26 @@
   function prepararEtapa() {
     var e = ETAPAS[etapa];
     for (var i = 0; i < ETAPAS.length; i++) if (ETAPAS[i].salir && i !== etapa) ETAPAS[i].salir();
-    elEtapa.textContent = e.num + " · " + e.nombre;
+    elEtapa.textContent = e.num + " · " + e.nombre + (practica ? " (repaso)" : "");
     elCerradura.hidden = e !== cerradura;
     reloj = 0;
     medir();
     e.preparar();
+  }
+
+  // Solo se listan las llaves ya giradas: no es un mapa de niveles, es
+  // "volver a jugar lo que ya sé hacer" sin arriesgar el avance real.
+  function pintarAnteriores() {
+    var giradas = memoria.ganado ? ETAPAS.length : memoria.etapa;
+    if (giradas < 1) { elAnteriores.hidden = true; return; }
+    elAnteriores.innerHTML = '<option value="">repasar una llave…</option>';
+    for (var i = 0; i < giradas; i++) {
+      var o = document.createElement("option");
+      o.value = i;
+      o.textContent = ETAPAS[i].num + " · " + ETAPAS[i].nombre;
+      elAnteriores.appendChild(o);
+    }
+    elAnteriores.hidden = false;
   }
 
   function perder(motivo) {
@@ -560,10 +583,26 @@
     if (transicion) return;
     var e = ETAPAS[etapa];
     fallos = 0;
+    // Repasando: girar la llave no avanza nada, solo devuelve a donde iba
+    // de verdad. Va primero para que ni el tramo final dispare el regalo
+    // otra vez por repasar la última llave ya girada.
+    if (practica) {
+      transicion = true;
+      nota("llave " + e.num + " repasada", 2000);
+      setTimeout(function () {
+        if (!viva) return;
+        practica = false;
+        etapa = etapaAntes;
+        transicion = false;
+        prepararEtapa();
+      }, 1600);
+      return;
+    }
     if (etapa < ETAPAS.length - 1) {
       transicion = true;
       memoria.etapa = Math.max(memoria.etapa, etapa + 1);
       guardar();
+      pintarAnteriores();
       nota("llave " + e.num + " girada", 2400);
       setTimeout(function () {
         if (!viva) return;
@@ -577,6 +616,7 @@
     memoria.etapa = ETAPAS.length - 1;
     memoria.ganado = true;
     guardar();
+    pintarAnteriores();
     nota("");
     abrirPremio();
   }
@@ -655,18 +695,19 @@
   function abrir() {
     memoria = leer();
     etapa = memoria.etapa || 0;
-    fallos = 0; viva = true;
+    fallos = 0; viva = true; practica = false;
     caja.classList.add("viva");
     caja.setAttribute("aria-hidden", "false");
     elPremio.classList.remove("viva");
     elVerRegalo.hidden = !memoria.ganado;
+    pintarAnteriores();
     prepararEtapa();
     ultimo = performance.now();
     cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(paso);
   }
   function cerrar() {
-    viva = false;
+    viva = false; practica = false;
     cancelAnimationFrame(rafId);
     caja.classList.remove("viva");
     caja.setAttribute("aria-hidden", "true");
@@ -679,6 +720,16 @@
   caja.querySelector("#r3Salir").addEventListener("click", cerrar);
   caja.querySelector("#r3Cerrar").addEventListener("click", cerrar);
   elVerRegalo.addEventListener("click", abrirPremio);
+  elAnteriores.addEventListener("change", function () {
+    var v = elAnteriores.value;
+    elAnteriores.value = "";
+    if (v === "" || transicion) return;
+    if (!practica) etapaAntes = etapa;
+    practica = true;
+    fallos = 0;
+    etapa = +v;
+    prepararEtapa();
+  });
 
   window.addEventListener("resize", function () {
     if (!viva) return;
