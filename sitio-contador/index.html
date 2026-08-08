@@ -112,6 +112,9 @@
     transition: background .9s ease, box-shadow .9s ease;
   }
   .presencia.juntos { color: var(--gold); font-style: normal; }
+  /* En #listo (el saludo del día D) no viene pegada a `.marca`, así que el
+     tirón hacia arriba de arriba no aplica: solo un poco de aire. */
+  .listo .presencia { margin: 6px 0 20px; }
   .presencia.juntos .luz {
     background: var(--gold); box-shadow: 0 0 10px var(--halo-oro);
     animation: late-luz 2.8s ease-in-out infinite;
@@ -1031,6 +1034,19 @@
     var listo = document.getElementById("listo");
     function n(x) { return String(x).padStart(2, "0"); }
 
+    // La luz de encontrarse (presencia.js) vive físicamente dentro de
+    // #espera, pero el día D esa sección se esconde y #listo pasa al frente:
+    // sin este traslado, la luz se apagaba con la cuenta regresiva aunque
+    // presencia.js siguiera latiendo. Un solo nodo que viaja, no una copia.
+    var presenciaCaja = document.getElementById("presencia");
+    var notaListo = listo ? listo.querySelector(".nota") : null;
+    function presenciaEnListo() {
+      if (presenciaCaja && notaListo) notaListo.insertAdjacentElement("afterend", presenciaCaja);
+    }
+    function presenciaEnEspera() {
+      if (presenciaCaja && marca) marca.insertAdjacentElement("afterend", presenciaCaja);
+    }
+
     // ── La revelación ─────────────────────────────────────────────
     // El día D el mundo pasa de la noche al papel (ver DESIGN.md). La clase
     // `dia` vira todos los tokens de golpe; el CSS se encarga del fundido.
@@ -1084,6 +1100,7 @@
     function mostrarSaludo() {
       espera.style.display = "none";
       listo.classList.add("viva");
+      presenciaEnListo();
       if (volver) volver.hidden = false;
       // La librería va con `defer`: si el saludo llega antes que ella, se
       // espera a que la página termine de cargar en vez de perder el confeti.
@@ -1150,6 +1167,7 @@
           listo.classList.remove("viva");
           espera.classList.remove("se-va");
           espera.style.display = "";
+          presenciaEnEspera();
           if (marca) marca.textContent = "El próximo cumpleaños llega en";
           volver.textContent = "↺ volver al saludo";
           tick();                       // sin esperar un segundo a que pinte
@@ -1159,6 +1177,7 @@
           if (marca) marca.textContent = MARCA_ORIGINAL;
           volver.textContent = "↺ volver a contar";
           listo.classList.add("viva");
+          presenciaEnListo();
         }
       });
     })();

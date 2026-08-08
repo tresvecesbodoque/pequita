@@ -106,7 +106,6 @@
   var confirmaHasta = marcadoAhora ? Date.now() + CONFIRMA_DURA : 0;
   var ultimoTexto = "";
 
-  function esDeDia() { return document.documentElement.classList.contains("dia"); }
   function seVe() { return document.visibilityState !== "hidden"; }
 
   function edadAhora() {
@@ -134,8 +133,6 @@
   }
 
   function pintar() {
-    if (esDeDia()) { caja.hidden = true; return; }
-
     // Acaba de marcarse este aparato: primero se dice, y luego ya se mira si
     // hay alguien. Es el único momento en que la línea habla de sí misma.
     if (Date.now() < confirmaHasta) {
@@ -171,7 +168,7 @@
 
   // ── El latido ──────────────────────────────────────────────────
   function latir() {
-    if (pidiendo || esDeDia() || !seVe()) return;
+    if (pidiendo || !seVe()) return;
     pidiendo = true;
     fetch(API, {
       method: "POST",
@@ -203,13 +200,4 @@
   document.addEventListener("visibilitychange", function () {
     if (seVe()) latir();
   });
-
-  // El día D se apaga todo, como el cielo y los eventos (ver DESIGN.md).
-  var vigilaElDia = setInterval(function () {
-    if (!esDeDia()) return;
-    clearInterval(relojLatido);
-    clearInterval(relojPintura);
-    clearInterval(vigilaElDia);
-    caja.hidden = true;
-  }, 1000);
 })();

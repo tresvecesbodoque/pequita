@@ -169,7 +169,14 @@
   var suave = window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function jugando() { return juegoEl && juegoEl.classList.contains("viva"); }
+  // "Jugando" tapa la pantalla del contador entera: el minijuego de estrellas
+  // (#juego) Y las siete puertas / las tres llaves, que se montan aparte
+  // (reto.js / reto3.js) con su propia clase "reto viva". Un evento que
+  // corriera detrás de cualquiera de las dos se daría por visto sin que ella
+  // lo viera, y encima gastaría la ración del día.
+  function jugando() {
+    return (juegoEl && juegoEl.classList.contains("viva")) || !!document.querySelector(".reto.viva");
+  }
   function az(a, b) { return a + Math.random() * (b - a); }
   function uno(lista) { return lista[Math.floor(Math.random() * lista.length)]; }
 
