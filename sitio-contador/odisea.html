@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>El regreso — el viaje de tus Noiz</title>
+  <meta name="robots" content="noindex" />
+  <link rel="stylesheet" href="tokens.css" />
+  <style>
+    /* ══════════════════════════════════════════════════════════════
+       EL REGRESO — el seguimiento del tercer regalo, contado como la
+       vuelta de Odiseo a Ítaca. Los nombres del envío van cambiados por
+       los del viaje; los datos son de verdad y se piden a Starken con el
+       botón de actualizar. Colores SIEMPRE por token: amanece con el
+       resto del sitio el día D.
+       ══════════════════════════════════════════════════════════════ */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    /* El azul va en <html> además de <body>: si el contenido no llena la
+       pantalla, lo que asoma por debajo es el cielo, no un vacío blanco. */
+    html { background: #070c19; }
+    body {
+      min-height: 100dvh; color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(1200px 720px at 50% -12%, #23325e 0%, transparent 62%),
+        linear-gradient(180deg, #0b1428 0%, #070c19 60%, #070c19 100%);
+    }
+    html.dia { background: var(--fondo); }
+    html.dia body { background: var(--telon-dia); }
+
+    .lienzo { max-width: 40rem; margin: 0 auto; padding: clamp(20px, 5vw, 46px) 20px 64px; }
+
+    /* ── Encabezado: el regalo y su dedicatoria ── */
+    .cabecera { text-align: center; margin-bottom: 30px; }
+    .foto-regalo {
+      max-width: min(18rem, 74vw); width: auto; border-radius: 14px;
+      border: 1px solid var(--borde); box-shadow: 0 20px 54px -24px rgba(0,0,0,.8);
+    }
+    .foto-regalo[hidden] { display: none; }
+    .dedico {
+      font-style: italic; font-size: clamp(1rem, 3.6vw, 1.18rem);
+      line-height: 1.7; color: var(--ink-calida); margin: 18px auto 0; max-width: 26rem;
+    }
+    .titulo {
+      margin: 30px 0 4px; font-size: clamp(1.5rem, 7vw, 2.3rem);
+      font-variant: small-caps; letter-spacing: .06em; color: var(--gold); text-align: center;
+    }
+    .subtitulo {
+      text-align: center; color: var(--ink-suave); font-style: italic;
+      font-size: .95rem; margin: 0 0 26px;
+    }
+
+    /* ── El estado de ahora, en grande ── */
+    .ahora {
+      border: 1.5px solid var(--borde); border-radius: 16px;
+      background: var(--cristal); backdrop-filter: blur(4px);
+      padding: 20px 20px 22px; margin-bottom: 12px; text-align: center;
+    }
+    .ahora .rotulo { font-variant: small-caps; letter-spacing: .18em; color: var(--ink-suave); font-size: .78rem; }
+    .ahora .lugar { font-size: clamp(1.3rem, 5.4vw, 1.7rem); color: var(--gold); margin: 6px 0 4px; }
+    .ahora .glosa { font-style: italic; color: var(--ink-calida); line-height: 1.6; }
+    .ahora .arribo {
+      margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--borde);
+      color: var(--ink); font-size: .96rem;
+    }
+    .ahora .arribo b { color: var(--rose); font-variant-numeric: tabular-nums; }
+
+    /* ── La singladura: seis escalas ── */
+    .mapa { list-style: none; margin: 22px 0 0; padding: 0; position: relative; }
+    .mapa::before {
+      content: ""; position: absolute; left: 15px; top: 12px; bottom: 12px; width: 2px;
+      background: linear-gradient(var(--borde), var(--borde-vivo) 50%, var(--borde));
+    }
+    .escala { position: relative; padding: 0 0 22px 46px; }
+    .escala:last-child { padding-bottom: 0; }
+    .escala .faro {
+      position: absolute; left: 6px; top: 2px; width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid var(--borde-vivo); background: var(--fondo); z-index: 1;
+    }
+    .escala.hecha .faro { background: var(--gold); border-color: var(--gold); }
+    .escala.aqui .faro {
+      background: var(--rose); border-color: var(--rose);
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--rose) 30%, transparent);
+      animation: latido 2.2s ease-in-out infinite;
+    }
+    @keyframes latido {
+      0%, 100% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--rose) 30%, transparent); }
+      50% { box-shadow: 0 0 0 10px color-mix(in srgb, var(--rose) 6%, transparent); }
+    }
+    .escala .nombre { display: block; font-size: 1.08rem; color: var(--ink); }
+    .escala.aqui .nombre { color: var(--rose); }
+    .escala.pend .nombre { color: var(--ink-tenue); }
+    .escala .glosa { font-style: italic; color: var(--ink-suave); font-size: .9rem; line-height: 1.55; margin-top: 2px; }
+    .escala .tras { display: block; margin-top: 3px; font-size: .74rem; color: var(--ink-tenue); font-variant: small-caps; letter-spacing: .1em; }
+
+    /* ── Actualizar ── */
+    .barra { margin-top: 30px; text-align: center; }
+    .actualizar {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 12px 24px; border-radius: 999px; cursor: pointer;
+      border: 1.5px solid var(--borde-vivo); background: rgba(255,255,255,.04);
+      color: var(--gold); font-family: inherit; font-size: 1rem; letter-spacing: .04em;
+      transition: transform .2s ease, background .2s ease;
+    }
+    .actualizar { text-decoration: none; }
+    .actualizar:hover { transform: translateY(-2px); background: rgba(217,168,63,.12); }
+    .actualizar .rueda { display: inline-block; }
+    .sello { margin-top: 12px; font-size: .82rem; color: var(--ink-suave); font-style: italic; line-height: 1.5; max-width: 26rem; margin-left: auto; margin-right: auto; }
+    .sello a { color: var(--gold); }
+
+    .pie { margin-top: 40px; text-align: center; color: var(--ink-tenue); font-size: .76rem; font-style: italic; }
+    .pie a { color: var(--ink-suave); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .escala.aqui .faro, .actualizar.girando .rueda { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="lienzo">
+    <header class="cabecera">
+      <img class="foto-regalo" id="foto" src="premio3.jpg" alt="Tus Noiz" hidden />
+      <p class="dedico">«De mí para tú. Sigue el viaje de tus Noiz, que vienen bajando desde el Olimpo.»</p>
+    </header>
+
+    <h1 class="titulo">El regreso</h1>
+    <p class="subtitulo">como Odiseo a Ítaca, tu regalo cruza el mar para llegar a ti</p>
+
+    <section class="ahora">
+      <p class="rotulo">dónde va ahora mismo</p>
+      <p class="lugar" id="ahoraLugar">—</p>
+      <p class="glosa" id="ahoraGlosa"></p>
+      <p class="arribo">arribo profetizado por el oráculo: <b id="ahoraArribo">—</b></p>
+    </section>
+
+    <ol class="mapa" id="mapa"></ol>
+
+    <div class="barra">
+      <a class="actualizar" id="btn" href="https://starken.cl/seguimiento?codigo=275431109"
+         target="_blank" rel="noopener">
+        <span class="rueda">↻</span> consultar al oráculo ↗
+      </a>
+      <p class="sello" id="sello"></p>
+    </div>
+
+    <p class="pie">
+      El viaje es de verdad: orden de flete N.º <span id="ofNum">275431109</span>.
+      Los nombres del mar están cambiados; las escalas, no.
+    </p>
+  </main>
+
+  <script>
+  (function () {
+    "use strict";
+
+    // El día D el sitio vira al papel: si alguien guardó esa marca, la
+    // respetamos también aquí para que la página no desentone.
+    try { if (localStorage.getItem("pequita.dia") === "1") document.documentElement.classList.add("dia"); } catch (e) {}
+
+    var OF = "275431109";
+
+    // ── La singladura: las seis escalas del envío, con su nombre de mar ──
+    // `clave` casa con el estado que canta Starken; así, al actualizar,
+    // sabemos en cuál de las seis está sin depender del orden del texto.
+    var ESCALAS = [
+      { clave: "creado",   nombre: "El decreto del Olimpo",     tras: "solicitud de envío creada",
+        glosa: "Los dioses consienten el regreso: el barco puede zarpar." },
+      { clave: "recibido", nombre: "Zarpa del Olimpo",          tras: "recibido en origen — Valdivia",
+        glosa: "Sueltan amarras; la nave deja el puerto de los dioses." },
+      { clave: "transito", nombre: "Cruza el mar vinoso",       tras: "en tránsito · en camino a destino",
+        glosa: "Mar abierto, entre islas y tormentas, rumbo a casa." },
+      { clave: "sucursal", nombre: "Fondea frente a Ítaca",     tras: "en sucursal destino",
+        glosa: "Avista la costa: echa el ancla a las puertas de Ítaca." },
+      { clave: "reparto",  nombre: "El último trecho a palacio", tras: "en reparto",
+        glosa: "Pisa tierra y sube, disfrazado, hacia el palacio." },
+      { clave: "entregado", nombre: "En casa, en Ítaca",        tras: "entregado",
+        glosa: "Cruza el umbral. El viaje termina en tus manos." }
+    ];
+
+    // ── El estado real de ahora (leído de Starken el 07-08-2026) ──
+    // Es lo que hay que cambiar cuando el envío avance: `idx` es en qué escala
+    // de las seis va (0…5) y `arribo`, la fecha estimada.
+    var estado = {
+      idx: 2,                       // «en tránsito», la 3.ª de las 6
+      arribo: "12 de agosto de 2026"
+    };
+
+    var elMapa = document.getElementById("mapa");
+    var elLugar = document.getElementById("ahoraLugar");
+    var elGlosa = document.getElementById("ahoraGlosa");
+    var elArribo = document.getElementById("ahoraArribo");
+    var elSello = document.getElementById("sello");
+    document.getElementById("ofNum").textContent = OF;
+
+    function pintar() {
+      elMapa.innerHTML = "";
+      ESCALAS.forEach(function (e, i) {
+        var li = document.createElement("li");
+        li.className = "escala " + (i < estado.idx ? "hecha" : i === estado.idx ? "aqui" : "pend");
+        li.innerHTML =
+          '<span class="faro"></span>' +
+          '<span class="nombre">' + e.nombre + '</span>' +
+          '<span class="glosa">' + e.glosa + '</span>' +
+          '<span class="tras">' + e.tras + '</span>';
+        elMapa.appendChild(li);
+      });
+      var aqui = ESCALAS[estado.idx];
+      elLugar.textContent = aqui.nombre;
+      elGlosa.textContent = aqui.glosa;
+      elArribo.textContent = estado.arribo;
+      // El oráculo vivo es Starken: aquí guardo la última mirada, y el botón
+      // de arriba lleva a la fuente oficial para verlo al minuto.
+      elSello.innerHTML = "así iba el 7 de agosto; el oráculo se actualiza al consultarlo en Starken.";
+    }
+
+    document.getElementById("foto").addEventListener("load", function () { this.hidden = false; });
+    document.getElementById("foto").addEventListener("error", function () { this.hidden = true; });
+
+    pintar();
+  })();
+  </script>
+</body>
+</html>

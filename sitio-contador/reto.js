@@ -1,15 +1,22 @@
 /* ══════════════════════════════════════════════════════════════════
-   EL RETO DE LAS CUATRO PUERTAS
+   EL RETO DE LAS SIETE PUERTAS
    ══════════════════════════════════════════════════════════════════
 
-   Un solo desafío, cuatro etapas seguidas, y al final el segundo regalo.
+   Un solo desafío, siete etapas seguidas, y al final el segundo regalo.
    Cada etapa pide una cosa distinta, para que no se gane con un solo
    talento:
 
-       I  · la constelación   memoria    repetir la secuencia
-       II · los siete sietes  cabeza     tres cifras que ella sabe
-       III· dueño del cielo   ritmo      dar en la línea a tiempo
-       IV · el laberinto      pulso      el brote hasta la rosa
+       I  · la constelación    memoria    repetir la secuencia
+       II · los siete sietes   cabeza     tres cifras que ella sabe
+       III· dueño del cielo    ritmo      dar en la línea a tiempo
+       IV · el laberinto       pulso      el brote hasta la rosa
+       V  · el cielo cambiado  ojo        ver qué se movió
+       VI · las siete lámparas cabeza fría encenderlas todas
+       VII· el pulso de la rosa nervio    seguirla mientras huye
+
+   Las tres últimas se añadieron después y van AL FINAL a propósito:
+   así quien ya cruzó las cuatro primeras no las vuelve a cruzar (la
+   memoria guarda un número de etapa, y ese número sigue valiendo).
 
    Reglas de la casa:
    - DIFÍCIL, pero la etapa superada queda superada: al fallar se repite
@@ -19,7 +26,7 @@
      es justo lo que se le pide.
    - Tras varios fallos seguidos, la etapa ayuda SIN DECIRLO. Nunca se
      anuncia: ella solo nota que de pronto le sale.
-   - El regalo se abre al terminar las cuatro, y queda abierto.
+   - El regalo se abre al terminar las siete, y queda abierto.
 
    Sin dependencias. Se pinta con los TOKENS del sitio, así que el reto
    amanece con el resto el día del cumpleaños.
@@ -35,11 +42,21 @@
   function leer() {
     try {
       var m = JSON.parse(localStorage.getItem(MEM) || "{}") || {};
-      return { etapa: Math.min(Math.max(+m.etapa || 0, 0), 3), ganado: !!m.ganado };
+      // El tope se lee de ETAPAS, no de un 3 escrito a mano: al añadir una
+      // puerta más, esta línea no hay que tocarla (y si se olvidara, dejaría
+      // a quien va avanzado encerrado en la etapa cuatro para siempre).
+      var etapaGuardada = Math.min(Math.max(+m.etapa || 0, 0), ETAPAS.length - 1);
+      // Si ya vio el regalo con una versión más corta del reto, la etapa
+      // guardada es la última puerta de ESA versión, que ya cruzó: que no
+      // la vuelva a cruzar, que arranque en la puerta nueva de al lado.
+      if (m.ganado && etapaGuardada < ETAPAS.length - 1) etapaGuardada++;
+      return { etapa: etapaGuardada, ganado: !!m.ganado };
     } catch (e) { return { etapa: 0, ganado: false }; }
   }
   function guardar() { try { localStorage.setItem(MEM, JSON.stringify(memoria)); } catch (e) {} }
-  var memoria = leer();
+  // No se lee aquí: `leer()` mira ETAPAS, que todavía no existe a esta altura
+  // del archivo. Lo que vale se lee al abrir, que es cuando importa.
+  var memoria = { etapa: 0, ganado: false };
 
   // ── Azar con semilla: lo mismo en cada intento ────────────────────
   function azarSemilla(s) {
@@ -71,7 +88,7 @@
     '<button class="reto-regalo" id="retoVerRegalo" type="button" hidden>ver el regalo ✿</button>' +
     '<p class="reto-nota" id="retoNota"></p>' +
     '<div class="reto-premio" id="retoPremio">' +
-      '<p class="reto-titulo">las cuatro puertas</p>' +
+      '<p class="reto-titulo">las siete puertas</p>' +
       '<img alt="Tu otro regalo" id="retoFoto" />' +
       '<p class="reto-frase" id="retoFrase"></p>' +
       '<button class="reto-cerrar" id="retoCerrar" type="button">volver al conteo</button>' +
@@ -122,6 +139,9 @@
   // ── Estado común ──────────────────────────────────────────────────
   var W = 0, H = 0;
   var etapa = 0, fallos = 0, viva = false, ultimo = 0, rafId = 0;
+  // Cuánto se sube el punto en las etapas de arrastre, para que el dedo no
+  // tape lo que hay que mirar. Solo con el dedo: con el ratón se ve todo.
+  var TOQUE_ARRIBA = 38;
   // Entre una etapa y la siguiente hay un respiro (se lee «etapa superada»).
   // Durante ese hueco NADIE late ni pinta: la etapa que viene todavía no está
   // preparada, y pintarla sería pintar el vacío.
@@ -277,6 +297,9 @@
      ════════════════════════════════════════════════════════════════ */
   var dos = {
     num: "II", nombre: "los siete sietes",
+    // Esta etapa no vive del tamaño de la pantalla, así que un cambio de
+    // pantalla no la reinicia: girar el teléfono le borraba lo respondido.
+    quieta: true,
     preguntas: [
       { texto: "cada verso del poema tiene las mismas palabras. ¿cuántas?", clave: 7 },
       { texto: "los años que cumples hoy", clave: 23 },
@@ -446,15 +469,15 @@
   /* ════════════════════════════════════════════════════════════════
      ETAPA IV — EL LABERINTO DE LA ROSA (pulso)
      El brote, con el dedo, de abajo hasta la rosa, sin rozar y con el
-     reloj encima. Es la última puerta: la más grande y la más apretada.
+     reloj encima. La más grande y la más apretada de las cuatro primeras.
      ════════════════════════════════════════════════════════════════ */
   var cuatro = {
     num: "IV", nombre: "el laberinto de la rosa",
+    pulgar: true,                       // se juega arrastrando: el dedo estorba
     cols: 7, filas: 12, segundos: 48,
     lab: null, camino: [], paredes: [], t: 0, ox: 0, oy: 0,
     dedo: { x: 0, y: 0 }, rastro: [], corriendo: false, tocando: false,
     restante: 0, pistaHasta: 0, holgura: 0, extra: 0,
-    TOQUE_ARRIBA: 38,
 
     cavar: function () {
       var cols = this.cols, filas = this.filas, azar = azarSemilla(7 * 4);
@@ -629,7 +652,352 @@
     soltar: function () { if (this.corriendo) perder("soltaste el brote"); }
   };
 
-  var ETAPAS = [uno, dos, tres, cuatro];
+  /* ════════════════════════════════════════════════════════════════
+     ETAPA V — EL CIELO CAMBIADO (ojo)
+     El mismo cielo dos veces, con un parpadeo en medio, y una sola
+     estrella que se corre de sitio. El parpadeo es lo cruel: sin él,
+     el ojo caza el movimiento solo; con él, hay que MIRAR.
+     Cinco rondas, cada una con más estrellas. Tres dedos en la estrella
+     equivocada y se repite la etapa.
+     ════════════════════════════════════════════════════════════════ */
+  var cinco = {
+    num: "V", nombre: "el cielo cambiado",
+    cuantas: [10, 14, 18, 22, 26],
+    estrellas: [], cual: -1, salto: { x: 0, y: 0 },
+    ronda: 0, fase: 0, hasta: 0, limite: 0, errores: 0,
+
+    preparar: function () {
+      this.ronda = 0; this.errores = 0;
+      this.armar();
+    },
+    // Con fallos, el cielo se queda quieto más rato y el parpadeo se acorta:
+    // la misma prueba, con más luz para mirarla.
+    verCuanto: function () { return fallos >= 3 ? 1050 : 800; },
+    veloCuanto: function () { return fallos >= 3 ? 150 : 200; },
+    plazo: function () { return fallos >= 5 ? 32000 : 24000; },
+
+    armar: function () {
+      var azar = azarSemilla(505 + this.ronda * 17);
+      var n = this.cuantas[this.ronda];
+      var margen = Math.min(W, H) * 0.11;
+      var x = 0, y = 0, i, k, t, libre;
+      this.estrellas = [];
+      for (i = 0; i < n; i++) {
+        // Repartidas sin amontonarse: si cae pegada a otra, se reintenta.
+        // Dos estrellas juntas harían imposible saber cuál de las dos saltó.
+        for (t = 0; t < 60; t++) {
+          x = margen + azar() * (W - margen * 2);
+          y = H * 0.15 + azar() * (H * 0.68);
+          libre = true;
+          for (k = 0; k < this.estrellas.length; k++) {
+            if (Math.hypot(x - this.estrellas[k].x, y - this.estrellas[k].y) < 52) { libre = false; break; }
+          }
+          if (libre) break;
+        }
+        this.estrellas.push({ x: x, y: y, r: 5 + azar() * 4 });
+      }
+      // La que salta: una que tenga sitio para saltar sin salirse del cielo.
+      var d = Math.max(17, Math.min(W, H) * 0.045);
+      for (t = 0; t < 80; t++) {
+        i = Math.floor(azar() * this.estrellas.length);
+        var a = azar() * Math.PI * 2;
+        var sx = this.estrellas[i].x + Math.cos(a) * d;
+        var sy = this.estrellas[i].y + Math.sin(a) * d;
+        if (sx > margen && sx < W - margen && sy > H * 0.14 && sy < H * 0.85) {
+          this.cual = i; this.salto = { x: Math.cos(a) * d, y: Math.sin(a) * d };
+          break;
+        }
+      }
+      this.fase = 0;
+      this.hasta = Date.now() + this.verCuanto();
+      this.limite = Date.now() + this.plazo();
+      elMarca.textContent = "ronda " + (this.ronda + 1) + " de 5";
+      nota(this.ronda === 0 ? "una estrella se cambia de sitio: tócala" : "", 3400);
+    },
+
+    latir: function () {
+      var ahora = Date.now();
+      if (ahora > this.limite) { perder("el cielo se cansó de esperar"); return; }
+      if (ahora < this.hasta) return;
+      // 0 y 2 son cielo (el de antes y el de después); 1 y 3, el parpadeo.
+      this.fase = (this.fase + 1) % 4;
+      this.hasta = ahora + (this.fase % 2 ? this.veloCuanto() : this.verCuanto());
+    },
+
+    pintar: function () {
+      if (this.fase % 2) return;                    // el parpadeo: cielo en blanco
+      var corrido = this.fase === 2;
+      // Migaja silenciosa: si lleva mucho rato mirando, la que salta respira.
+      var soplo = fallos >= 5 && Date.now() > this.limite - this.plazo() + 13000;
+      for (var i = 0; i < this.estrellas.length; i++) {
+        var e = this.estrellas[i];
+        var x = e.x + (corrido && i === this.cual ? this.salto.x : 0);
+        var y = e.y + (corrido && i === this.cual ? this.salto.y : 0);
+        ctx.save();
+        if (soplo && i === this.cual) conBrillo(16, P.calida, .45);
+        ctx.fillStyle = conAlfa(P.oro, .62);
+        estrella(x, y, e.r + 6, 0);
+        ctx.restore();
+      }
+    },
+
+    tocar: function (px, py) {
+      for (var i = 0; i < this.estrellas.length; i++) {
+        var e = this.estrellas[i];
+        var cerca = Math.hypot(px - e.x, py - e.y) < 32 ||
+          (i === this.cual && Math.hypot(px - e.x - this.salto.x, py - e.y - this.salto.y) < 32);
+        if (!cerca) continue;
+        if (i !== this.cual) {
+          // Solo cuenta como error tocar una estrella: el cielo vacío es libre.
+          this.errores++;
+          if (this.errores >= 3) { perder("tres veces la estrella quieta"); return; }
+          nota("esa no se movió", 1500);
+          return;
+        }
+        if (this.ronda >= this.cuantas.length - 1) { ganarEtapa(); return; }
+        this.ronda++;
+        nota("esa era", 1200);
+        var self = this;
+        this.fase = 1; this.hasta = Date.now() + 900;   // un respiro a oscuras
+        this.limite = Infinity;      // el reloj de la ronda no corre en el respiro
+        setTimeout(function () { if (viva && ETAPAS[etapa] === self) self.armar(); }, 900);
+        return;
+      }
+    }
+  };
+
+  /* ════════════════════════════════════════════════════════════════
+     ETAPA VI — LAS SIETE LÁMPARAS (cabeza fría)
+     Siete lámparas en rueda. Tocar una la cambia a ella Y a sus dos
+     vecinas, y hay que dejarlas las siete encendidas. Siendo siete
+     (y no seis, ni nueve) cada tablero tiene UNA sola salida: aquí no
+     se llega probando, se llega pensando.
+     Tres tableros, y un tope de jugadas que casi no perdona.
+     ════════════════════════════════════════════════════════════════ */
+  var seis = {
+    num: "VI", nombre: "las siete lámparas",
+    hondura: [3, 4, 5],                 // cuántos toques esconde cada tablero
+    luz: [], ronda: 0, jugadas: 0, tope: 0, sol: [], desde: 0,
+
+    preparar: function () { this.ronda = 0; this.armar(); },
+
+    vecinas: function (i) { return [(i + 6) % 7, i, (i + 1) % 7]; },
+    dar: function (luz, i) {
+      var v = this.vecinas(i);
+      for (var k = 0; k < 3; k++) luz[v[k]] = !luz[v[k]];
+    },
+    // Las 128 combinaciones posibles, probadas todas: la más corta que deja
+    // el candelabro entero encendido. Con siete lámparas hay una y solo una.
+    resolver: function () {
+      var mejor = null;
+      for (var m = 0; m < 128; m++) {
+        var luz = this.luz.slice(), toques = [], i, todas = true;
+        for (i = 0; i < 7; i++) if (m & (1 << i)) { this.dar(luz, i); toques.push(i); }
+        for (i = 0; i < 7; i++) if (!luz[i]) { todas = false; break; }
+        if (todas && (!mejor || toques.length < mejor.length)) mejor = toques;
+      }
+      return mejor || [];
+    },
+    armar: function () {
+      var azar = azarSemilla(1717 + this.ronda * 23), i;
+      // Se parte del candelabro entero encendido y se apaga «al revés»:
+      // así el tablero SIEMPRE tiene salida, y la salida es de la hondura
+      // que se le pidió.
+      var libres = [0, 1, 2, 3, 4, 5, 6];
+      this.luz = [true, true, true, true, true, true, true];
+      for (i = 0; i < this.hondura[this.ronda]; i++) {
+        this.dar(this.luz, libres.splice(Math.floor(azar() * libres.length), 1)[0]);
+      }
+      this.sol = this.resolver();
+      this.jugadas = 0;
+      this.tope = this.sol.length + (fallos >= 3 ? 3 : 2);
+      this.desde = Date.now();
+      this.marcar();
+      nota(this.ronda === 0
+        ? "enciéndelas todas; cada toque cambia la que tocas y sus dos vecinas"
+        : "", 4200);
+    },
+    marcar: function () {
+      elMarca.textContent = "candelabro " + (this.ronda + 1) + " de 3 · " +
+        this.jugadas + "/" + this.tope;
+    },
+    donde: function (i) {
+      var r = Math.min(W, H) * 0.29, a = -Math.PI / 2 + (i / 7) * Math.PI * 2;
+      return { x: W / 2 + Math.cos(a) * r, y: H * 0.47 + Math.sin(a) * r };
+    },
+
+    pintar: function () {
+      var i, p, q;
+      // La rueda: se dibuja para que se vea QUIÉN es vecina de quién.
+      ctx.save();
+      ctx.strokeStyle = conAlfa(P.oro, .16); ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (i = 0; i < 7; i++) {
+        p = this.donde(i); q = this.donde((i + 1) % 7);
+        ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y);
+      }
+      ctx.stroke(); ctx.restore();
+
+      // Migaja silenciosa: tras un rato largo, la lámpara que toca respira.
+      var soplo = fallos >= 5 && Date.now() - this.desde > 15000 ? this.sol[0] : -1;
+      for (i = 0; i < 7; i++) {
+        p = this.donde(i);
+        ctx.save();
+        if (this.luz[i]) { conBrillo(22, P.calida, .85); ctx.fillStyle = P.calida; }
+        else if (i === soplo) { conBrillo(12, P.oro, .5); ctx.fillStyle = conAlfa(P.oro, .55); }
+        else ctx.fillStyle = conAlfa(P.oro, .28);
+        estrella(p.x, p.y, this.luz[i] ? 19 : 13, 0);
+        ctx.restore();
+      }
+    },
+
+    tocar: function (x, y) {
+      for (var i = 0; i < 7; i++) {
+        var p = this.donde(i);
+        if (Math.hypot(x - p.x, y - p.y) > 38) continue;
+        this.dar(this.luz, i);
+        this.jugadas++;
+        this.sol = this.resolver();
+        this.marcar();
+        if (!this.sol.length) {                       // ya no falta ninguna
+          if (this.ronda >= this.hondura.length - 1) { ganarEtapa(); return; }
+          this.ronda++;
+          nota("ese candelabro ya está", 1400);
+          var self = this;
+          setTimeout(function () { if (viva && ETAPAS[etapa] === self) self.armar(); }, 1100);
+          return;
+        }
+        if (this.jugadas >= this.tope) perder("te quedaste sin jugadas");
+        return;
+      }
+    }
+  };
+
+  /* ════════════════════════════════════════════════════════════════
+     ETAPA VII — EL PULSO DE LA ROSA (nervio)
+     La última puerta. La rosa echa a andar y hay que seguirla con el
+     dedo sin que el hilo se estire de más, mientras el hilo se acorta
+     y ella corre cada vez más. No hay nada que aprenderse: hay que
+     aguantar. Soltar el dedo es perder.
+     ════════════════════════════════════════════════════════════════ */
+  var siete = {
+    num: "VII", nombre: "el pulso de la rosa",
+    pulgar: true,                       // el dedo tapa la rosa: se toca más arriba
+    segundos: 26,
+    u: 0, total: 26, restante: 0, fuera: 0,
+    brote: { x: 0, y: 0 }, dedo: { x: 0, y: 0 },
+    corriendo: false, tocando: false,
+
+    preparar: function () {
+      this.total = this.segundos - (fallos >= 5 ? 10 : fallos >= 3 ? 6 : 0);
+      this.restante = this.total;
+      this.u = 0; this.fuera = 0;
+      this.corriendo = false; this.tocando = false;
+      this.brote = this.donde(0);
+      this.dedo = { x: this.brote.x, y: this.brote.y };
+      elMarca.textContent = Math.ceil(this.restante) + "s";
+      nota("pon el dedo en la rosa y no la sueltes: va a huir", 3800);
+    },
+    // Un vaivén que no se repite pronto: dos ondas que no encajan entre sí.
+    donde: function (u) {
+      return {
+        x: W / 2 + W * 0.31 * Math.sin(u + 0.6) + W * 0.07 * Math.sin(u * 2.7),
+        y: H * 0.48 + H * 0.27 * Math.sin(u * 1.43) + H * 0.05 * Math.sin(u * 3.1)
+      };
+    },
+    andado: function () { return 1 - this.restante / this.total; },
+    // Corre más según avanza, y da dos tirones en sitios fijos: los mismos
+    // en cada intento, para que se puedan ver venir.
+    paso: function () {
+      var p = this.andado();
+      var tiron = (p > 0.34 && p < 0.42) || (p > 0.68 && p < 0.76) ? 2.1 : 1;
+      return (0.85 + p * 1.45) * tiron;
+    },
+    // Lo que aguanta el hilo antes de romperse: al principio holgado, al
+    // final del largo del dedo.
+    hilo: function () {
+      return (56 - 27 * this.andado()) * (Math.min(W, H) < 420 ? 0.9 : 1) +
+        (fallos >= 3 ? 11 : 0);
+    },
+
+    latir: function (dt) {
+      if (this.corriendo) { this.u += dt * this.paso(); this.restante -= dt; }
+      this.brote = this.donde(this.u);
+      if (!this.corriendo) return;
+      elMarca.textContent = Math.max(0, Math.ceil(this.restante)) + "s";
+      var d = Math.hypot(this.dedo.x - this.brote.x, this.dedo.y - this.brote.y);
+      if (d > this.hilo()) {
+        // Un respiro cortísimo antes de romper: un tirón se perdona, dos no.
+        this.fuera += dt;
+        if (this.fuera > 0.3) { perder("se te soltó el hilo"); return; }
+      } else this.fuera = Math.max(0, this.fuera - dt * 2);
+      if (this.restante <= 0) ganarEtapa();
+    },
+
+    pintar: function () {
+      var d = Math.hypot(this.dedo.x - this.brote.x, this.dedo.y - this.brote.y);
+      var largo = this.hilo();
+      var tirante = Math.min(1, d / largo);
+
+      // El cerco: hasta dónde se puede estirar. Se aprieta a la vista.
+      ctx.save();
+      ctx.strokeStyle = conAlfa(tirante > .75 ? P.rosa : P.oro, .35 + tirante * .4);
+      ctx.lineWidth = 1.3; ctx.setLineDash([4, 5]);
+      ctx.beginPath(); ctx.arc(this.brote.x, this.brote.y, largo, 0, Math.PI * 2);
+      ctx.stroke(); ctx.restore();
+
+      if (this.corriendo) {                       // el hilo, que se pone rojo
+        ctx.save();
+        ctx.strokeStyle = conAlfa(tirante > .75 ? P.rosa : P.calida, .25 + tirante * .55);
+        ctx.lineWidth = 1 + (1 - tirante) * 1.6;
+        ctx.beginPath();
+        ctx.moveTo(this.dedo.x, this.dedo.y); ctx.lineTo(this.brote.x, this.brote.y);
+        ctx.stroke(); ctx.restore();
+      }
+
+      rosa(this.brote.x, this.brote.y, 13);
+
+      ctx.save();
+      conBrillo(12, P.calida, .8);
+      ctx.fillStyle = conAlfa(P.calida, this.corriendo ? .9 : .4);
+      ctx.beginPath(); ctx.arc(this.dedo.x, this.dedo.y, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+
+      // Lo andado, en una línea abajo: se ve el final acercarse.
+      ctx.save();
+      ctx.strokeStyle = conAlfa(P.oro, .2); ctx.lineWidth = 2.5; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(W * 0.18, H * 0.93); ctx.lineTo(W * 0.82, H * 0.93); ctx.stroke();
+      ctx.strokeStyle = P.oro;
+      conBrillo(8, P.oro, .5);
+      ctx.beginPath(); ctx.moveTo(W * 0.18, H * 0.93);
+      ctx.lineTo(W * 0.18 + W * 0.64 * this.andado(), H * 0.93); ctx.stroke();
+      ctx.restore();
+
+      if (!this.corriendo) {
+        ctx.save();
+        ctx.strokeStyle = conAlfa(P.calida, .5); ctx.lineWidth = 1.4;
+        ctx.setLineDash([3, 4]);
+        ctx.beginPath();
+        ctx.arc(this.brote.x, this.brote.y, 26 + (suave ? 0 : Math.sin(Date.now() / 400) * 3), 0, Math.PI * 2);
+        ctx.stroke(); ctx.restore();
+      }
+    },
+
+    tocar: function (x, y) {
+      if (Math.hypot(x - this.brote.x, y - this.brote.y) > this.hilo()) {
+        nota("empieza con el dedo en la rosa", 1800); return false;
+      }
+      this.corriendo = true; this.tocando = true;
+      this.dedo = { x: x, y: y };
+      this.fuera = 0;
+      nota("");
+      return true;
+    },
+    mover: function (x, y) { this.dedo.x = x; this.dedo.y = y; },
+    soltar: function () { if (this.corriendo) perder("soltaste la rosa"); }
+  };
+
+  var ETAPAS = [uno, dos, tres, cuatro, cinco, seis, siete];
 
   /* ── Motor común ─────────────────────────────────────────────────── */
   function medir() {
@@ -674,7 +1042,10 @@
       }, 1800);
       return;
     }
-    cuatro.corriendo = false; cuatro.tocando = false;   // que el reloj no siga
+    // Que ningún reloj siga corriendo por detrás del regalo.
+    for (var k = 0; k < ETAPAS.length; k++) {
+      if ("corriendo" in ETAPAS[k]) { ETAPAS[k].corriendo = false; ETAPAS[k].tocando = false; }
+    }
     memoria.etapa = ETAPAS.length - 1;
     memoria.ganado = true;
     guardar();
@@ -686,9 +1057,13 @@
   // de tiempo y el regalo no se destripa mirando lo que descarga la página.
   function abrirPremio() {
     elFoto.src = "premio.jpg";
-    elFrase.textContent = "Cuatro puertas para esto: el 30 de octubre te llevo a escuchar a Morfina en vivo.";
+    elFrase.textContent = "Siete puertas para esto: el 30 de octubre te llevo a escuchar a Morfina en vivo.";
     elPremio.classList.add("viva");
     elVerRegalo.hidden = false;
+    // Aviso para el tercer juego, que hasta aquí estaba con candado. Va por
+    // evento y no por llamada directa: si reto3.js no estuviera cargado, esto
+    // no se entera y no rompe nada.
+    try { window.dispatchEvent(new CustomEvent("reto:ganado")); } catch (e) {}
   }
 
   function paso(ahora) {
@@ -707,26 +1082,31 @@
   function puntoDe(ev) {
     var r = lienzo.getBoundingClientRect();
     var x = ev.clientX - r.left, y = ev.clientY - r.top;
-    // En la etapa del laberinto el brote va por encima del dedo, o la mano
-    // tapa justo lo que hay que mirar. En las otras se toca donde se ve.
-    if (ev.pointerType === "touch" && ETAPAS[etapa] === cuatro) y -= cuatro.TOQUE_ARRIBA;
+    // En las etapas que se juegan arrastrando, lo que hay que mirar va por
+    // encima del dedo, o la mano tapa justo eso. En las de tocar, se toca
+    // donde se ve.
+    if (ev.pointerType === "touch" && ETAPAS[etapa].pulgar) y -= TOQUE_ARRIBA;
     return { x: x, y: y };
   }
   lienzo.addEventListener("pointerdown", function (ev) {
     if (!viva || elPremio.classList.contains("viva")) return;
     ev.preventDefault();
     var p = puntoDe(ev), e = ETAPAS[etapa];
-    if (e === cuatro) { if (cuatro.tocar(p.x, p.y)) lienzo.setPointerCapture(ev.pointerId); }
+    // Las de arrastre agarran el puntero: si el dedo se sale del lienzo, los
+    // eventos siguen llegando y la etapa se entera de que lo soltó.
+    if (e.mover) { if (e.tocar(p.x, p.y)) lienzo.setPointerCapture(ev.pointerId); }
     else if (e.tocar) e.tocar(p.x, p.y);
   });
   lienzo.addEventListener("pointermove", function (ev) {
-    if (!viva || ETAPAS[etapa] !== cuatro || !cuatro.tocando) return;
+    var e = viva ? ETAPAS[etapa] : null;
+    if (!e || !e.mover || !e.tocando) return;
     ev.preventDefault();
     var p = puntoDe(ev);
-    cuatro.mover(p.x, p.y);
+    e.mover(p.x, p.y);
   });
   function soltar() {
-    if (viva && ETAPAS[etapa] === cuatro) { cuatro.tocando = false; cuatro.soltar(); }
+    var e = viva ? ETAPAS[etapa] : null;
+    if (e && e.mover && e.tocando) { e.tocando = false; e.soltar(); }
   }
   lienzo.addEventListener("pointerup", soltar);
   lienzo.addEventListener("pointercancel", soltar);
@@ -771,7 +1151,8 @@
     if (!viva) return;
     medir();
     if (ETAPAS[etapa] === cuatro) { cuatro.encajar(); if (cuatro.corriendo) perder("cambió la pantalla"); }
-    else prepararEtapa();
+    else if (ETAPAS[etapa] === siete) { if (siete.corriendo) perder("cambió la pantalla"); }
+    else if (!ETAPAS[etapa].quieta) prepararEtapa();
   });
 
   var boton = document.getElementById("retoAbrir");
@@ -782,10 +1163,14 @@
     window.__reto = {
       abrir: abrir, cerrar: cerrar,
       irEtapa: function (n) { etapa = n; fallos = 0; prepararEtapa(); },
+      total: ETAPAS.length,
       estado: function () {
         return { etapa: etapa, fallos: fallos, premio: elPremio.classList.contains("viva"),
                  ronda: uno.ronda, mostrando: uno.mostrando, pregunta: dos.i,
-                 notas: tres.contadas(), perdidas: tres.perdidas };
+                 notas: tres.contadas(), perdidas: tres.perdidas,
+                 ojoRonda: cinco.ronda, ojoFase: cinco.fase, ojoErrores: cinco.errores,
+                 lamparas: seis.ronda, jugadas: seis.jugadas, tope: seis.tope,
+                 pulsoResta: siete.restante, pulsoAnda: siete.corriendo };
       },
       solucion: {
         constelacion: function () {
@@ -801,7 +1186,15 @@
           for (var i = 0; i < cuatro.camino.length; i++) s.push(cuatro.centro(cuatro.camino[i]));
           s.push(cuatro.salida());
           return s;
-        }
+        },
+        cielo: function () {
+          var e = cinco.estrellas[cinco.cual];
+          return e ? { x: e.x, y: e.y, fase: cinco.fase } : null;
+        },
+        lamparas: function () {
+          return { toques: seis.sol.slice(), donde: seis.sol.map(function (i) { return seis.donde(i); }) };
+        },
+        pulso: function () { return { brote: siete.brote, hilo: siete.hilo(), resta: siete.restante }; }
       },
       teclear: function (t) { dos.teclear(t); }
     };

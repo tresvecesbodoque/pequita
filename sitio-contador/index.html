@@ -220,15 +220,32 @@
   .num { font-size: 2.1rem; color: var(--gold); font-variant-numeric: tabular-nums; }
   .lab { font-size: .6rem; text-transform: uppercase; letter-spacing: .2em; color: var(--ink-suave); margin-top: 4px; }
 
-  /* ── Minijuego: atrapar estrellas ──────────────────────────────── */
+  /* ── Minijuegos: los tres botones ──────────────────────────────── */
+  /* Rejilla centrada que se apila sola: en fila no caben en el teléfono. */
+  .juegos {
+    margin-top: 26px; display: flex; flex-wrap: wrap;
+    justify-content: center; gap: 10px 12px; padding: 0 4px;
+  }
   .juego-abrir {
-    display: inline-block; margin-top: 26px; padding: 10px 20px;
+    margin-top: 0; padding: 10px 20px;
     border: 1.5px solid rgba(217,168,63,.45); border-radius: 999px;
     background: rgba(255,255,255,.04); color: var(--gold);
     font-family: inherit; font-size: .95rem; letter-spacing: .06em;
     cursor: pointer; transition: transform .2s ease, background .2s ease;
   }
+  /* Angosto de verdad: un botón por línea, a lo ancho, para que no se corte. */
+  @media (max-width: 400px) {
+    .juegos { flex-direction: column; align-items: stretch; padding: 0 24px; }
+    .juego-abrir { width: 100%; text-align: center; }
+  }
   .juego-abrir:hover { transform: translateY(-2px); background: rgba(217,168,63,.12); }
+  /* Con candado: se ve que existe, no se puede abrir. Sin `disabled`, para
+     que el toque llegue igual y pueda contestar por qué está cerrado. */
+  .juego-abrir.con-candado {
+    color: var(--ink-tenue); border-color: var(--borde);
+    background: none; cursor: not-allowed;
+  }
+  .juego-abrir.con-candado:hover { transform: none; background: none; }
 
   .juego {
     /* Por encima de los botones fijos de la página (el de volver va en 30) y
@@ -501,10 +518,19 @@
         </div>
       </div>
 
-      <button class="juego-abrir" id="juegoAbrir" type="button">atrapar estrellas ✦</button>
-      <!-- El segundo juego: un reto de cuatro etapas y, al final, otro
-           regalo. Vive en reto.js, que se cuelga solo de este botón. -->
-      <button class="juego-abrir" id="retoAbrir" type="button">las cuatro puertas ✿</button>
+      <!-- Los tres juegos, en una rejilla que se centra y se apila sola: en
+           el teléfono no caben en fila y, sueltos, quedaban pegados a los
+           bordes. Aquí envueltos, respiran y nunca se cortan. -->
+      <div class="juegos">
+        <button class="juego-abrir" id="juegoAbrir" type="button">atrapar estrellas ✦</button>
+        <!-- El segundo juego: un reto de siete etapas y, al final, otro
+             regalo. Vive en reto.js, que se cuelga solo de este botón. -->
+        <button class="juego-abrir" id="retoAbrir" type="button">las siete puertas ✿</button>
+        <!-- El tercero: tres llaves y el tercer regalo. Nace con candado y lo
+             abre reto3.js cuando las siete puertas están cruzadas. Se ve desde
+             el principio a propósito: que sepa que el camino sigue. -->
+        <button class="juego-abrir con-candado" id="reto3Abrir" type="button">las tres llaves ✕</button>
+      </div>
     </section>
 
     <!-- EL día D -->
@@ -1036,6 +1062,14 @@
       if (confetiLanzado || !esHoyElCumple()) return;
       if (typeof confetti !== "function") return;   // aún no cargó: se deja pasar
       if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      // Una sola vez por cumpleaños: sin esto, el confeti estallaba en CADA
+      // recarga (parecía un destello a medio hacer). Se guarda por año, así el
+      // año que viene vuelve a caer fresco.
+      var marcaConfeti = "pequita.confeti." + new Date(OBJETIVO).getFullYear();
+      try {
+        if (localStorage.getItem(marcaConfeti)) { confetiLanzado = true; return; }
+        localStorage.setItem(marcaConfeti, "1");
+      } catch (e) {}
       confetiLanzado = true;
 
       confetti({ particleCount: 120, spread: 90, origin: { y: 0.6 }, colors: CONFETI_COLORES });
@@ -1671,6 +1705,7 @@
   </script>
   <script src="confeti.js" defer></script>
   <script src="reto.js" defer></script>
+  <script src="reto3.js" defer></script>
   <script src="eventos.js" defer></script>
   <script src="presencia.js" defer></script>
   <script src="frasco.js" defer></script>

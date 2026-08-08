@@ -1,8 +1,10 @@
 /* ══════════════════════════════════════════════════════════════════
-   EL RETO DE LAS CUATRO PUERTAS
-   El segundo minijuego del contador (cuatro etapas seguidas). Todo lo que se ve dentro se pinta
-   en el lienzo (ver reto.js); esto es solo el marco: la pantalla,
-   la cabecera, los avisos y el regalo del final.
+   EL MARCO DE LOS RETOS
+   Sirve al segundo minijuego (las siete puertas, reto.js) y al tercero
+   (las tres llaves, reto3.js): los dos son la misma pantalla con otro
+   contenido, así que comparten estilo y no se copia nada.
+   Casi todo lo que se ve dentro se pinta en el lienzo; esto es solo el
+   marco: la pantalla, la cabecera, los avisos y el regalo del final.
    Colores SIEMPRE por token: la partida vira al papel el día D igual
    que el resto del sitio.
    ══════════════════════════════════════════════════════════════════ */
@@ -40,7 +42,7 @@ html.dia .reto { background: var(--telon-dia); }
   cursor: pointer; padding: 8px 14px;
 }
 
-/* Atajo al regalo, solo para quien ya cruzó las cuatro puertas. */
+/* Atajo al regalo, solo para quien ya cruzó todas las puertas. */
 .reto-regalo {
   position: absolute; right: 14px; bottom: max(14px, env(safe-area-inset-bottom, 0px));
   padding: 9px 16px; border-radius: 999px;
@@ -62,9 +64,14 @@ html.dia .reto { background: var(--telon-dia); }
 /* ── El regalo ───────────────────────────────────────────────────── */
 .reto-premio {
   position: absolute; inset: 0; display: none;
-  flex-direction: column; align-items: center; justify-content: center;
-  gap: 16px; padding: 28px 22px calc(28px + env(safe-area-inset-bottom, 0px));
-  text-align: center; overflow-y: auto;
+  flex-direction: column; align-items: center;
+  /* `safe center`: centra cuando cabe, pero si el contenido es más alto que
+     la pantalla (foto grande + frase + botones) NO recorta el título de
+     arriba —lo deja accesible y deja que se baje con el dedo—. Con `center` a
+     secas, en teléfonos bajos «las tres llaves» quedaba cortado. */
+  justify-content: safe center;
+  gap: 14px; padding: 24px 22px calc(24px + env(safe-area-inset-bottom, 0px));
+  text-align: center; overflow-y: auto; -webkit-overflow-scrolling: touch;
   background: color-mix(in srgb, var(--fondo) 88%, transparent);
   backdrop-filter: blur(8px);
 }
@@ -75,7 +82,7 @@ html.dia .reto { background: var(--telon-dia); }
   font-variant: small-caps; letter-spacing: .12em;
 }
 .reto-premio img {
-  max-width: min(20rem, 78vw); max-height: 62vh; width: auto; height: auto;
+  max-width: min(18rem, 72vw); max-height: 52vh; width: auto; height: auto;
   border-radius: 12px; border: 1px solid var(--borde);
   box-shadow: 0 18px 50px -22px rgba(0, 0, 0, .8);
   animation: reto-revela 1.4s cubic-bezier(.22, 1, .36, 1) both;
@@ -93,6 +100,13 @@ html.dia .reto { background: var(--telon-dia); }
   font-family: inherit; font-size: .9rem; letter-spacing: .06em; cursor: pointer;
 }
 .reto-premio .reto-cerrar:hover { border-color: var(--borde-vivo); }
+/* El enlace al viaje del tercer regalo: mismo botón, pero encendido en oro
+   lleno, que es el que invita a seguir. `text-decoration:none` porque es un
+   <a> disfrazado de botón. */
+.reto-premio .reto-cerrar.es-viaje {
+  display: inline-block; text-decoration: none;
+  border-color: var(--borde-vivo); background: rgba(217,168,63,.1);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .reto-premio.viva, .reto-premio img { animation: none; }
@@ -133,3 +147,56 @@ html.dia .reto { background: var(--telon-dia); }
   75% { transform: translate(calc(-50% + 7px), -50%) }
 }
 @media (prefers-reduced-motion: reduce) { .reto-cifras.tiembla { animation: none; } }
+
+/* ── Tres llaves, II: la cerradura ────────────────────────────────
+   Tampoco se pinta en el lienzo: aquí hay que VOLVER a mirar lo que
+   ya se probó, y una lista de verdad se lee mucho mejor que una
+   dibujada. Los intentos suben, lo de tocar queda abajo, fijo. */
+.llave-cerradura {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(22rem, 90vw); max-height: 76vh;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center;
+}
+.llave-cerradura[hidden] { display: none; }
+
+.cerradura-leyenda {
+  margin: 0; font-size: .78rem; letter-spacing: .04em;
+  color: var(--ink-tenue);
+}
+
+.cerradura-intentos {
+  width: 100%; overflow-y: auto; display: flex; flex-direction: column; gap: 5px;
+  /* Alto fijo desde el principio: si creciera con cada intento, la fila de
+     abajo bailaría y el dedo tocaría la figura de al lado. */
+  height: 13.5rem;
+  padding-right: 4px;
+}
+.cerradura-intento {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 5px 10px; border-radius: 8px;
+  background: var(--cristal); border: 1px solid var(--borde);
+}
+.cerradura-intento .intento-flores { color: var(--gold); letter-spacing: .3em; font-size: 1.05rem; }
+.cerradura-intento .intento-marcas { color: var(--ink-calida); letter-spacing: .12em; font-size: .8rem; }
+
+.cerradura-fila { display: flex; gap: 8px; }
+.cerradura-hueco {
+  width: 2.4rem; height: 2.4rem; display: grid; place-items: center;
+  border-radius: 10px; border: 1.5px solid var(--borde-vivo);
+  color: var(--gold); font-size: 1.2rem;
+}
+.cerradura-hueco.vacio { border-color: var(--borde); color: var(--ink-tenue); }
+
+.cerradura-flores {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  width: min(16rem, 76vw);
+}
+.cerradura-flor {
+  padding: 11px 0; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--borde); background: var(--cristal);
+  color: var(--gold); font-family: inherit; font-size: 1.15rem;
+}
+.cerradura-flor:hover { border-color: var(--borde-vivo); }
+.cerradura-flor.es-va { color: var(--ink-calida); }
+.cerradura-flor.es-borrar { color: var(--ink-tenue); }
